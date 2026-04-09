@@ -21,7 +21,7 @@ function resolveOrigin(request?: Request) {
 export function buildCorsHeaders(request?: Request) {
   return {
     "Access-Control-Allow-Origin": resolveOrigin(request),
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Credentials": "true",
     Vary: "Origin",
