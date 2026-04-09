@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { getSafeImageSrc } from "../../src/lib/image";
 import type { Product, ProductCategory } from "../../src/types/product";
 import { PRODUCT_CATEGORY_GROUPS } from "../../src/constants/categories";
 
@@ -254,10 +255,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                       {/* Image Container */}
                       <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
                         <Image
-                          src={
-                            produs.imagine?.trim() ||
-                            "/images/categories/dormitor.png"
-                          }
+                          src={getSafeImageSrc(produs.imagine)}
                           alt={produs.nume}
                           fill
                           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"

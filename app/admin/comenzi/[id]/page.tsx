@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import OrderDetailSidebar from "@/src/components/admin/comenzi/OrderDetailSidebar";
 import OrderTimeline from "@/src/components/admin/comenzi/OrderTimeline";
 import type { AdminOrder } from "@/src/hooks/useOrders";
+import { getSafeImageSrc } from "@/src/lib/image";
 
 export default function AdminOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -58,7 +59,13 @@ export default function AdminOrderDetailPage() {
               {comanda.produse.map((p, idx) => (
                 <div key={`${p.nume}-${idx}`} className="flex items-center gap-3 border-b border-gray-100 pb-3">
                   <div className="relative h-12 w-12 overflow-hidden rounded-md bg-gray-100">
-                    <Image src={p.imagine} alt={p.nume} fill className="object-cover" sizes="48px" />
+                    <Image
+                      src={getSafeImageSrc(p.imagine)}
+                      alt={p.nume}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                    />
                   </div>
                   <p className="flex-1 text-sm">{p.nume}</p>
                   <p className="text-sm">{p.pret.toLocaleString()} MDL</p>

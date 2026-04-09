@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 import type { CartItem as CartItemType } from "@/src/context/CartContext";
+import { getSafeImageSrc } from "@/src/lib/image";
 
 type CartItemProps = {
   item: CartItemType;
@@ -20,7 +21,7 @@ export default function CartItem({ item, onChangeQty, onRemove }: CartItemProps)
         className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100"
       >
         <Image
-          src={item.imagine}
+          src={getSafeImageSrc(item.imagine)}
           alt={item.nume}
           fill
           className="object-cover"

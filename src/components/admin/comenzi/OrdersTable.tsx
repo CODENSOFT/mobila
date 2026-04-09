@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clipboard, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 
 import type { AdminOrder } from "@/src/hooks/useOrders";
+import { getSafeImageSrc } from "@/src/lib/image";
 import OrderStatusBadge from "./OrderStatusBadge";
 
 type Props = {
@@ -59,7 +60,7 @@ export default function OrdersTable({ comenzi, onChangeStatus, onDelete }: Props
                     {comanda.produse[0]?.imagine ? (
                       <div className="relative h-8 w-8 overflow-hidden rounded bg-gray-100">
                         <Image
-                          src={comanda.produse[0].imagine}
+                          src={getSafeImageSrc(comanda.produse[0].imagine)}
                           alt=""
                           fill
                           className="object-cover"

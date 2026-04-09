@@ -22,13 +22,13 @@ export default function HeroSection() {
 
       <div className="relative mx-auto flex min-h-screen max-w-7xl items-center px-6 py-20">
         <div className="max-w-3xl">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.28em] text-[color:rgba(194,235,162,0.95)]">
+          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand-green)]">
             LABIRINT
           </p>
           <h1 className="text-5xl font-light leading-[1.1] tracking-tight text-white sm:text-6xl lg:text-7xl">
             Mobilă la comandă
             <br />
-            <span className="font-serif italic text-[color:rgba(214,246,184,0.98)]">de încredere</span>
+            <span className="font-serif italic text-[var(--brand-green)]">de încredere</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg font-light leading-8 text-white/85">
             Din 2007 oferim produse de calitate, garantii reale si mobilier personalizat, cu accent

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getSafeImageSrc } from "../../lib/image";
 import type { Product } from "../../types/product";
 import Card from "../ui/Card";
 
@@ -53,7 +54,7 @@ export default function FeaturedProductsSection({ products }: { products: Produc
               <Link key={product._id} href={`/produse/${product._id}`} className="block">
                 <Card className="relative aspect-4/5 border border-[#e8e3dc] bg-[#fcfbf9] shadow-[0_14px_34px_rgba(20,18,15,0.08)] transition-all duration-300 hover:shadow-[0_20px_42px_rgba(20,18,15,0.14)]">
                   <Image
-                    src={product.imagine || "/images/categories/dormitor.png"}
+                    src={getSafeImageSrc(product.imagine)}
                     alt={product.nume}
                     fill
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"

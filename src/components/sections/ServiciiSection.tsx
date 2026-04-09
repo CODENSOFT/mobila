@@ -1,21 +1,6 @@
 import Image from "next/image";
-import { Cormorant_Garamond, Playfair_Display } from "next/font/google";
 import type { LucideIcon } from "lucide-react";
 import { Clock, ShieldCheck, Truck } from "lucide-react";
-import React from "react";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-});
-
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["300", "400"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
 
 export type ServiciuItem = {
   icon: LucideIcon;
@@ -86,12 +71,12 @@ export default function ServiciiSection({
           <div className="flex flex-col justify-between py-2 lg:py-0">
             <div>
               <p
-                className={`${cormorant.className} mb-5 text-sm uppercase italic tracking-[0.18em] text-[#8a7f72]`}
+                className="mb-5 text-sm uppercase tracking-[0.18em] text-[#8a7f72]"
               >
                 De ce noi
               </p>
               <h2
-                className={`${playfair.className} text-[2.6rem] font-semibold leading-[1.15] tracking-[-0.01em] text-[#1a1a1a] lg:text-5xl`}
+                className="text-4xl font-light tracking-tight text-[#1c1917] lg:text-6xl"
               >
                 {sectionTitle}
               </h2>
@@ -101,7 +86,7 @@ export default function ServiciiSection({
               </div>
             </div>
             <p
-              className={`${cormorant.className} hidden text-xs tracking-widest text-[#a89e8e] lg:block`}
+              className="hidden text-xs tracking-widest text-[#a89e8e] lg:block"
             >
               © {new Date().getFullYear()} · Calitate certificată
             </p>
@@ -135,12 +120,12 @@ export default function ServiciiSection({
                   </div>
                   <div className="min-w-0 flex-1 pt-1">
                     <p
-                      className={`${playfair.className} text-[1.05rem] font-semibold leading-snug text-[#1a1a1a]`}
+                      className="text-base font-medium leading-snug text-[#1a1a1a]"
                     >
                       {titlu}
                     </p>
                     <p
-                      className={`${cormorant.className} mt-1.5 text-[1rem] leading-relaxed text-[#6b6257]`}
+                      className="mt-1.5 text-sm leading-relaxed text-[#6b6257]"
                     >
                       {descriere}
                     </p>
@@ -167,7 +152,7 @@ export default function ServiciiSection({
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
               <div
-                className={`${cormorant.className} absolute bottom-5 left-5 rounded-lg bg-white/80 px-4 py-2.5 shadow-md backdrop-blur-sm`}
+                className="absolute bottom-5 left-5 rounded-lg bg-white/80 px-4 py-2.5 shadow-md backdrop-blur-sm"
               >
                 <p className="text-xs font-light italic tracking-widest text-[#5c5044]">
                   Design &amp; Confort

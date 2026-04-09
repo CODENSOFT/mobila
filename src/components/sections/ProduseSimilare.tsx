@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toApiUrl } from "@/src/lib/api";
+import { getSafeImageSrc } from "@/src/lib/image";
 
 type ProdusSimilar = {
   _id: string;
@@ -90,7 +91,7 @@ export default function ProduseSimilare({
                 key={i}
                 className="overflow-hidden rounded-sm bg-white"
               >
-                <div className="aspect-[4/5] animate-pulse bg-[#f5f5f4]" />
+                <div className="aspect-4/5 animate-pulse bg-[#f5f5f4]" />
                 <div className="space-y-3 p-5">
                   <div className="h-4 w-3/4 animate-pulse rounded bg-[#e7e5e4]" />
                   <div className="h-5 w-1/3 animate-pulse rounded bg-[#e7e5e4]" />
@@ -120,7 +121,7 @@ export default function ProduseSimilare({
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {items.map((produs) => {
-            const src = imaginePrincipala(produs);
+            const src = getSafeImageSrc(imaginePrincipala(produs), "");
             const href = produs.slug
               ? `/produse/${produs.slug}`
               : `/produse/${produs._id}`;
@@ -131,7 +132,7 @@ export default function ProduseSimilare({
                 className="group relative overflow-hidden rounded-sm bg-white transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl"
               >
                 <Link href={href} className="block">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-[#f5f5f4]">
+                  <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
                     {src ? (
                       <Image
                         src={src}

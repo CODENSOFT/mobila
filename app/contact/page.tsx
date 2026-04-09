@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="bg-[#f7f3ec] pt-28">
+    <main className="bg-[#f7f3ec]">
       <ContactSection showForm form={<ContactForm />} />
     </main>
   );

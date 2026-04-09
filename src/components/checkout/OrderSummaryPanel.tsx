@@ -3,6 +3,7 @@
 import Image from "next/image";
 
 import type { CartItem } from "@/src/context/CartContext";
+import { getSafeImageSrc } from "@/src/lib/image";
 
 type Props = {
   items: CartItem[];
@@ -31,7 +32,13 @@ export default function OrderSummaryPanel({
         {items.map((item) => (
           <div key={item.id} className="flex gap-3">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-gray-100">
-              <Image src={item.imagine} alt={item.nume} fill className="object-cover" sizes="64px" />
+              <Image
+                src={getSafeImageSrc(item.imagine)}
+                alt={item.nume}
+                fill
+                className="object-cover"
+                sizes="64px"
+              />
               <span className="absolute -right-1 -top-1 rounded-full bg-gray-800 px-1.5 py-0.5 text-[10px] text-white">
                 x{item.cantitate}
               </span>
