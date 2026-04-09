@@ -13,14 +13,14 @@ type Props = {
 export default function OrderFilters({ filters, onChange, onReset }: Props) {
   return (
     <section className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <input
           value={filters.search}
           onChange={(e) =>
             onChange((prev) => ({ ...prev, search: e.target.value, page: 1 }))
           }
           placeholder="Caută după #comandă, client, email"
-          className="lg:col-span-2 h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-gray-400"
+          className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 sm:col-span-2 xl:col-span-2"
         />
         <select
           value={filters.status}
@@ -70,11 +70,11 @@ export default function OrderFilters({ filters, onChange, onReset }: Props) {
         </select>
       </div>
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-3 flex justify-stretch sm:justify-end">
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 sm:w-auto"
         >
           <RotateCcw className="h-4 w-4" aria-hidden />
           Resetează filtrele

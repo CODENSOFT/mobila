@@ -23,7 +23,82 @@ function paymentBadge(metoda: AdminOrder["metodaPlata"]) {
 export default function OrdersTable({ comenzi, onChangeStatus, onDelete }: Props) {
   return (
     <section className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-      <div className="overflow-x-auto">
+      <div className="divide-y divide-gray-100 md:hidden">
+        {comenzi.map((comanda) => (
+          <article key={comanda._id} className="space-y-3 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard.writeText(comanda.orderNumber)}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#1a1a1a]"
+                  title="Copiază numărul comenzii"
+                >
+                  {comanda.orderNumber}
+                  <Clipboard className="h-3.5 w-3.5 text-gray-400" aria-hidden />
+                </button>
+                <p className="mt-1 text-xs text-gray-500">
+                  {new Date(comanda.createdAt).toLocaleString("ro-RO", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+              <OrderStatusBadge status={comanda.status} />
+            </div>
+
+            <div className="rounded-lg bg-gray-50 p-3">
+              <p className="text-sm font-medium text-[#1a1a1a]">{comanda.client.nume}</p>
+              <p className="text-xs text-gray-500">{comanda.client.email}</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-gray-600">
+                <span>{comanda.produse.length} produse</span>
+                <span className="font-semibold text-[#1a1a1a]">
+                  {comanda.total.toLocaleString()} MDL
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <select
+                value={comanda.status}
+                onChange={(e) =>
+                  onChangeStatus(comanda._id, e.target.value as AdminOrder["status"])
+                }
+                className="h-9 flex-1 rounded-md border border-gray-200 px-2 text-xs"
+              >
+                <option value="noua">Nouă</option>
+                <option value="procesata">Procesată</option>
+                <option value="expediata">Expediată</option>
+                <option value="livrata">Livrată</option>
+                <option value="anulata">Anulată</option>
+              </select>
+              <Link
+                href={`/admin/comenzi/${comanda._id}`}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100"
+                title="Vezi detalii"
+              >
+                <Eye className="h-4 w-4" aria-hidden />
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!window.confirm("Sigur vrei să anulezi această comandă?")) return;
+                  onDelete(comanda._id);
+                }}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-red-200 text-red-500 hover:bg-red-50"
+                title="Anulează comanda"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
             <tr>
