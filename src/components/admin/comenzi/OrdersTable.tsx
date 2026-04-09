@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Clipboard, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Clipboard, Eye, Trash2 } from "lucide-react";
 
 import type { AdminOrder } from "@/src/hooks/useOrders";
 import { getSafeImageSrc } from "@/src/lib/image";
@@ -115,18 +115,14 @@ export default function OrdersTable({ comenzi, onChangeStatus, onDelete }: Props
                     </select>
                     <button
                       type="button"
-                      onClick={() => onDelete(comanda._id)}
+                      onClick={() => {
+                        if (!window.confirm("Sigur vrei să anulezi această comandă?")) return;
+                        onDelete(comanda._id);
+                      }}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-red-200 text-red-500 hover:bg-red-50"
                       title="Anulează comanda"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100"
-                      title="Mai multe"
-                    >
-                      <MoreHorizontal className="h-4 w-4" aria-hidden />
                     </button>
                   </div>
                 </td>
