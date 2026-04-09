@@ -135,6 +135,28 @@ function getErrorDetails(error: unknown) {
   };
 }
 
+type SortBy = "newest" | "oldest" | "valueAsc" | "valueDesc";
+
+function normalizeSort(sortBy: string | null): SortBy {
+  if (sortBy === "oldest") return "oldest";
+  if (sortBy === "valueAsc") return "valueAsc";
+  if (sortBy === "valueDesc") return "valueDesc";
+  return "newest";
+}
+
+function parsePositiveInt(value: string | null, fallback: number) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(1, Math.trunc(parsed));
+}
+
+function parseDateParam(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
 export async function OPTIONS(request: Request) {
   return new Response(null, { status: 200, headers: buildCorsHeaders(request) });
 }
@@ -145,10 +167,66 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    // /api/comenzi -> return all orders
+    // /api/comenzi -> return paginated orders list
     if (!id) {
-      const comenzi = await Order.find({}).sort("-createdAt").lean();
-      return Response.json({ comenzi }, { headers: buildCorsHeaders(request) });
+      const page = parsePositiveInt(searchParams.get("page"), 1);
+      const limit = Math.min(100, parsePositiveInt(searchParams.get("limit"), 20));
+      const status = searchParams.get("status");
+      const search = (searchParams.get("search") ?? "").trim();
+      const startDate = parseDateParam(searchParams.get("startDate"));
+      const endDate = parseDateParam(searchParams.get("endDate"));
+      const sortBy = normalizeSort(searchParams.get("sortBy"));
+
+      const query: Record<string, unknown> = {};
+
+      if (
+        status &&
+        ["noua", "procesata", "expediata", "livrata", "anulata"].includes(status)
+      ) {
+        query.status = status;
+      }
+
+      if (search) {
+        query.$or = [
+          { orderNumber: { $regex: search, $options: "i" } },
+          { "client.nume": { $regex: search, $options: "i" } },
+          { "client.email": { $regex: search, $options: "i" } },
+        ];
+      }
+
+      if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) {
+          (query.createdAt as Record<string, unknown>).$gte = startDate;
+        }
+        if (endDate) {
+          endDate.setHours(23, 59, 59, 999);
+          (query.createdAt as Record<string, unknown>).$lte = endDate;
+        }
+      }
+
+      const sort =
+        sortBy === "oldest"
+          ? "createdAt"
+          : sortBy === "valueAsc"
+            ? "total"
+            : sortBy === "valueDesc"
+              ? "-total"
+              : "-createdAt";
+
+      const total = await Order.countDocuments(query);
+      const pagini = Math.max(1, Math.ceil(total / limit));
+      const safePage = Math.min(page, pagini);
+      const comenzi = await Order.find(query)
+        .sort(sort)
+        .skip((safePage - 1) * limit)
+        .limit(limit)
+        .lean();
+
+      return Response.json(
+        { comenzi, total, pagini, page: safePage },
+        { headers: buildCorsHeaders(request) }
+      );
     }
 
     // /api/comenzi?id=... -> return single order with ObjectId validation
