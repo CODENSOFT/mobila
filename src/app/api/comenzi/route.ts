@@ -102,6 +102,19 @@ function normalizeOrderBody(body: LooseOrderBody): CreateOrderBody | null {
   };
 }
 
+function getErrorDetails(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      stack: error.stack ?? "",
+    };
+  }
+  return {
+    message: String(error),
+    stack: "",
+  };
+}
+
 export async function OPTIONS(request: Request) {
   return new Response(null, { status: 200, headers: buildCorsHeaders(request) });
 }
@@ -230,26 +243,39 @@ export async function POST(request: Request) {
       updatedAt: new Date(),
     });
 
-    await sendOrderConfirmation({
-      orderNumber: created.orderNumber,
-      client: body.client,
-      produse: body.produse.map((item) => ({
-        nume: item.nume,
-        cantitate: item.cantitate,
-        pret: item.pret,
-      })),
-      total: body.total,
-      metodaLivrare: body.metodaLivrare,
-    });
+    try {
+      await sendOrderConfirmation({
+        orderNumber: created.orderNumber,
+        client: body.client,
+        produse: body.produse.map((item) => ({
+          nume: item.nume,
+          cantitate: item.cantitate,
+          pret: item.pret,
+        })),
+        total: body.total,
+        metodaLivrare: body.metodaLivrare,
+      });
+    } catch (mailError) {
+      const mailDetails = getErrorDetails(mailError);
+      // Email must not block successful order placement in production.
+      console.error("Order created, but email sending failed:", mailDetails.message);
+      if (mailDetails.stack) {
+        console.error(mailDetails.stack);
+      }
+    }
 
     return Response.json(
       { ok: true, id: String(created._id), orderNumber: created.orderNumber },
       { status: 201, headers: buildCorsHeaders(request) }
     );
   } catch (error) {
-    console.error("POST /api/comenzi error", error);
+    const details = getErrorDetails(error);
+    console.error("POST /api/comenzi error:", details.message);
+    if (details.stack) {
+      console.error(details.stack);
+    }
     return Response.json(
-      { message: "Eroare server" },
+      { message: "Eroare server", error: details.message },
       { status: 500, headers: buildCorsHeaders(request) }
     );
   }
