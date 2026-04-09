@@ -16,9 +16,6 @@ const navItems = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
-  if (pathname.startsWith("/admin/login")) {
-    return <main className="mx-auto w-full max-w-7xl px-4 py-8">{children}</main>;
-  }
 
   return (
     <main className="min-h-screen bg-slate-50">

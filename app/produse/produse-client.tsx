@@ -23,6 +23,7 @@ const normalizeCategory = (value?: string | null): Category => {
 };
 
 export default function ProduseClient({ produse }: { produse: Product[] }) {
+  const formatNumber = (value: number) => value.toLocaleString("ro-RO");
   const searchParams = useSearchParams();
   const categoryFromUrlValid = normalizeCategory(searchParams.get("categorie"));
 
@@ -201,8 +202,8 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                   Preț
                 </h3>
                 <div className="space-y-2 text-sm text-[#78716c]">
-                  <p>De la {produse.length > 0 ? Math.min(...produse.map(p => p.pret)).toLocaleString() : 0} MDL</p>
-                  <p>Până la {produse.length > 0 ? Math.max(...produse.map(p => p.pret)).toLocaleString() : 0} MDL</p>
+                  <p>De la {produse.length > 0 ? formatNumber(Math.min(...produse.map((p) => p.pret))): "0"} MDL</p>
+                  <p>Până la {produse.length > 0 ? formatNumber(Math.max(...produse.map((p) => p.pret))): "0"} MDL</p>
                 </div>
               </div>
 
@@ -290,7 +291,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                           {produs.nume}
                         </h2>
                         <p className="text-lg font-light text-[#1c1917]">
-                          {produs.pret.toLocaleString()} <span className="text-sm text-[#a8a29e]">MDL</span>
+                          {formatNumber(produs.pret)} <span className="text-sm text-[#a8a29e]">MDL</span>
                         </p>
                       </div>
                     </article>
