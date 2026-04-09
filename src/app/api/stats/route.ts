@@ -1,6 +1,11 @@
 import { connectDB } from "../../../lib/db";
+import { corsHeaders } from "../../../lib/cors";
 import Client from "../../../models/Client";
 import Product from "../../../models/Product";
+
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
 
 export async function GET() {
   try {
@@ -29,10 +34,13 @@ export async function GET() {
         clientiAzi,
         totalProduse,
       },
-      { status: 200 }
+      { status: 200, headers: corsHeaders }
     );
   } catch (error) {
     console.error("GET /api/stats error:", error);
-    return Response.json({ message: "Nu s-au putut incarca statisticile." }, { status: 500 });
+    return Response.json(
+      { message: "Nu s-au putut incarca statisticile." },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }

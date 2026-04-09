@@ -1,6 +1,7 @@
 import { isValidObjectId, Types, type PipelineStage } from "mongoose";
 
 import { uploadImageToCloudinary } from "../../../lib/cloudinary";
+import { corsHeaders } from "../../../lib/cors";
 import { connectDB } from "../../../lib/db";
 import Product from "../../../models/Product";
 
@@ -10,29 +11,12 @@ const parseLimit = (raw: string | null, fallback: number, max: number) => {
   return Math.min(n, max);
 };
 
-const allowedOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? "";
-
-const corsHeaders = (origin: string | null) => {
-  const isAllowed =
-    Boolean(origin) &&
-    (origin === allowedOrigin || origin?.endsWith(".vercel.app") === true);
-
-  return {
-    "Access-Control-Allow-Origin": isAllowed ? (origin as string) : allowedOrigin || "*",
-    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    Vary: "Origin",
-  };
-};
-
-export async function OPTIONS(request: Request) {
-  const origin = request.headers.get("origin");
-  return new Response(null, { status: 204, headers: corsHeaders(origin) });
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
 }
 
 export async function GET(request: Request) {
   try {
-    const origin = request.headers.get("origin");
     console.info("[api/produse] GET called:", request.url);
     await connectDB();
     const { searchParams } = new URL(request.url);
@@ -40,7 +24,10 @@ export async function GET(request: Request) {
 
     if (id) {
       if (!isValidObjectId(id)) {
-        return Response.json({ message: "Produs invalid." }, { status: 400 });
+        return Response.json(
+          { message: "Produs invalid." },
+          { status: 400, headers: corsHeaders }
+        );
       }
 
       const produs = await Product.findById(id).lean();
@@ -48,11 +35,11 @@ export async function GET(request: Request) {
       if (!produs) {
         return Response.json(
           { message: "Produsul nu a fost gasit." },
-          { status: 404 }
+          { status: 404, headers: corsHeaders }
         );
       }
 
-      return Response.json(produs, { status: 200, headers: corsHeaders(origin) });
+      return Response.json(produs, { status: 200, headers: corsHeaders });
     }
 
     const categorieParam = searchParams.get("categorie");
@@ -114,18 +101,18 @@ export async function GET(request: Request) {
 
       const produse = await Product.aggregate(pipeline);
       console.info("[api/produse] Returned products (filtered):", produse.length);
-      return Response.json(produse, { status: 200, headers: corsHeaders(origin) });
+      return Response.json(produse, { status: 200, headers: corsHeaders });
     }
 
     const produse = await Product.find().lean();
     console.info("[api/produse] Returned products:", produse.length);
 
-    return Response.json(produse, { status: 200, headers: corsHeaders(origin) });
+    return Response.json(produse, { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("GET /api/produse error:", error);
     return Response.json(
       { message: "Nu s-au putut incarca produsele." },
-      { status: 500, headers: corsHeaders(request.headers.get("origin")) }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
@@ -187,13 +174,13 @@ export async function POST(request: Request) {
       !categorie.trim() ||
       Number.isNaN(pretNumber)
     ) {
-      return Response.json({ message: "Date invalide." }, { status: 400 });
+      return Response.json({ message: "Date invalide." }, { status: 400, headers: corsHeaders });
     }
 
     if (!finalImageUrl) {
       return Response.json(
         { message: "Adauga o imagine (fisier sau URL)." },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -205,7 +192,7 @@ export async function POST(request: Request) {
       imagine: finalImageUrl,
     });
 
-    return Response.json(produs, { status: 201 });
+    return Response.json(produs, { status: 201, headers: corsHeaders });
   } catch (error) {
     console.error("POST /api/produse error:", error);
 
@@ -218,7 +205,7 @@ export async function POST(request: Request) {
           message:
             "Cloudinary nu este configurat. Completeaza CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY si CLOUDINARY_API_SECRET sau foloseste un URL de imagine.",
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -233,13 +220,13 @@ export async function POST(request: Request) {
           message:
             "Configurare Cloudinary invalida (401). Verifica CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY si CLOUDINARY_API_SECRET in .env.",
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     return Response.json(
       { message: "Nu s-a putut crea produsul." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

@@ -1,5 +1,6 @@
 import { isValidObjectId } from "mongoose";
 
+import { corsHeaders } from "../../../../lib/cors";
 import { connectDB } from "../../../../lib/db";
 import Product from "../../../../models/Product";
 
@@ -7,13 +8,20 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
+
 export async function PUT(request: Request, context: RouteContext) {
   try {
     await connectDB();
     const { id } = await context.params;
 
     if (!isValidObjectId(id)) {
-      return Response.json({ message: "ID produs invalid." }, { status: 400 });
+      return Response.json(
+        { message: "ID produs invalid." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     const body = (await request.json()) as {
@@ -31,7 +39,7 @@ export async function PUT(request: Request, context: RouteContext) {
       typeof body.categorie !== "string" ||
       typeof body.imagineUrl !== "string"
     ) {
-      return Response.json({ message: "Date invalide." }, { status: 400 });
+      return Response.json({ message: "Date invalide." }, { status: 400, headers: corsHeaders });
     }
 
     const updated = await Product.findByIdAndUpdate(
@@ -43,17 +51,23 @@ export async function PUT(request: Request, context: RouteContext) {
         categorie: body.categorie.trim(),
         imagine: body.imagineUrl.trim(),
       },
-      { new: true }
+      { returnDocument: "after" }
     ).lean();
 
     if (!updated) {
-      return Response.json({ message: "Produsul nu a fost gasit." }, { status: 404 });
+      return Response.json(
+        { message: "Produsul nu a fost gasit." },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return Response.json(updated, { status: 200 });
+    return Response.json(updated, { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("PUT /api/produse/[id] error:", error);
-    return Response.json({ message: "Nu s-a putut actualiza produsul." }, { status: 500 });
+    return Response.json(
+      { message: "Nu s-a putut actualiza produsul." },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
@@ -63,18 +77,30 @@ export async function DELETE(_: Request, context: RouteContext) {
     const { id } = await context.params;
 
     if (!isValidObjectId(id)) {
-      return Response.json({ message: "ID produs invalid." }, { status: 400 });
+      return Response.json(
+        { message: "ID produs invalid." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     const deleted = await Product.findByIdAndDelete(id).lean();
 
     if (!deleted) {
-      return Response.json({ message: "Produsul nu a fost gasit." }, { status: 404 });
+      return Response.json(
+        { message: "Produsul nu a fost gasit." },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return Response.json({ message: "Produs sters cu succes." }, { status: 200 });
+    return Response.json(
+      { message: "Produs sters cu succes." },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error) {
     console.error("DELETE /api/produse/[id] error:", error);
-    return Response.json({ message: "Nu s-a putut sterge produsul." }, { status: 500 });
+    return Response.json(
+      { message: "Nu s-a putut sterge produsul." },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }

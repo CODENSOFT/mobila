@@ -1,5 +1,6 @@
 import { isValidObjectId, Types } from "mongoose";
 
+import { corsHeaders } from "@/src/lib/cors";
 import { connectDB } from "@/src/lib/db";
 import { sendOrderConfirmation } from "@/src/lib/email/sendOrderConfirmation";
 import Order from "@/src/models/Order";
@@ -40,18 +41,28 @@ function orderNumberFromCount(count: number) {
   return `#ORD-${year}-${String(count + 1).padStart(4, "0")}`;
 }
 
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
+
 export async function GET(request: Request) {
   await connectDB();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
   if (!id || !isValidObjectId(id)) {
-    return Response.json({ message: "ID comandă invalid." }, { status: 400 });
+    return Response.json(
+      { message: "ID comandă invalid." },
+      { status: 400, headers: corsHeaders }
+    );
   }
   const comanda = await Order.findById(id).lean();
   if (!comanda) {
-    return Response.json({ message: "Comanda nu a fost găsită." }, { status: 404 });
+    return Response.json(
+      { message: "Comanda nu a fost găsită." },
+      { status: 404, headers: corsHeaders }
+    );
   }
-  return Response.json(comanda);
+  return Response.json(comanda, { headers: corsHeaders });
 }
 
 export async function POST(request: Request) {
@@ -60,7 +71,10 @@ export async function POST(request: Request) {
     const body = (await request.json()) as CreateOrderBody;
 
     if (!body.client || !Array.isArray(body.produse) || body.produse.length === 0) {
-      return Response.json({ message: "Date comandă invalide." }, { status: 400 });
+      return Response.json(
+        { message: "Date comandă invalide." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     const productIds = body.produse
@@ -76,7 +90,7 @@ export async function POST(request: Request) {
       if (!db) {
         return Response.json(
           { message: `Produs indisponibil: ${item.nume}` },
-          { status: 409 }
+          { status: 409, headers: corsHeaders }
         );
       }
       const stock = Number((db as { stoc?: unknown }).stoc);
@@ -86,7 +100,7 @@ export async function POST(request: Request) {
             message: `Stoc insuficient pentru ${item.nume}. Disponibil: ${stock}.`,
             productId: item.id,
           },
-          { status: 409 }
+          { status: 409, headers: corsHeaders }
         );
       }
     }
@@ -96,7 +110,7 @@ export async function POST(request: Request) {
       if (timeout) {
         return Response.json(
           { message: "Timeout la procesarea plății cu cardul. Te rugăm să reîncerci." },
-          { status: 408 }
+          { status: 408, headers: corsHeaders }
         );
       }
     }
@@ -149,13 +163,13 @@ export async function POST(request: Request) {
 
     return Response.json(
       { ok: true, id: String(created._id), orderNumber: created.orderNumber },
-      { status: 201 }
+      { status: 201, headers: corsHeaders }
     );
   } catch (error) {
     console.error("POST /api/comenzi error", error);
     return Response.json(
       { message: "A apărut o eroare. Te rugăm să încerci din nou." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

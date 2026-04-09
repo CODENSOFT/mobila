@@ -1,1 +1,1 @@
-export { DELETE, PATCH } from "../../../../src/app/api/clienti/[id]/route";
+export { DELETE, OPTIONS, PATCH } from "../../../../src/app/api/clienti/[id]/route";

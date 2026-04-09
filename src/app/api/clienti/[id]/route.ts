@@ -1,7 +1,12 @@
 import { isValidObjectId } from "mongoose";
 
+import { corsHeaders } from "../../../../lib/cors";
 import { connectDB } from "../../../../lib/db";
 import Client from "../../../../models/Client";
+
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
 
 export async function DELETE(
   _request: Request,
@@ -11,20 +16,29 @@ export async function DELETE(
     const { id } = await params;
 
     if (!isValidObjectId(id)) {
-      return Response.json({ message: "ID invalid." }, { status: 400 });
+      return Response.json({ message: "ID invalid." }, { status: 400, headers: corsHeaders });
     }
 
     await connectDB();
     const deletedClient = await Client.findByIdAndDelete(id);
 
     if (!deletedClient) {
-      return Response.json({ message: "Clientul nu a fost gasit." }, { status: 404 });
+      return Response.json(
+        { message: "Clientul nu a fost gasit." },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return Response.json({ message: "Client sters cu succes." }, { status: 200 });
+    return Response.json(
+      { message: "Client sters cu succes." },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error) {
     console.error("DELETE /api/clienti/:id error:", error);
-    return Response.json({ message: "Nu s-a putut sterge clientul." }, { status: 500 });
+    return Response.json(
+      { message: "Nu s-a putut sterge clientul." },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
@@ -36,7 +50,7 @@ export async function PATCH(
     const { id } = await params;
 
     if (!isValidObjectId(id)) {
-      return Response.json({ message: "ID invalid." }, { status: 400 });
+      return Response.json({ message: "ID invalid." }, { status: 400, headers: corsHeaders });
     }
 
     const body = await request.json();
@@ -44,26 +58,29 @@ export async function PATCH(
     const allowedStatuses = ["new", "contacted", "closed"];
 
     if (!allowedStatuses.includes(status)) {
-      return Response.json({ message: "Status invalid." }, { status: 400 });
+      return Response.json({ message: "Status invalid." }, { status: 400, headers: corsHeaders });
     }
 
     await connectDB();
     const updatedClient = await Client.findByIdAndUpdate(
       id,
       { status },
-      { new: true }
+      { returnDocument: "after" }
     ).lean();
 
     if (!updatedClient) {
-      return Response.json({ message: "Clientul nu a fost gasit." }, { status: 404 });
+      return Response.json(
+        { message: "Clientul nu a fost gasit." },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return Response.json(updatedClient, { status: 200 });
+    return Response.json(updatedClient, { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("PATCH /api/clienti/:id error:", error);
     return Response.json(
       { message: "Nu s-a putut actualiza statusul clientului." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

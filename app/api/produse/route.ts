@@ -1,1 +1,1 @@
-export { GET, POST } from "../../../src/app/api/produse/route";
+export { GET, OPTIONS, POST } from "../../../src/app/api/produse/route";

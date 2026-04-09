@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 
 import { requireAdminRole } from "@/src/lib/adminAuth";
+import { corsHeaders } from "@/src/lib/cors";
 import { connectDB } from "@/src/lib/db";
 import { exportOrders } from "@/src/lib/exportOrders";
 import Order from "@/src/models/Order";
 
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
+
 export async function GET(request: Request) {
   if (!(await requireAdminRole())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
   }
 
   await connectDB();
@@ -52,6 +57,7 @@ export async function GET(request: Request) {
     headers: {
       "Content-Type": exported.contentType,
       "Content-Disposition": `attachment; filename="${exported.filename}"`,
+      ...corsHeaders,
     },
   });
 }

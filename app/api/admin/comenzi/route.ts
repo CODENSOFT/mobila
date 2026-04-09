@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireAdminRole } from "@/src/lib/adminAuth";
+import { corsHeaders } from "@/src/lib/cors";
 import { connectDB } from "@/src/lib/db";
 import Order from "@/src/models/Order";
 
@@ -13,9 +14,13 @@ function normalizeSort(sortBy: string | null): SortBy {
   return "newest";
 }
 
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
+
 export async function GET(request: Request) {
   if (!(await requireAdminRole())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
   }
 
   await connectDB();
@@ -109,5 +114,8 @@ export async function GET(request: Request) {
     venituriLuna: venituriLunaCurenta[0]?.total ?? 0,
   };
 
-  return NextResponse.json({ comenzi, total, pagini, statistici, page: safePage });
+  return NextResponse.json(
+    { comenzi, total, pagini, statistici, page: safePage },
+    { headers: corsHeaders }
+  );
 }

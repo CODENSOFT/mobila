@@ -1,4 +1,5 @@
 import type { Article } from "../../../types/blog";
+import { corsHeaders } from "../../../lib/cors";
 
 const MOCK_ARTICLES: Article[] = [
   {
@@ -45,5 +46,9 @@ export async function GET(request: Request) {
     : 3;
 
   const items = MOCK_ARTICLES.slice(0, limit);
-  return Response.json(items, { status: 200 });
+  return Response.json(items, { status: 200, headers: corsHeaders });
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
 }
