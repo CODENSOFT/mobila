@@ -129,21 +129,7 @@ export async function DELETE(
     );
   }
 
-  const comanda = await Order.findByIdAndUpdate(
-    id,
-    {
-      status: "anulata",
-      updatedAt: new Date(),
-      $push: {
-        statusHistory: {
-          status: "anulata",
-          changedAt: new Date(),
-          changedBy: "Admin",
-        },
-      },
-    },
-    { returnDocument: "after" }
-  ).lean();
+  const comanda = await Order.findByIdAndDelete(id).lean();
 
   if (!comanda) {
     return NextResponse.json(
@@ -152,5 +138,8 @@ export async function DELETE(
     );
   }
 
-  return NextResponse.json(comanda, { headers: buildCorsHeaders(request) });
+  return NextResponse.json(
+    { ok: true, message: "Comanda a fost ștearsă." },
+    { headers: buildCorsHeaders(request) }
+  );
 }
