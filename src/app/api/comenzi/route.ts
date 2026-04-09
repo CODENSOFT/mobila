@@ -73,20 +73,40 @@ function normalizeOrderBody(body: LooseOrderBody): CreateOrderBody | null {
     return null;
   }
 
-  const subtotal = Number(body.subtotal ?? body.total ?? 0);
-  const transport = Number(body.transport ?? 0);
-  const reducere = Number(body.reducere ?? 0);
-  const total = Number(body.total ?? subtotal + transport - reducere);
-  if (!Number.isFinite(total) || total <= 0) return null;
+  const hasNumericTotal = typeof body.total === "number" && Number.isFinite(body.total);
+  if (!hasNumericTotal || (body.total ?? 0) <= 0) return null;
 
-  const normalizedProducts = body.produse.map((p) => ({
-    id: p.id ?? "",
-    nume: p.nume ?? "Produs",
-    imagine: p.imagine ?? "/images/categories/dormitor.png",
-    pret: Number(p.pret ?? 0),
-    cantitate: Number(p.cantitate ?? 1),
-    slug: p.slug ?? "",
-  }));
+  const subtotal = typeof body.subtotal === "number" && Number.isFinite(body.subtotal)
+    ? body.subtotal
+    : body.total ?? 0;
+  const transport =
+    typeof body.transport === "number" && Number.isFinite(body.transport) ? body.transport : 0;
+  const reducere =
+    typeof body.reducere === "number" && Number.isFinite(body.reducere) ? body.reducere : 0;
+  const total = body.total;
+
+  const normalizedProducts = body.produse
+    .filter(
+      (p) =>
+        typeof p === "object" &&
+        p !== null &&
+        typeof p.pret === "number" &&
+        Number.isFinite(p.pret) &&
+        p.pret >= 0 &&
+        typeof p.cantitate === "number" &&
+        Number.isFinite(p.cantitate) &&
+        p.cantitate > 0
+    )
+    .map((p) => ({
+      id: p.id ?? "",
+      nume: p.nume ?? "Produs",
+      imagine: p.imagine ?? "/images/categories/dormitor.png",
+      pret: p.pret,
+      cantitate: Math.trunc(p.cantitate),
+      slug: p.slug ?? "",
+    }));
+
+  if (normalizedProducts.length === 0) return null;
 
   return {
     client,
@@ -150,6 +170,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     await connectDB();
+    const contentType = request.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) {
+      return Response.json(
+        { message: "Content-Type invalid. Folosește application/json." },
+        { status: 415, headers: buildCorsHeaders(request) }
+      );
+    }
     let rawBody: unknown;
     try {
       rawBody = await request.json();
