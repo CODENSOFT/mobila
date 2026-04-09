@@ -144,12 +144,21 @@ export async function GET(request: Request) {
     await connectDB();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    if (!id || !isValidObjectId(id)) {
+
+    // /api/comenzi -> return all orders
+    if (!id) {
+      const comenzi = await Order.find({}).sort("-createdAt").lean();
+      return Response.json({ comenzi }, { headers: buildCorsHeaders(request) });
+    }
+
+    // /api/comenzi?id=... -> return single order with ObjectId validation
+    if (!isValidObjectId(id)) {
       return Response.json(
         { message: "ID comandă invalid." },
         { status: 400, headers: buildCorsHeaders(request) }
       );
     }
+
     const comanda = await Order.findById(id).lean();
     if (!comanda) {
       return Response.json(
