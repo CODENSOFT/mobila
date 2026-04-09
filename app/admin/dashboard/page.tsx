@@ -18,7 +18,7 @@ async function getProducts(): Promise<Product[]> {
   const headersList = await headers();
   const host = headersList.get("host");
   const protocol = headersList.get("x-forwarded-proto") ?? "http";
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiBaseUrl = "https://mobila-production.up.railway.app";
 
   if (!apiBaseUrl && !host) {
     return [];
