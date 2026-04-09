@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { toApiUrl } from "@/src/lib/api";
 
 type ProdusSimilar = {
   _id: string;
@@ -53,7 +54,7 @@ export default function ProduseSimilare({
     params.set("limit", "4");
     params.set("exclude", produsId);
 
-    fetch(`/api/produse?${params.toString()}`)
+    fetch(toApiUrl(`/api/produse?${params.toString()}`))
       .then((res) => {
         if (!res.ok) throw new Error("fetch failed");
         return res.json() as Promise<unknown>;

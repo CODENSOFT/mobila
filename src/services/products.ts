@@ -1,8 +1,14 @@
 import { headers } from "next/headers";
 
+import { getApiBaseUrl } from "../lib/api";
 import type { Product } from "../types/product";
 
 async function getBaseUrl() {
+  const apiBaseUrl = getApiBaseUrl();
+  if (apiBaseUrl) {
+    return apiBaseUrl;
+  }
+
   const headersList = await headers();
   const host = headersList.get("host");
   const protocol = headersList.get("x-forwarded-proto") ?? "http";

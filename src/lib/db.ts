@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 type MongooseCache = {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
+  connectedUri: string | null;
 };
 
 declare global {
@@ -16,6 +17,7 @@ const globalWithMongoose = global as typeof globalThis & {
 const cached: MongooseCache = globalWithMongoose.mongooseCache ?? {
   conn: null,
   promise: null,
+  connectedUri: null,
 };
 
 if (!globalWithMongoose.mongooseCache) {
@@ -23,10 +25,10 @@ if (!globalWithMongoose.mongooseCache) {
 }
 
 export async function connectDB(): Promise<typeof mongoose> {
-  const mongoUri = process.env.MONGO_URI ?? process.env.MONGODB_URI;
+  const mongoUri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
 
   if (!mongoUri) {
-    throw new Error("Please define MONGO_URI or MONGODB_URI environment variable");
+    throw new Error("Please define MONGODB_URI (or MONGO_URI) environment variable");
   }
 
   if (cached.conn) {
@@ -34,7 +36,18 @@ export async function connectDB(): Promise<typeof mongoose> {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(mongoUri);
+    cached.promise = mongoose
+      .connect(mongoUri)
+      .then((conn) => {
+        cached.connectedUri = mongoUri;
+        console.info("[db] MongoDB connected successfully.");
+        return conn;
+      })
+      .catch((error) => {
+        console.error("[db] MongoDB connection failed:", error);
+        cached.promise = null;
+        throw error;
+      });
   }
 
   cached.conn = await cached.promise;

@@ -7,6 +7,7 @@ import { Box, CircleDollarSign, Layers3 } from "lucide-react";
 import type { ProductCategory } from "../../src/constants/categories";
 import ConfirmModal from "../../src/components/admin/ConfirmModal";
 import ProductTable from "../../src/components/admin/ProductTable";
+import { toApiUrl } from "../../src/lib/api";
 import type { Product } from "../../src/types/product";
 
 const ProductForm = dynamic(() => import("../../src/components/admin/ProductForm"), {
@@ -22,7 +23,7 @@ export default function AdminPage() {
   const loadProducts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/produse", { cache: "no-store" });
+      const response = await fetch(toApiUrl("/api/produse"), { cache: "no-store" });
       if (!response.ok) {
         throw new Error("Nu s-au putut incarca produsele.");
       }
@@ -50,7 +51,7 @@ export default function AdminPage() {
     const hasFile = payload.imagineFile instanceof File;
 
     const response = hasFile
-      ? await fetch("/api/produse", {
+      ? await fetch(toApiUrl("/api/produse"), {
           method: "POST",
           body: (() => {
             const formData = new FormData();
@@ -67,7 +68,7 @@ export default function AdminPage() {
             return formData;
           })(),
         })
-      : await fetch("/api/produse", {
+      : await fetch(toApiUrl("/api/produse"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -86,7 +87,7 @@ export default function AdminPage() {
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      const response = await fetch(`/api/produse/${id}`, { method: "DELETE" });
+      const response = await fetch(toApiUrl(`/api/produse/${id}`), { method: "DELETE" });
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as
           | { message?: string }

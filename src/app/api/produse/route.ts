@@ -10,8 +10,30 @@ const parseLimit = (raw: string | null, fallback: number, max: number) => {
   return Math.min(n, max);
 };
 
+const allowedOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? "";
+
+const corsHeaders = (origin: string | null) => {
+  const isAllowed =
+    Boolean(origin) &&
+    (origin === allowedOrigin || origin?.endsWith(".vercel.app") === true);
+
+  return {
+    "Access-Control-Allow-Origin": isAllowed ? (origin as string) : allowedOrigin || "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    Vary: "Origin",
+  };
+};
+
+export async function OPTIONS(request: Request) {
+  const origin = request.headers.get("origin");
+  return new Response(null, { status: 204, headers: corsHeaders(origin) });
+}
+
 export async function GET(request: Request) {
   try {
+    const origin = request.headers.get("origin");
+    console.info("[api/produse] GET called:", request.url);
     await connectDB();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -30,7 +52,7 @@ export async function GET(request: Request) {
         );
       }
 
-      return Response.json(produs, { status: 200 });
+      return Response.json(produs, { status: 200, headers: corsHeaders(origin) });
     }
 
     const categorieParam = searchParams.get("categorie");
@@ -91,17 +113,19 @@ export async function GET(request: Request) {
       }
 
       const produse = await Product.aggregate(pipeline);
-      return Response.json(produse, { status: 200 });
+      console.info("[api/produse] Returned products (filtered):", produse.length);
+      return Response.json(produse, { status: 200, headers: corsHeaders(origin) });
     }
 
     const produse = await Product.find().lean();
+    console.info("[api/produse] Returned products:", produse.length);
 
-    return Response.json(produse, { status: 200 });
+    return Response.json(produse, { status: 200, headers: corsHeaders(origin) });
   } catch (error) {
     console.error("GET /api/produse error:", error);
     return Response.json(
       { message: "Nu s-au putut incarca produsele." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders(request.headers.get("origin")) }
     );
   }
 }

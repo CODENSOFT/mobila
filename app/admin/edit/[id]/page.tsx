@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import type { ProductCategory } from "../../../../src/constants/categories";
+import { toApiUrl } from "../../../../src/lib/api";
 import type { Product } from "../../../../src/types/product";
 
 const ProductForm = dynamic(() => import("../../../../src/components/admin/ProductForm"), {
@@ -21,7 +22,9 @@ export default function AdminEditProductPage() {
   useEffect(() => {
     const loadProduct = async () => {
       try {
-        const response = await fetch(`/api/produse?id=${params.id}`, { cache: "no-store" });
+        const response = await fetch(toApiUrl(`/api/produse?id=${params.id}`), {
+          cache: "no-store",
+        });
         if (!response.ok) {
           throw new Error("Nu s-a putut incarca produsul.");
         }
@@ -47,7 +50,7 @@ export default function AdminEditProductPage() {
     imagineUrl: string;
     imagineFile?: File | null;
   }) => {
-    const response = await fetch(`/api/produse/${params.id}`, {
+    const response = await fetch(toApiUrl(`/api/produse/${params.id}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
