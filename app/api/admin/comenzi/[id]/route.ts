@@ -2,37 +2,43 @@ import { NextResponse } from "next/server";
 import { Types } from "mongoose";
 
 import { requireAdminRole } from "@/src/lib/adminAuth";
-import { corsHeaders } from "@/src/lib/cors";
+import { buildCorsHeaders } from "@/src/lib/cors";
 import { connectDB } from "@/src/lib/db";
 import Order from "@/src/models/Order";
 
-export async function OPTIONS() {
-  return new Response(null, { status: 200, headers: corsHeaders });
+export async function OPTIONS(request: Request) {
+  return new Response(null, { status: 200, headers: buildCorsHeaders(request) });
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await requireAdminRole())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
+    return NextResponse.json(
+      { message: "Unauthorized" },
+      { status: 401, headers: buildCorsHeaders(request) }
+    );
   }
   await connectDB();
 
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) {
-    return NextResponse.json({ message: "Invalid order id" }, { status: 400, headers: corsHeaders });
+    return NextResponse.json(
+      { message: "Invalid order id" },
+      { status: 400, headers: buildCorsHeaders(request) }
+    );
   }
 
   const comanda = await Order.findById(id).populate("produse.produsId").lean();
   if (!comanda) {
     return NextResponse.json(
       { message: "Comanda nu a fost găsită." },
-      { status: 404, headers: corsHeaders }
+      { status: 404, headers: buildCorsHeaders(request) }
     );
   }
 
-  return NextResponse.json(comanda, { headers: corsHeaders });
+  return NextResponse.json(comanda, { headers: buildCorsHeaders(request) });
 }
 
 export async function PATCH(
@@ -40,13 +46,19 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await requireAdminRole())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
+    return NextResponse.json(
+      { message: "Unauthorized" },
+      { status: 401, headers: buildCorsHeaders(request) }
+    );
   }
   await connectDB();
 
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) {
-    return NextResponse.json({ message: "Invalid order id" }, { status: 400, headers: corsHeaders });
+    return NextResponse.json(
+      { message: "Invalid order id" },
+      { status: 400, headers: buildCorsHeaders(request) }
+    );
   }
 
   const body = (await request.json().catch(() => null)) as
@@ -54,7 +66,10 @@ export async function PATCH(
     | null;
 
   if (!body) {
-    return NextResponse.json({ message: "Body invalid" }, { status: 400, headers: corsHeaders });
+    return NextResponse.json(
+      { message: "Body invalid" },
+      { status: 400, headers: buildCorsHeaders(request) }
+    );
   }
 
   const update: Record<string, unknown> = { updatedAt: new Date() };
@@ -87,25 +102,31 @@ export async function PATCH(
   if (!comanda) {
     return NextResponse.json(
       { message: "Comanda nu a fost găsită." },
-      { status: 404, headers: corsHeaders }
+      { status: 404, headers: buildCorsHeaders(request) }
     );
   }
 
-  return NextResponse.json(comanda, { headers: corsHeaders });
+  return NextResponse.json(comanda, { headers: buildCorsHeaders(request) });
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await requireAdminRole())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
+    return NextResponse.json(
+      { message: "Unauthorized" },
+      { status: 401, headers: buildCorsHeaders(request) }
+    );
   }
   await connectDB();
 
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) {
-    return NextResponse.json({ message: "Invalid order id" }, { status: 400, headers: corsHeaders });
+    return NextResponse.json(
+      { message: "Invalid order id" },
+      { status: 400, headers: buildCorsHeaders(request) }
+    );
   }
 
   const comanda = await Order.findByIdAndUpdate(
@@ -127,9 +148,9 @@ export async function DELETE(
   if (!comanda) {
     return NextResponse.json(
       { message: "Comanda nu a fost găsită." },
-      { status: 404, headers: corsHeaders }
+      { status: 404, headers: buildCorsHeaders(request) }
     );
   }
 
-  return NextResponse.json(comanda, { headers: corsHeaders });
+  return NextResponse.json(comanda, { headers: buildCorsHeaders(request) });
 }

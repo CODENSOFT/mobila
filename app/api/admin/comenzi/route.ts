@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireAdminRole } from "@/src/lib/adminAuth";
-import { corsHeaders } from "@/src/lib/cors";
+import { buildCorsHeaders } from "@/src/lib/cors";
 import { connectDB } from "@/src/lib/db";
 import Order from "@/src/models/Order";
 
@@ -27,14 +27,17 @@ function parseDateParam(value: string | null) {
   return date;
 }
 
-export async function OPTIONS() {
-  return new Response(null, { status: 200, headers: corsHeaders });
+export async function OPTIONS(request: Request) {
+  return new Response(null, { status: 200, headers: buildCorsHeaders(request) });
 }
 
 export async function GET(request: Request) {
   try {
     if (!(await requireAdminRole())) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401, headers: corsHeaders });
+      return NextResponse.json(
+        { message: "Unauthorized" },
+        { status: 401, headers: buildCorsHeaders(request) }
+      );
     }
 
     await connectDB();
@@ -129,13 +132,13 @@ export async function GET(request: Request) {
 
     return NextResponse.json(
       { comenzi, total, pagini, statistici, page: safePage },
-      { headers: corsHeaders }
+      { headers: buildCorsHeaders(request) }
     );
   } catch (error) {
     console.error("GET /api/admin/comenzi failed", error);
     return NextResponse.json(
       { message: "Nu s-au putut încărca comenzile." },
-      { status: 500, headers: corsHeaders }
+      { status: 500, headers: buildCorsHeaders(request) }
     );
   }
 }
