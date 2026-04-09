@@ -18,12 +18,13 @@ async function getProducts(): Promise<Product[]> {
   const headersList = await headers();
   const host = headersList.get("host");
   const protocol = headersList.get("x-forwarded-proto") ?? "http";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  if (!host) {
+  if (!apiBaseUrl && !host) {
     return [];
   }
 
-  const response = await fetch(`${protocol}://${host}/api/produse`, {
+  const response = await fetch(`${apiBaseUrl ?? `${protocol}://${host}`}/api/produse`, {
     cache: "no-store",
   });
 
