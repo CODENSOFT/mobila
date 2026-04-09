@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Copy } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { toApiUrl } from "@/src/lib/api";
 
 type OrderData = {
   orderNumber: string;
@@ -26,7 +27,7 @@ function ConfirmareContent() {
 
   useEffect(() => {
     if (!id) return;
-    void fetch(`/api/comenzi?id=${encodeURIComponent(id)}`, { cache: "no-store" })
+    void fetch(toApiUrl(`/api/comenzi?id=${encodeURIComponent(id)}`), { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data) return;

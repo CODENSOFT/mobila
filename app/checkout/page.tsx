@@ -13,6 +13,7 @@ import DiscountCodeInput from "@/src/components/checkout/DiscountCodeInput";
 import OrderSummaryPanel from "@/src/components/checkout/OrderSummaryPanel";
 import PersonalDataForm from "@/src/components/checkout/PersonalDataForm";
 import { useCart } from "@/src/context/CartContext";
+import { toApiUrl } from "@/src/lib/api";
 import {
   checkoutSchema,
   type CheckoutFormValues,
@@ -65,7 +66,7 @@ export default function CheckoutPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/comenzi", {
+      const response = await fetch(toApiUrl("/api/comenzi"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
