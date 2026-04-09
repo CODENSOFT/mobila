@@ -1,4 +1,4 @@
-import { model, models, Schema, type InferSchemaType } from "mongoose";
+import { model, models, Schema, type InferSchemaType, type Model } from "mongoose";
 
 const productSchema = new Schema(
   {
@@ -15,6 +15,8 @@ const productSchema = new Schema(
 
 export type ProductDocument = InferSchemaType<typeof productSchema>;
 
-const Product = models.Product || model("Product", productSchema);
+const Product =
+  (models.Product as Model<ProductDocument> | undefined) ??
+  model<ProductDocument>("Product", productSchema);
 
 export default Product;

@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowRight, Box, ClipboardList, Grid2X2, LayoutPanelLeft } from "lucide-react";
 
+import { PRODUCT_CATEGORY_GROUPS } from "../../../src/constants/categories";
 import type { Product } from "../../../src/types/product";
 
 type DashboardStats = {
@@ -34,6 +35,16 @@ async function getProducts(): Promise<Product[]> {
 }
 
 function buildStats(products: Product[]): DashboardStats {
+  const kitchenCategories = new Set<string>(
+    PRODUCT_CATEGORY_GROUPS.find((group) => group.title === "PENTRU BUCĂTĂRIE")?.items ?? []
+  );
+  const bedroomCategories = new Set<string>(
+    PRODUCT_CATEGORY_GROUPS.find((group) => group.title === "PENTRU DORMITOR")?.items ?? []
+  );
+  const livingCategories = new Set<string>(
+    PRODUCT_CATEGORY_GROUPS.find((group) => group.title === "PENTRU LIVING")?.items ?? []
+  );
+
   const stats: DashboardStats = {
     total: products.length,
     byCategory: {
@@ -44,11 +55,11 @@ function buildStats(products: Product[]): DashboardStats {
   };
 
   for (const product of products) {
-    if (product.categorie === "Bucatarie") {
+    if (product.categorie && kitchenCategories.has(product.categorie)) {
       stats.byCategory.Bucatarie += 1;
-    } else if (product.categorie === "Dormitor") {
+    } else if (product.categorie && bedroomCategories.has(product.categorie)) {
       stats.byCategory.Dormitor += 1;
-    } else if (product.categorie === "Living") {
+    } else if (product.categorie && livingCategories.has(product.categorie)) {
       stats.byCategory.Living += 1;
     }
   }

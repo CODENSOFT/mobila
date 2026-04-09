@@ -1,4 +1,4 @@
-import { model, models, Schema, type InferSchemaType } from "mongoose";
+import { model, models, Schema, type InferSchemaType, type Model } from "mongoose";
 
 const clientSchema = new Schema({
   nume: { type: String, required: true, trim: true },
@@ -15,6 +15,8 @@ const clientSchema = new Schema({
 
 export type ClientDocument = InferSchemaType<typeof clientSchema>;
 
-const Client = models.Client || model("Client", clientSchema);
+const Client =
+  (models.Client as Model<ClientDocument> | undefined) ??
+  model<ClientDocument>("Client", clientSchema);
 
 export default Client;

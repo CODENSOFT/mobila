@@ -1,4 +1,4 @@
-import { model, models, Schema, type InferSchemaType, type Types } from "mongoose";
+import { model, models, Schema, type InferSchemaType, type Model, type Types } from "mongoose";
 
 const orderProductSchema = new Schema(
   {
@@ -78,6 +78,8 @@ export type OrderDocument = InferSchemaType<typeof orderSchema> & {
   _id: Types.ObjectId;
 };
 
-const Order = models.Order || model("Order", orderSchema);
+const Order =
+  (models.Order as Model<OrderDocument> | undefined) ??
+  model<OrderDocument>("Order", orderSchema);
 
 export default Order;
