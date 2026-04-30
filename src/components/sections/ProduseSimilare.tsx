@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toApiUrl } from "@/src/lib/api";
 import { getSafeImageSrc } from "@/src/lib/image";
+import { useLang } from "@/src/context/LangContext";
+import { useLiveRuText } from "@/src/hooks/useLiveRuText";
 
 type ProdusSimilar = {
   _id: string;
@@ -36,16 +38,66 @@ type ProduseSimilareProps = {
   categorie: string;
 };
 
+function SimilarProductCard({
+  produs,
+  lang,
+  href,
+  noImage,
+}: {
+  produs: ProdusSimilar;
+  lang: string;
+  href: string;
+  noImage: string;
+}) {
+  const { text: numeDisplay } = useLiveRuText(produs.nume, lang);
+  const src = getSafeImageSrc(imaginePrincipala(produs), "");
+  return (
+    <article className="group relative overflow-hidden rounded-sm bg-white transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl">
+      <Link href={href} className="block">
+        <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
+          {src ? (
+            <Image
+              src={src}
+              alt={numeDisplay}
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-[#e7e5e4] text-xs text-[#a8a29e]">
+              {noImage}
+            </div>
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/10" />
+          {produs.categorie ? (
+            <span className="absolute left-4 top-4 bg-white/90 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-[#1c1917] backdrop-blur-sm">
+              {produs.categorie}
+            </span>
+          ) : null}
+        </div>
+        <div className="p-5">
+          <h3 className="mb-1 text-base font-medium text-[#1c1917] transition-colors group-hover:text-[#78716c]">
+            {numeDisplay}
+          </h3>
+          <p className="text-lg font-light text-[#1c1917]">{formatPretRon(produs.pret)}</p>
+        </div>
+      </Link>
+    </article>
+  );
+}
+
 export default function ProduseSimilare({
   produsId,
   categorie,
 }: ProduseSimilareProps) {
+  const { lang, dict } = useLang();
+  const t = dict.product;
   const [items, setItems] = useState<ProdusSimilar[] | null>(null);
 
   const veziToateHref = useMemo(() => {
     const c = categorie.trim();
-    return c ? `/produse?categorie=${encodeURIComponent(c)}` : "/produse";
-  }, [categorie]);
+    return c ? `/${lang}/produse?categorie=${encodeURIComponent(c)}` : `/${lang}/produse`;
+  }, [lang, categorie]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,60 +161,30 @@ export default function ProduseSimilare({
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-16">
         <div className="mb-8 flex items-center justify-between gap-4">
           <h2 className="text-2xl font-bold text-[#1c1917]">
-            Produse similare
+            {t.similar}
           </h2>
           <Link
             href={veziToateHref}
             className="shrink-0 text-sm text-[#78716c] transition-colors hover:text-[#1c1917]"
           >
-            Vezi toate
+            {t.viewAll}
           </Link>
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {items.map((produs) => {
-            const src = getSafeImageSrc(imaginePrincipala(produs), "");
             const href = produs.slug
-              ? `/produse/${produs.slug}`
-              : `/produse/${produs._id}`;
+              ? `/${lang}/produse/${produs.slug}`
+              : `/${lang}/produse/${produs._id}`;
 
             return (
-              <article
+              <SimilarProductCard
                 key={produs._id}
-                className="group relative overflow-hidden rounded-sm bg-white transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl"
-              >
-                <Link href={href} className="block">
-                  <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
-                    {src ? (
-                      <Image
-                        src={src}
-                        alt={produs.nume}
-                        fill
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[#e7e5e4] text-xs text-[#a8a29e]">
-                        Fără imagine
-                      </div>
-                    )}
-                    <div className="pointer-events-none absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/10" />
-                    {produs.categorie ? (
-                      <span className="absolute left-4 top-4 bg-white/90 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-[#1c1917] backdrop-blur-sm">
-                        {produs.categorie}
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="p-5">
-                    <h3 className="mb-1 text-base font-medium text-[#1c1917] transition-colors group-hover:text-[#78716c]">
-                      {produs.nume}
-                    </h3>
-                    <p className="text-lg font-light text-[#1c1917]">
-                      {formatPretRon(produs.pret)}
-                    </p>
-                  </div>
-                </Link>
-              </article>
+                produs={produs}
+                lang={lang}
+                href={href}
+                noImage={t.noImage}
+              />
             );
           })}
         </div>

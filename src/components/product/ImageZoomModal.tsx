@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
+import { useLang } from "@/src/context/LangContext";
 
 export type ImageZoomModalProps = {
   imagini: string[];
@@ -34,6 +35,7 @@ export default function ImageZoomModal({
   indexStart,
   onClose,
 }: ImageZoomModalProps) {
+  const { dict } = useLang();
   const mounted = useIsClient();
   const [entered, setEntered] = useState(false);
   const [index, setIndex] = useState(() =>
@@ -409,7 +411,7 @@ export default function ImageZoomModal({
           {label}
         </p>
         <p className="mt-1 text-center text-xs text-white/40">
-          Scroll pentru zoom · Esc pentru închidere
+          {dict.product.modalHint}
         </p>
       </div>
     </div>

@@ -1,0 +1,426 @@
+{
+  "nav": {
+    "home": "Acasă",
+    "products": "Produse",
+    "about": "Despre",
+    "contact": "Contact"
+  },
+  "hero": {
+    "badge": "LABIRINT",
+    "heading1": "Mobilier premium pentru casa ta",
+    "heading2": "Creat cu atenție la detalii, din 2007",
+    "description": "Din Soroca, livrăm în toată Moldova mobilier care îmbină designul modern cu durabilitatea. Fie că alegi produse gata realizate sau mobilier la comandă, fiecare piesă este construită pentru a rezista în timp și pentru a aduce confort în locuința ta.",
+    "cta": "Vezi produsele"
+  },
+  "heroSplit": {
+    "title": "Designuri de calitate premium, create pentru casa ta",
+    "description": "Alege piese care combină estetica modernă cu materiale atent selectate și durabilitate, pentru un interior în care te simți acasă.",
+    "viewAll": "VEZI TOATE CATEGORIILE",
+    "ticker": [
+      "Calitate reală",
+      "Materiale atent selectate",
+      "Execuție precisă",
+      "Relații pe termen lung"
+    ]
+  },
+  "categories": {
+    "heading": "Descoperă mai mult pentru tine",
+    "explore": "Explorează colecția",
+    "viewAll": "Colecția completă",
+    "viewAllSub": "150+ piese de mobilier premium",
+    "new": "Nou",
+    "seeAll": "Vezi tot",
+    "see": "Vezi",
+    "items": {
+      "Dormitor": "Dormitor",
+      "Bucatarii": "Bucătării",
+      "Dulapuri": "Dulapuri",
+      "Scaune": "Scaune",
+      "Mese": "Mese"
+    },
+    "subtitles": {
+      "Dormitor": "Relaxare & Confort",
+      "Bucatarii": "Funcționalitate & Stil",
+      "Dulapuri": "Spațiu & Organizare",
+      "Scaune": "Confort & Design",
+      "Mese": "Calitate & Utilitate"
+    }
+  },
+  "services": {
+    "badge": "Ce oferim",
+    "heading": "Soluții complete pentru orice tip de spațiu",
+    "quality": "Calitate certificată",
+    "design": "Design & Confort",
+    "items": [
+      {
+        "title": "Produse gata realizate",
+        "desc": "Mobilier disponibil rapid, ideal pentru amenajări fără timp de așteptare. Gamă variată: dormitoare, bucătării, livinguri, dulapuri, mese și scaune."
+      },
+      {
+        "title": "Mobilier la comandă",
+        "desc": "Realizăm mobilier adaptat exact nevoilor tale: dimensiuni personalizate, alegere materiale și culori, design în funcție de spațiu. Fiecare proiect este unic."
+      },
+      {
+        "title": "Consultanță și suport",
+        "desc": "Te ghidăm de la idee până la montaj: alegerea produselor, optimizarea spațiului și recomandări de design."
+      }
+    ]
+  },
+  "featured": {
+    "label": "Selecție Editată",
+    "heading": "Piese",
+    "headingItalic": "remarcabile",
+    "description": "Mobilier contemporan pentru interioare premium, construit pe proporții echilibrate și materiale autentice.",
+    "viewAll": "Toată colecția",
+    "empty": "Colecția va fi disponibilă în curând.",
+    "labels": ["Nou", "Popular", "Ediție Limitată", "Premium", "Sezon", "Recomandat"],
+    "defaultLabel": "Colecție",
+    "furniture": "Mobilier",
+    "viewDetails": "Vezi detalii"
+  },
+  "footer": {
+    "description": "Mobilier la comandă și produse finite, cu tradiție din 2007. Fiecare piesă este realizată cu atenție la detalii în atelierul nostru din Soroca.",
+    "productsHeading": "Produse",
+    "companyHeading": "Companie",
+    "rights": "Toate drepturile rezervate.",
+    "links": {
+      "dormitoare": "Dormitoare",
+      "bucatarii": "Bucătării",
+      "dulapuri": "Dulapuri",
+      "scaune": "Scaune",
+      "mese": "Mese",
+      "despre": "Despre noi",
+      "contact": "Contact"
+    }
+  },
+  "cart": {
+    "title": "Coșul meu",
+    "items": "produse",
+    "item": "produs",
+    "close": "Închide coșul",
+    "empty": "Coșul tău este gol",
+    "emptyDesc": "Adaugă produse pentru a începe comanda.",
+    "browse": "Descoperă produsele",
+    "subtotal": "Subtotal",
+    "shipping": "Transport",
+    "free": "Gratuit",
+    "total": "Total",
+    "checkout": "Finalizează comanda",
+    "continue": "Continuă cumpărăturile",
+    "addToCart": "Adaugă în coș",
+    "adding": "Se adaugă...",
+    "added": "Adăugat!"
+  },
+  "product": {
+    "home": "Acasă",
+    "products": "Produse",
+    "description": "Descriere produs",
+    "delivery": "Livrare",
+    "deliveryValue": "2–4 săptămâni",
+    "warranty": "Garanție",
+    "warrantyValue": "24 luni",
+    "assembly": "Montaj",
+    "assemblyValue": "Disponibil",
+    "payment": "Plată",
+    "paymentValue": "Cash / Transfer",
+    "callNow": "Sună acum",
+    "whatsapp": "WhatsApp",
+    "trustWarranty": "Garanție oficială",
+    "trustDelivery": "Livrare în toată Moldova",
+    "trustAssembly": "Montaj profesional",
+    "notFound": "Produs indisponibil",
+    "notFoundDesc": "Produsul căutat nu există în colecția noastră.",
+    "backToProducts": "Înapoi la produse",
+    "similar": "Produse similare",
+    "viewAll": "Vezi toate",
+    "imageZoomHint": "Click pe imagine pentru zoom · folosește scroll în vizualizare pentru mărire",
+    "modalHint": "Scroll pentru zoom · Esc pentru închidere",
+    "noImage": "Fără imagine"
+  },
+  "products": {
+    "collectionHeading": "Colecția",
+    "collectionItalic": "completă",
+    "collectionDesc": "Mobilier premium pentru fiecare colț al casei tale. Descoperă piesele care transformă spațiul în experiențe.",
+    "shop": "Shop",
+    "filters": "Filtre",
+    "categories": "Categorii",
+    "all": "Toate",
+    "allCategories": "Toate categoriile",
+    "searchPlaceholder": "Caută produse...",
+    "sortFeatured": "Recomandate",
+    "sortPriceAsc": "Preț: Mic - Mare",
+    "sortPriceDesc": "Preț: Mare - Mic",
+    "price": "Preț",
+    "from": "De la",
+    "to": "Până la",
+    "priceRange": "Interval disponibil",
+    "contactCta": "Nu găsești ce cauți?",
+    "contactLink": "Contactează-ne",
+    "noResults": "Nu există produse pentru filtrul selectat.",
+    "resetFilters": "Resetează filtrele",
+    "showing": "Afișate",
+    "productsCount": "produse",
+    "viewDetails": "Vezi Detalii",
+    "loading": "Se încarcă produsele...",
+    "categoryGroups": [
+      {
+        "title": "PENTRU DORMITOR",
+        "items": [
+          { "key": "Dormitoare", "label": "Dormitoare" },
+          { "key": "Dulapuri", "label": "Dulapuri" },
+          { "key": "Paturi", "label": "Paturi" },
+          { "key": "Comode", "label": "Comode" },
+          { "key": "Noptiere", "label": "Noptiere" },
+          { "key": "Anexe", "label": "Anexe" },
+          { "key": "Mese de toaletă", "label": "Mese de toaletă" },
+          { "key": "Mese de calculator", "label": "Mese de calculator" },
+          { "key": "Taburete puf", "label": "Taburete puf" },
+          { "key": "Oglinzi", "label": "Oglinzi" }
+        ]
+      },
+      {
+        "title": "SALTELE ȘI TOPPERE",
+        "items": [
+          { "key": "Toate saltelele", "label": "Toate saltelele" },
+          { "key": "Saltele", "label": "Saltele" },
+          { "key": "Toppere", "label": "Toppere" }
+        ]
+      },
+      {
+        "title": "PENTRU BUCĂTĂRIE",
+        "items": [
+          { "key": "Bucătării", "label": "Bucătării" },
+          { "key": "Colțare", "label": "Colțare" },
+          { "key": "Mese", "label": "Mese" },
+          { "key": "Scaune", "label": "Scaune" }
+        ]
+      },
+      {
+        "title": "PENTRU LIVING",
+        "items": [
+          { "key": "Livinguri", "label": "Livinguri" },
+          { "key": "Dulapuri", "label": "Dulapuri" },
+          { "key": "Comode", "label": "Comode" },
+          { "key": "Polițe", "label": "Polițe" },
+          { "key": "Mese", "label": "Mese" },
+          { "key": "Scaune", "label": "Scaune" },
+          { "key": "Mese de cafea", "label": "Mese de cafea" }
+        ]
+      },
+      {
+        "title": "PENTRU HOL",
+        "items": [
+          { "key": "Antreuri", "label": "Antreuri" },
+          { "key": "Dulapuri", "label": "Dulapuri" },
+          { "key": "Comode", "label": "Comode" },
+          { "key": "Anexe", "label": "Anexe" },
+          { "key": "Oglinzi", "label": "Oglinzi" },
+          { "key": "Pantofare", "label": "Pantofare" },
+          { "key": "Cuiere", "label": "Cuiere" }
+        ]
+      }
+    ]
+  },
+  "checkout": {
+    "breadcrumb": { "cart": "Coș", "details": "Detalii", "confirm": "Confirmare" },
+    "mobileSummary": "Sumar comandă",
+    "orderSummary": "Sumar comandă",
+    "personalData": "Date personale",
+    "firstName": "Prenume",
+    "lastName": "Nume",
+    "deliveryAddress": "Adresa de livrare",
+    "street": "Strada",
+    "number": "Număr",
+    "block": "Bloc",
+    "staircase": "Scară",
+    "apartment": "Apartament",
+    "city": "Oraș",
+    "district": "Raion / Municipiu",
+    "postalCode": "Cod poștal (ex: MD-2001)",
+    "deliveryMethod": "Metodă de livrare",
+    "delivery": {
+      "standard": { "label": "Livrare standard", "desc": "3-5 zile lucrătoare" },
+      "express": { "label": "Livrare express", "desc": "1-2 zile lucrătoare" },
+      "showroom": { "label": "Ridicare din showroom", "desc": "Soroca, str. Bechir 4" }
+    },
+    "free": "GRATUIT",
+    "discountCode": "Cod de reducere",
+    "apply": "Aplică",
+    "discountValid": "Cod valid: -{{procent}}%",
+    "discountError": "Cod invalid. Încearcă din nou.",
+    "discountApiError": "A apărut o eroare la validarea codului.",
+    "note": "Notă comandă",
+    "notePlaceholder": "Ex: Sună înainte de livrare, etaj 3 fără lift",
+    "gdpr": "Am citit și accept",
+    "terms": "Termenii și condițiile",
+    "and": "și",
+    "privacy": "Politica de confidențialitate",
+    "newsletter": "Doresc să primesc oferte și noutăți pe email",
+    "submit": "Plasează comanda",
+    "submitting": "Se procesează...",
+    "error": "A apărut o eroare. Te rugăm să încerci din nou.",
+    "ssl": "SSL",
+    "subtotal": "Subtotal",
+    "shipping": "Transport",
+    "discount": "Reducere",
+    "total": "TOTAL",
+    "vat": "(inclusiv TVA 19%)"
+  },
+  "confirmation": {
+    "title": "Comanda ta a fost plasată cu succes!",
+    "emailConfirmation": "Vei primi un email de confirmare la adresa:",
+    "emailFallback": "adresa ta de email",
+    "orderSummary": "Sumar comandă",
+    "total": "Total",
+    "deliveryStandard": "Estimare livrare: 3-5 zile lucrătoare",
+    "deliveryExpress": "Estimare livrare: 1-2 zile lucrătoare",
+    "deliveryShowroom": "Ridicare din showroom: în aceeași zi",
+    "trackOrder": "Urmărește comanda",
+    "continueShopping": "Continuă cumpărăturile",
+    "loading": "Se încarcă...",
+    "description": "Îți mulțumim pentru comandă. Vei fi contactat în scurt timp.",
+    "backToShop": "Înapoi la produse"
+  },
+  "contact": {
+    "badge": "Contact",
+    "heading": "Să începem un",
+    "italic": "proiect",
+    "description": "Fie că ai nevoie de mobilier la comandă sau dorești să vizitezi showroom-ul, suntem aici să te ajutăm.",
+    "phone": "Telefon",
+    "phoneHours": "Luni - Vineri, 09:00 - 18:00",
+    "email": "Email",
+    "address": "Showroom & Atelier",
+    "social": "Urmărește-ne",
+    "mapHint": "Click pe hartă pentru indicații în Google Maps",
+    "formHeading": "Solicită o ofertă",
+    "formDesc": "Completează formularul și te contactăm în 24 de ore.",
+    "form": {
+      "name": "Nume",
+      "phone": "Telefon",
+      "message": "Mesaj",
+      "submit": "Trimite mesaj",
+      "submitting": "Se trimite...",
+      "success": "Mesajul a fost trimis cu succes!",
+      "error": "Nu am putut trimite mesajul. Încearcă din nou."
+    }
+  },
+  "about": {
+    "badge": "LABIRINT · Despre noi",
+    "hero": {
+      "heading1": "Mobilier premium pentru casa ta",
+      "heading2": "Creat cu atenție la detalii, din 2007",
+      "description": "Din Soroca, livrăm în toată Moldova mobilier care îmbină designul modern cu durabilitatea. Fie că alegi produse gata realizate sau mobilier la comandă, fiecare piesă este construită pentru a rezista în timp și pentru a aduce confort în locuința ta.",
+      "ctaProducts": "Vezi produsele",
+      "ctaContact": "Contactează-ne"
+    },
+    "timeline": {
+      "label": "Experiența noastră",
+      "heading": "Ani care",
+      "italic": "conturează povestea",
+      "items": [
+        { "year": "2007", "event": "Atelierul din Soroca", "detail": "Mobilier de calitate, fără compromisuri" },
+        { "year": "2012", "event": "Primul showroom", "detail": "Expunere și acces rapid pentru clienți" },
+        { "year": "2018", "event": "Extindere în toată Moldova", "detail": "Livrăm și realizăm proiecte regionale" },
+        { "year": "2024", "event": "Experiență matură", "detail": "Peste 19 ani, 1000+ proiecte, cu garanție și personalizare completă" }
+      ]
+    },
+    "stats": [
+      { "num": "19", "suffix": "+", "label": "Ani", "sub": "de activitate" },
+      { "num": "1000", "suffix": "+", "label": "Proiecte", "sub": "realizate cu succes" },
+      { "num": "24", "suffix": "", "label": "Garanție", "sub": "pentru produsele realizate" },
+      { "num": "", "suffix": "", "label": "Clienți", "sub": "din toată Moldova" }
+    ],
+    "values": {
+      "label": "Principii",
+      "heading": "Cum lucrăm",
+      "italic": "în fiecare detaliu",
+      "description": "Folosim materiale bune, personalizăm după nevoile tale și respectăm termenele stabilite, pentru mobilier care rezistă în timp.",
+      "items": [
+        { "title": "Calitate", "desc": "Folosim materiale bune și lucrăm atent fiecare detaliu. Mobilier durabil, finisat corect, pentru confort zilnic." },
+        { "title": "Personalizare", "desc": "Fiecare client are nevoi diferite, iar noi ne adaptăm: dimensiuni personalizate, alegere materiale și culori, design în funcție de spațiu." },
+        { "title": "Promptitudine", "desc": "Respectăm termenele și livrăm ce promitem, cu comunicare clară și corectă pe tot parcursul proiectului." }
+      ]
+    },
+    "story": {
+      "label": "Povestea noastră",
+      "heading": "De la un atelier mic, la un nume de",
+      "italic": "încredere",
+      "para1": "Am început în 2007 cu un atelier mic în Soroca și o idee simplă: să facem mobilier de calitate, fără compromisuri.",
+      "para2": "De-a lungul anilor, am crescut prin muncă și seriozitate. Clienții mulțumiți ne-au recomandat mai departe, iar asta ne-a ajutat să ne extindem și să dezvoltăm proiecte tot mai complexe.",
+      "para3": "Astăzi realizăm atât proiecte pentru locuințe, cât și pentru spații comerciale."
+    },
+    "services": {
+      "label": "Ce oferim",
+      "heading": "Soluții complete pentru orice tip de",
+      "italic": "spațiu",
+      "description": "Lucrăm atât cu produse gata realizate, cât și cu mobilier personalizat.",
+      "see": "Vezi",
+      "items": [
+        {
+          "title": "Produse gata realizate",
+          "desc": "Mobilier disponibil rapid, ideal pentru amenajări fără timp de așteptare. Gamă variată: dormitoare, bucătării, livinguri, dulapuri, mese și scaune.",
+          "price": "Rapid, fără timp de așteptare"
+        },
+        {
+          "title": "Mobilier la comandă",
+          "desc": "Realizăm mobilier adaptat exact nevoilor tale: dimensiuni personalizate, alegere materiale și culori, design în funcție de spațiu. Fiecare proiect este unic.",
+          "price": "Personalizat exact nevoilor tale"
+        },
+        {
+          "title": "Consultanță și suport",
+          "desc": "Te ghidăm de la idee până la montaj: alegerea produselor, optimizarea spațiului și recomandări de design.",
+          "price": "De la idee până la montaj"
+        }
+      ]
+    },
+    "mission": {
+      "label": "Misiunea noastră",
+      "quote1": "Să oferim mobilier care nu doar",
+      "italic": "arată bine",
+      "quote2": ", dar rămâne durabil și funcțional ani la rând.",
+      "principles": [
+        "Lucrăm transparent",
+        "Comunicăm deschis",
+        "Livrăm exact ceea ce stabilim"
+      ]
+    },
+    "cta": {
+      "heading": "Hai să discutăm despre",
+      "italic": "proiectul tău",
+      "description": "Fie că ai nevoie de mobilier gata sau la comandă, te ajutăm să alegi soluția potrivită.",
+      "viewProducts": "Vezi produsele",
+      "contact": "Contactează-ne"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Lista completă de articole este în lucru. Între timp, poți vedea ultimele recomandări pe pagina principală.",
+    "backHome": "← Înapoi acasă",
+    "backBlog": "← Blog",
+    "articleComingSoon": "Conținutul complet al acestui articol va fi publicat în curând. Revino sau",
+    "articleContact": "contactează-ne",
+    "articleContactSuffix": "pentru detalii.",
+    "readMore": "Citește mai mult",
+    "noArticles": "Nu există articole momentan."
+  },
+  "cos": {
+    "title": "Coșul meu",
+    "empty": "Coșul tău este gol",
+    "emptyDesc": "Nu ai produse adăugate momentan. Explorează colecția noastră.",
+    "browse": "Descoperă produsele",
+    "checkout": "Finalizează comanda",
+    "count": "produse în coș",
+    "clearCart": "Golește coșul",
+    "lineTotal": "Total linie",
+    "orderSummary": "Sumar comandă",
+    "subtotal": "Subtotal produse",
+    "shipping": "Transport",
+    "free": "Gratuit",
+    "discount": "Reducere",
+    "total": "Total final",
+    "discountCode": "Cod reducere",
+    "apply": "Aplică",
+    "payment": "Acceptăm",
+    "continue": "Continuă cumpărăturile"
+  }
+}

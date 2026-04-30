@@ -39,6 +39,7 @@ const DEFAULT_IMAGE_RIGHT_SRC =
 const DEFAULT_IMAGE_RIGHT_ALT = "Interior cu canapea și decor cald";
 
 export type ServiciiSectionProps = {
+  badge?: string;
   sectionTitle?: string;
   services?: ServiciuItem[];
   imageLeftSrc?: string;
@@ -48,6 +49,7 @@ export type ServiciiSectionProps = {
 };
 
 export default function ServiciiSection({
+  badge = "De ce noi",
   sectionTitle = DEFAULT_SECTION_TITLE,
   services = DEFAULT_SERVICES,
   imageLeftSrc = DEFAULT_IMAGE_LEFT_SRC,
@@ -73,7 +75,7 @@ export default function ServiciiSection({
               <p
                 className="mb-5 text-sm uppercase tracking-[0.18em] text-[#8a7f72]"
               >
-                De ce noi
+                {badge}
               </p>
               <h2
                 className="text-4xl font-light tracking-tight text-[#1c1917] lg:text-6xl"

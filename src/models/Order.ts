@@ -15,7 +15,7 @@ const statusHistorySchema = new Schema(
   {
     status: {
       type: String,
-      enum: ["noua", "procesata", "expediata", "livrata", "anulata"],
+      enum: ["nou", "noua", "procesata", "expediata", "livrata", "anulata"],
       required: true,
     },
     changedAt: { type: Date, default: Date.now },
@@ -54,9 +54,18 @@ const orderSchema = new Schema(
       default: "standard",
       required: true,
     },
+    nume_client: { type: String, default: "", trim: true },
+    telefon: { type: String, default: "", trim: true },
+    tip_mobila: { type: String, default: "", trim: true },
+    dimensiuni: { type: String, default: "", trim: true },
+    material: { type: String, default: "", trim: true },
+    culoare: { type: String, default: "", trim: true },
+    canal: { type: String, enum: ["telegram", "website"], default: "website" },
+    sursa: { type: String, default: "chat-bot", trim: true },
+    data_creare: { type: Date, default: Date.now },
     status: {
       type: String,
-      enum: ["noua", "procesata", "expediata", "livrata", "anulata"],
+      enum: ["nou", "noua", "procesata", "expediata", "livrata", "anulata"],
       default: "noua",
       index: true,
     },

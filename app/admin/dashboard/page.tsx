@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowRight, Box, ClipboardList, Grid2X2, LayoutPanelLeft } from "lucide-react";
 
+import DeliverySettingsCard from "@/src/components/admin/DeliverySettingsCard";
 import { PRODUCT_CATEGORY_GROUPS } from "../../../src/constants/categories";
 import type { Product } from "../../../src/types/product";
 
@@ -163,6 +164,10 @@ export default async function AdminDashboardPage() {
             </Link>
           </div>
         </article>
+      </section>
+
+      <section>
+        <DeliverySettingsCard />
       </section>
     </main>
   );

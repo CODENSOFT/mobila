@@ -42,7 +42,9 @@ export default function AdminPage() {
 
   const handleCreate = async (payload: {
     nume: string;
+    nume_ru: string;
     descriere: string;
+    descriere_ru: string;
     pret: number;
     categorie: ProductCategory;
     imagineUrl: string;
@@ -56,7 +58,9 @@ export default function AdminPage() {
           body: (() => {
             const formData = new FormData();
             formData.append("nume", payload.nume);
+            if (payload.nume_ru) formData.append("nume_ru", payload.nume_ru);
             formData.append("descriere", payload.descriere);
+            if (payload.descriere_ru) formData.append("descriere_ru", payload.descriere_ru);
             formData.append("pret", String(payload.pret));
             formData.append("categorie", payload.categorie);
             if (payload.imagineUrl) {

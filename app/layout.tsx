@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import ChatWidget from "./components/chat-widget";
-import Footer from "../src/components/layout/Footer";
-import Navbar from "../src/components/layout/Navbar";
-import CartDrawer from "../src/components/cart/CartDrawer";
-import CartToast from "../src/components/cart/CartToast";
-import { CartProvider } from "../src/context/CartContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,19 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="ro"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
-        <CartProvider>
-          <Navbar />
-          <CartDrawer />
-          <CartToast />
-          <div className="flex-1">{children}</div>
-          <Footer />
-          <ChatWidget />
-        </CartProvider>
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

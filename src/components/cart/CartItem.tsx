@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 import type { CartItem as CartItemType } from "@/src/context/CartContext";
+import { useLang } from "@/src/context/LangContext";
+import { useLiveRuText } from "@/src/hooks/useLiveRuText";
 import { getSafeImageSrc } from "@/src/lib/image";
 
 type CartItemProps = {
@@ -14,15 +16,16 @@ type CartItemProps = {
 };
 
 export default function CartItem({ item, onChangeQty, onRemove }: CartItemProps) {
+  const { lang } = useLang();
+  const { text: numeDisplay } = useLiveRuText(item.nume, lang);
+  const href = `/${lang}/produse/${item.slug || item.id}`;
+
   return (
     <article className="flex gap-4 border-b border-gray-100 py-4">
-      <Link
-        href={`/produse/${item.slug || item.id}`}
-        className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100"
-      >
+      <Link href={href} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
         <Image
           src={getSafeImageSrc(item.imagine)}
-          alt={item.nume}
+          alt={numeDisplay}
           fill
           className="object-cover"
           sizes="80px"
@@ -30,7 +33,7 @@ export default function CartItem({ item, onChangeQty, onRemove }: CartItemProps)
       </Link>
 
       <div className="min-w-0 flex-1">
-        <h3 className="line-clamp-2 text-sm font-medium text-[#1a1a1a]">{item.nume}</h3>
+        <h3 className="line-clamp-2 text-sm font-medium text-[#1a1a1a]">{numeDisplay}</h3>
         <p className="mt-1 text-sm text-gray-500">{item.pret.toLocaleString()} MDL / buc</p>
 
         <div className="mt-3 flex items-center justify-between">

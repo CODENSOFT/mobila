@@ -2,43 +2,34 @@
 
 import { Store, Truck, Zap } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-
+import { useLang } from "@/src/context/LangContext";
 import type { CheckoutFormValues } from "@/src/lib/validations/checkoutSchema";
 
-const METHODS = [
-  {
-    id: "standard",
-    label: "Livrare standard",
-    desc: "3-5 zile lucrătoare",
-    price: "GRATUIT",
-    icon: Truck,
-  },
-  {
-    id: "express",
-    label: "Livrare express",
-    desc: "1-2 zile lucrătoare",
-    price: "50 MDL",
-    icon: Zap,
-  },
-  {
-    id: "showroom",
-    label: "Ridicare din showroom",
-    desc: "Chișinău, bd. Ștefan cel Mare 64",
-    price: "GRATUIT",
-    icon: Store,
-  },
-] as const;
+const METHOD_ICONS = { standard: Truck, express: Zap, showroom: Store } as const;
+type MethodId = keyof typeof METHOD_ICONS;
 
-export default function DeliveryMethodSelect() {
+type DeliveryMethodSelectProps = {
+  expressPrice: number;
+};
+
+export default function DeliveryMethodSelect({ expressPrice }: DeliveryMethodSelectProps) {
   const { register, watch } = useFormContext<CheckoutFormValues>();
+  const { dict } = useLang();
+  const t = dict.checkout;
   const selected = watch("metodaLivrare");
+
+  const methods: { id: MethodId; label: string; desc: string; price: string }[] = [
+    { id: "standard", label: t.delivery.standard.label, desc: t.delivery.standard.desc, price: t.free },
+    { id: "express",  label: t.delivery.express.label,  desc: t.delivery.express.desc,  price: expressPrice <= 0 ? t.free : `${expressPrice} MDL` },
+    { id: "showroom", label: t.delivery.showroom.label, desc: t.delivery.showroom.desc, price: t.free },
+  ];
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-[#1a1a1a]">Metodă de livrare</h2>
+      <h2 className="mb-4 text-lg font-semibold text-[#1a1a1a]">{t.deliveryMethod}</h2>
       <div className="space-y-2">
-        {METHODS.map((method) => {
-          const Icon = method.icon;
+        {methods.map((method) => {
+          const Icon = METHOD_ICONS[method.id];
           const active = selected === method.id;
           return (
             <label

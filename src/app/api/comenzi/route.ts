@@ -51,6 +51,19 @@ type LooseOrderBody = Partial<CreateOrderBody> & {
   codPostal?: string;
 };
 
+type ChatBotOrderBody = {
+  nume_client?: string;
+  telefon?: string;
+  tip_mobila?: string;
+  dimensiuni?: string;
+  material?: string;
+  culoare?: string;
+  canal?: "telegram" | "website";
+  sursa?: string;
+  status?: string;
+  data_creare?: string | Date;
+};
+
 function normalizeOrderBody(body: LooseOrderBody): CreateOrderBody | null {
   if (!Array.isArray(body.produse) || body.produse.length === 0) return null;
 
@@ -274,7 +287,87 @@ export async function POST(request: Request) {
       );
     }
 
+    if (
+      rawBody !== null &&
+      typeof rawBody === "object" &&
+      "raw_text" in rawBody &&
+      typeof (rawBody as { raw_text?: unknown }).raw_text === "string"
+    ) {
+      try {
+        const rt = (rawBody as { raw_text: string }).raw_text;
+        const extracted = rt.split("##COMANDA##")[1]?.split("##SFARSIT##")[0];
+        rawBody = JSON.parse(extracted ?? "");
+      } catch {
+        return Response.json(
+          { message: "Raw text parse error" },
+          { status: 400, headers: buildCorsHeaders(request) }
+        );
+      }
+    }
+
     console.log("[orders] req.body:", rawBody);
+
+    const chatBody = rawBody as ChatBotOrderBody;
+    const isChatBotPayload =
+      !!chatBody &&
+      typeof chatBody === "object" &&
+      typeof chatBody.nume_client === "string" &&
+      typeof chatBody.telefon === "string" &&
+      typeof chatBody.tip_mobila === "string" &&
+      typeof chatBody.dimensiuni === "string" &&
+      typeof chatBody.material === "string" &&
+      typeof chatBody.culoare === "string" &&
+      true;
+
+    if (isChatBotPayload) {
+      const count = await Order.countDocuments();
+      const orderNumber = orderNumberFromCount(count);
+      const parsedDate =
+        chatBody.data_creare instanceof Date
+          ? chatBody.data_creare
+          : new Date(chatBody.data_creare ?? new Date());
+      const dataCreare = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+
+      const created = await Order.create({
+        orderNumber,
+        client: {
+          nume: chatBody.nume_client,
+          email: "no-reply@labirint.local",
+          telefon: chatBody.telefon,
+          adresa: "-",
+          oras: "Soroca",
+          judet: "Soroca",
+          codPostal: "MD-3000",
+        },
+        produse: [],
+        subtotal: 0,
+        transport: 0,
+        reducere: 0,
+        total: 0,
+        codReducere: "",
+        metodaPlata: "ramburs",
+        metodaLivrare: "standard",
+        notaInterna: "",
+        nume_client: chatBody.nume_client,
+        telefon: chatBody.telefon,
+        tip_mobila: chatBody.tip_mobila,
+        dimensiuni: chatBody.dimensiuni,
+        material: chatBody.material,
+        culoare: chatBody.culoare,
+        canal: (chatBody.canal === "telegram" || chatBody.canal === "website") ? chatBody.canal : "website",
+        sursa: "chat-bot",
+        status: "noua",
+        data_creare: dataCreare,
+        statusHistory: [{ status: "noua", changedAt: new Date(), changedBy: "Chat Bot" }],
+        updatedAt: new Date(),
+      });
+
+      return Response.json(
+        { success: true, id: String(created._id) },
+        { status: 201, headers: buildCorsHeaders(request) }
+      );
+    }
+
     const body = normalizeOrderBody(rawBody as LooseOrderBody);
 
     if (!body || !body.client || !Array.isArray(body.produse) || body.produse.length === 0) {

@@ -44,7 +44,9 @@ export default function AdminEditProductPage() {
 
   const handleUpdate = async (payload: {
     nume: string;
+    nume_ru: string;
     descriere: string;
+    descriere_ru: string;
     pret: number;
     categorie: ProductCategory;
     imagineUrl: string;
@@ -55,7 +57,9 @@ export default function AdminEditProductPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         nume: payload.nume,
+        nume_ru: payload.nume_ru,
         descriere: payload.descriere,
+        descriere_ru: payload.descriere_ru,
         pret: payload.pret,
         categorie: payload.categorie,
         imagineUrl: payload.imagineUrl,

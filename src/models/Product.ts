@@ -3,7 +3,9 @@ import { model, models, Schema, type InferSchemaType, type Model } from "mongoos
 const productSchema = new Schema(
   {
     nume: { type: String, required: true, trim: true },
+    nume_ru: { type: String, trim: true },
     descriere: { type: String, required: true, trim: true },
+    descriere_ru: { type: String, trim: true },
     pret: { type: Number, required: true },
     imagine: { type: String, required: true, trim: true },
     imagini: { type: [String], default: undefined },

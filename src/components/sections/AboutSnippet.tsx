@@ -3,34 +3,26 @@
 import { useEffect, useRef, useState } from "react";
 
 const TAGURI = [
-  "Materiale brute și accente metalice",
-  "Livrare gratuită la comenzi de valoare mare",
-  "Stiluri eclectice și materiale naturale",
-  "Designuri clasice cu detalii rafinate",
-  "Oferte avantajoase și parteneri de încredere",
+  "Calitate reală, nu doar aspect",
+  "Materiale atent selectate",
+  "Execuție precisă",
+  "Relații pe termen lung cu clienții",
 ];
 
+/** Două copii identice pentru bucla marquee (translate -50% în CSS). */
 const BANDA = [...TAGURI, ...TAGURI];
 
-function Pill({ text, variant }: { text: string; variant: "light" | "warm" }) {
+function Pill({ text }: { text: string }) {
   return (
     <div
-      className={`group shrink-0 rounded-full border px-5 py-2.5 text-sm transition-all duration-300 md:px-6 md:py-3 md:text-[15px] ${
-        variant === "light"
-          ? "border-stone-200/90 bg-white/95 text-[#3a3a3a] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-[var(--brand-green)]/35 hover:shadow-[0_8px_30px_rgba(102,169,37,0.12)]"
-          : "border-stone-200/70 bg-[#fffefb]/95 text-[#3a3a3a] shadow-[0_2px_12px_rgba(101,69,31,0.05)] hover:border-amber-200/80 hover:shadow-[0_8px_28px_rgba(180,140,80,0.1)]"
-      } hover:-translate-y-0.5`}
+      className={`group shrink-0 rounded-full border border-stone-200/90 bg-white px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-stone-600 shadow-sm transition-all duration-300 md:px-5 md:py-2.5 md:text-xs md:tracking-[0.2em] hover:border-(--brand-green)/40 hover:text-stone-900`}
     >
-      <span className="flex items-center gap-2.5">
+      <span className="flex items-center gap-2">
         <span
-          className={`h-1.5 w-1.5 shrink-0 rounded-full transition-transform duration-300 group-hover:scale-125 ${
-            variant === "light"
-              ? "bg-[var(--brand-green)]/70 group-hover:bg-[var(--brand-green)]"
-              : "bg-amber-500/60 group-hover:bg-amber-500"
-          }`}
+          className="h-1 w-1 shrink-0 rounded-full bg-(--brand-green)/70 transition-transform duration-300 group-hover:scale-125 group-hover:bg-(--brand-green)"
           aria-hidden
         />
-        <span className="font-medium tracking-tight">{text}</span>
+        {text}
       </span>
     </div>
   );
@@ -59,45 +51,35 @@ export default function AboutSnippet() {
 
   return (
     <section
-      className="relative overflow-hidden py-20 lg:py-28"
+      className="relative overflow-hidden border-y border-stone-200/80 bg-[#faf9f7] py-20 lg:py-28"
       aria-labelledby="about-snippet-heading"
     >
-      {/* Fundal stratificat */}
+      <div className="absolute inset-0 bg-linear-to-b from-[#faf9f7] via-[#f6f4f1] to-[#f0ece6]" aria-hidden />
       <div
-        className="absolute inset-0 bg-gradient-to-b from-[#fdfcfa] via-[#f8f5ef] to-[#f0ebe3]"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 opacity-[0.35]"
+        className="absolute inset-0 opacity-[0.28]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(26,26,26,0.04) 1px, transparent 0)`,
-          backgroundSize: "28px 28px",
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(28,25,23,0.035) 1px, transparent 0)`,
+          backgroundSize: "26px 26px",
         }}
         aria-hidden
       />
       <div
-        className="absolute -left-24 top-1/4 h-[420px] w-[420px] rounded-full bg-[var(--brand-green)]/[0.07] blur-[100px]"
+        className="absolute -left-24 top-1/4 h-[380px] w-[380px] rounded-full bg-(--brand-green)/[0.06] blur-[100px]"
         aria-hidden
       />
       <div
-        className="absolute -right-16 bottom-0 h-[320px] w-[320px] rounded-full bg-amber-200/[0.12] blur-[90px]"
+        className="absolute -right-20 bottom-0 h-[280px] w-[280px] rounded-full bg-stone-300/15 blur-[90px]"
         aria-hidden
       />
 
-      <div
-        ref={headRef}
-        className="relative mx-auto max-w-7xl px-6 lg:px-12"
-      >
+      <div ref={headRef} className="relative mx-auto max-w-7xl px-6 lg:px-12">
         <div
-          className={`inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5c5348] shadow-sm backdrop-blur-sm transition-all duration-700 ease-out ${
+          className={`inline-flex items-center gap-2 rounded-full border border-stone-200/90 bg-white/80 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-500 shadow-sm backdrop-blur-sm transition-all duration-700 ease-out ${
             show ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
           }`}
         >
-          <span
-            className="h-1.5 w-1.5 rounded-full bg-[var(--brand-green)]"
-            aria-hidden
-          />
-          Calitate &amp; design
+          <span className="h-1 w-1 rounded-full bg-(--brand-green)" aria-hidden />
+          Companie
         </div>
 
         <h2
@@ -106,58 +88,52 @@ export default function AboutSnippet() {
             show ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
           }`}
         >
-          <span className="block text-[2rem] font-extralight leading-[1.12] tracking-tight text-[#141414] sm:text-4xl md:text-5xl lg:text-[54px]">
-            Designuri de calitate premium,
+          <span className="block text-[2rem] font-extralight leading-[1.1] tracking-tight text-stone-900 sm:text-4xl md:text-5xl lg:text-[2.75rem]">
+            Mobilier făcut corect,
           </span>
-          <span className="mt-1 block font-serif text-[1.85rem] italic leading-[1.15] text-[#2a2a2a] sm:mt-2 sm:text-4xl md:text-[2.75rem] lg:text-[48px]">
-            create pentru{" "}
-            <span className="bg-gradient-to-r from-[var(--brand-green-dark)] to-[var(--brand-green)] bg-clip-text font-medium not-italic text-transparent">
-              casa ta
+          <span className="mt-2 block font-serif text-[1.65rem] italic leading-snug text-stone-700 sm:mt-3 sm:text-3xl md:text-[2.25rem] lg:text-[2.5rem]">
+            pentru oameni care{" "}
+            <span className="bg-linear-to-r from-(--brand-green-dark) to-(--brand-green) bg-clip-text font-medium not-italic text-transparent">
+              apreciază calitatea
             </span>
           </span>
         </h2>
 
         <div
-          className={`origin-left mt-6 h-px w-14 rounded-full bg-gradient-to-r from-[var(--brand-green)] to-[var(--brand-green)]/30 transition-all delay-200 duration-700 sm:mt-8 sm:w-20 ${
+          className={`origin-left mt-6 h-px w-14 rounded-full bg-linear-to-r from-(--brand-green) to-(--brand-green)/35 transition-all delay-200 duration-700 sm:mt-8 sm:w-20 ${
             show ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
           }`}
           aria-hidden
         />
 
         <p
-          className={`mt-6 max-w-2xl text-base leading-[1.75] text-[#5a554d] transition-all delay-200 duration-700 sm:mt-8 sm:text-lg ${
+          className={`mt-6 max-w-2xl text-base leading-relaxed text-stone-600 transition-all delay-200 duration-700 sm:mt-8 sm:text-lg ${
             show ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
           }`}
         >
-          Din 2007, creăm mobilier care îmbină materiale alese, execuție atentă și un design
-          atemporal. Fiecare piesă reflectă experiența echipei{" "}
-          <span className="font-semibold text-[#2c2820]">LABIRINT</span> și respectul pentru
-          detaliile care fac diferența în locuința ta.
+          <strong className="font-semibold text-stone-900">LABIRINT</strong> este un brand dezvoltat
+          de <strong className="font-semibold text-stone-900">SRL GASNASGRUP</strong>, activ pe piața
+          mobilei din 2007. Cu o experiență de peste 19 ani, am construit sute de proiecte pentru clienți
+          din toată Moldova. Ne-am dezvoltat pas cu pas, prin recomandări și încrederea clienților.
+          Fiecare proiect realizat este o carte de vizită pentru noi. Punem accent pe calitate reală,
+          materiale atent selectate, execuție precisă și relații pe termen lung cu clienții.
         </p>
       </div>
 
-      {/* Marquee cu fade pe margini */}
-      <div className="relative mt-16 lg:mt-24">
+      <div className="relative mt-14 lg:mt-20">
         <div
-          className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#f5f0e8] via-[#f5f0e8]/90 to-transparent sm:w-20 md:w-28"
+          className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-linear-to-r from-[#faf9f7] via-[#faf9f7]/95 to-transparent sm:w-16 md:w-24"
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#ebe6de] via-[#ebe6de]/90 to-transparent sm:w-20 md:w-28"
+          className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-linear-to-l from-[#f0ece6] via-[#f0ece6]/95 to-transparent sm:w-16 md:w-24"
           aria-hidden
         />
 
-        <div className="space-y-3 md:space-y-4">
-          <div className="about-snippet-marquee-track items-center gap-3 md:gap-5">
-            {BANDA.map((text, i) => (
-              <Pill key={`a-${text}-${i}`} text={text} variant="light" />
-            ))}
-          </div>
-          <div className="about-snippet-marquee-track--reverse items-center gap-3 md:gap-5">
-            {BANDA.map((text, i) => (
-              <Pill key={`b-${text}-${i}`} text={text} variant="warm" />
-            ))}
-          </div>
+        <div className="about-snippet-marquee-track flex items-center gap-3 md:gap-5">
+          {BANDA.map((text, i) => (
+            <Pill key={`${text}-${i}`} text={text} />
+          ))}
         </div>
       </div>
     </section>

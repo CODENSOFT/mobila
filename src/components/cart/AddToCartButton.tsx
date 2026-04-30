@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useCart } from "@/src/context/CartContext";
 import type { CartItem } from "@/src/context/CartContext";
+import { useLang } from "@/src/context/LangContext";
 
 type AddToCartButtonProps = {
   produs: Omit<CartItem, "cantitate">;
@@ -16,6 +17,8 @@ export default function AddToCartButton({
   className = "",
 }: AddToCartButtonProps) {
   const { adaugaInCos } = useCart();
+  const { dict } = useLang();
+  const t = dict.cart;
   const [status, setStatus] = useState<"idle" | "loading" | "added">("idle");
 
   const handleAdd = async () => {
@@ -43,12 +46,12 @@ export default function AddToCartButton({
       {status === "added" ? (
         <>
           <Check className="h-4 w-4 text-green-400" aria-hidden />
-          <span className="animate-pulse">Adăugat!</span>
+          <span className="animate-pulse">{t.added}</span>
         </>
       ) : (
         <>
           <ShoppingCart className="h-4 w-4" aria-hidden />
-          <span>{status === "loading" ? "Se adaugă..." : "Adaugă în coș"}</span>
+          <span>{status === "loading" ? t.adding : t.addToCart}</span>
         </>
       )}
     </button>

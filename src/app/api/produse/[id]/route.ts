@@ -26,7 +26,9 @@ export async function PUT(request: Request, context: RouteContext) {
 
     const body = (await request.json()) as {
       nume?: string;
+      nume_ru?: string;
       descriere?: string;
+      descriere_ru?: string;
       pret?: number;
       categorie?: string;
       imagineUrl?: string;
@@ -42,11 +44,17 @@ export async function PUT(request: Request, context: RouteContext) {
       return Response.json({ message: "Date invalide." }, { status: 400, headers: corsHeaders });
     }
 
+    const numeRuFinala = typeof body.nume_ru === "string" ? body.nume_ru.trim() : "";
+    const descriereRuFinala =
+      typeof body.descriere_ru === "string" ? body.descriere_ru.trim() : "";
+
     const updated = await Product.findByIdAndUpdate(
       id,
       {
         nume: body.nume.trim(),
+        nume_ru: numeRuFinala,
         descriere: body.descriere.trim(),
+        descriere_ru: descriereRuFinala,
         pret: body.pret,
         categorie: body.categorie.trim(),
         imagine: body.imagineUrl.trim(),

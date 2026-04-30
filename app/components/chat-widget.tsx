@@ -12,6 +12,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -30,14 +31,38 @@ export default function ChatWidget() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({
+          message: trimmed,
+          ...(sessionId ? { session_id: sessionId } : {}),
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error("Chat API error");
+      const raw = await response.text();
+      let data: { response?: string; session_id?: string; message?: string } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {};
+      } catch {
+        /* răspuns non-JSON (ex. HTML de la proxy) */
       }
 
-      const data = (await response.json()) as { response?: string };
+      if (!response.ok) {
+        const fromServer =
+          typeof data.message === "string" && data.message.trim()
+            ? data.message.trim()
+            : null;
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              fromServer ??
+              "Momentan asistentul nu este disponibil. Ne poți contacta la telefon sau pe WhatsApp.",
+          },
+        ]);
+        return;
+      }
+
+      if (data.session_id) setSessionId(data.session_id);
       setMessages((prev) => [
         ...prev,
         {
@@ -46,7 +71,7 @@ export default function ChatWidget() {
         },
       ]);
     } catch (error) {
-      console.error("Chat widget error:", error);
+      console.warn("Chat widget (rețea):", error);
       setMessages((prev) => [
         ...prev,
         {

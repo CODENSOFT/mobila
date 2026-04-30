@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLang } from "@/src/context/LangContext";
+import { useLiveRuText } from "@/src/hooks/useLiveRuText";
 import { useSearchParams } from "next/navigation";
 import { getSafeImageSrc } from "../../src/lib/image";
 import type { Product, ProductCategory } from "../../src/types/product";
@@ -23,16 +25,163 @@ const normalizeCategory = (value?: string | null): Category => {
   return isKnownCategory(value) ? value : "All";
 };
 
+type SortKey = "featured" | "price-asc" | "price-desc";
+
+function SortDropdown({
+  sortBy,
+  setSortBy,
+  t,
+}: {
+  sortBy: SortKey;
+  setSortBy: (v: SortKey) => void;
+  t: { sortFeatured: string; sortPriceAsc: string; sortPriceDesc: string };
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const options: { value: SortKey; label: string }[] = [
+    { value: "featured", label: t.sortFeatured },
+    { value: "price-asc", label: t.sortPriceAsc },
+    { value: "price-desc", label: t.sortPriceDesc },
+  ];
+
+  const current = options.find((o) => o.value === sortBy)!;
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2.5 rounded-lg border border-[#e7e5e4] bg-[#fafaf9] px-4 py-2.5 text-sm text-[#1c1917] transition-colors hover:border-[#1c1917]/30 hover:bg-white"
+      >
+        <svg className="h-3.5 w-3.5 text-[#a8a29e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M6 12h12M9 17h6" />
+        </svg>
+        <span className="font-medium">{current.label}</span>
+        <svg
+          className={`h-3.5 w-3.5 text-[#a8a29e] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-xl border border-[#e7e5e4] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { setSortBy(opt.value); setOpen(false); }}
+              className={`flex w-full items-center justify-between px-4 py-3 text-sm transition-colors hover:bg-[#fafaf9] ${
+                opt.value === sortBy
+                  ? "font-medium text-[#1c1917]"
+                  : "text-[#78716c]"
+              }`}
+            >
+              {opt.label}
+              {opt.value === sortBy && (
+                <svg className="h-3.5 w-3.5 text-[#1c1917]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductGridCard({
+  produs,
+  lang,
+  categoryTag,
+  viewDetails,
+  formatPrice,
+}: {
+  produs: Product;
+  lang: string;
+  categoryTag: string | undefined;
+  viewDetails: string;
+  formatPrice: (n: number) => string;
+}) {
+  const { text: numeDisplay } = useLiveRuText(produs.nume, lang);
+  return (
+    <article className="group relative bg-white rounded-sm overflow-hidden">
+      <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
+        <Image
+          src={getSafeImageSrc(produs.imagine)}
+          alt={numeDisplay}
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+        />
+
+        <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
+
+        <div className="absolute inset-x-4 bottom-4 opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+          <Link
+            href={`/${lang}/produse/${produs._id}`}
+            className="block w-full bg-white text-center py-3 text-[11px] font-medium uppercase tracking-wider text-[#1c1917] hover:bg-[#1c1917] hover:text-white transition-colors"
+          >
+            {viewDetails}
+          </Link>
+        </div>
+
+        {categoryTag ? (
+          <span className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
+            {categoryTag}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="p-5">
+        <h2 className="text-base font-medium text-[#1c1917] mb-1 group-hover:text-[#78716c] transition-colors">
+          {numeDisplay}
+        </h2>
+        <p className="text-lg font-light text-[#1c1917]">
+          {formatPrice(produs.pret)} <span className="text-sm text-[#a8a29e]">MDL</span>
+        </p>
+      </div>
+    </article>
+  );
+}
+
 export default function ProduseClient({ produse }: { produse: Product[] }) {
+  const { lang, dict } = useLang();
+  const t = dict.products;
   const formatNumber = (value: number) => value.toLocaleString("ro-RO");
   const searchParams = useSearchParams();
   const categoryFromUrlValid = normalizeCategory(searchParams.get("categorie"));
+  const minAvailablePrice = produse.length > 0 ? Math.min(...produse.map((p) => p.pret)) : 0;
+  const maxAvailablePrice = produse.length > 0 ? Math.max(...produse.map((p) => p.pret)) : 0;
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [priceFrom, setPriceFrom] = useState("");
+  const [priceTo, setPriceTo] = useState("");
   const activeCategory: Category = selectedCategory ?? categoryFromUrlValid;
+
+  const categoryLabel = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const group of t.categoryGroups) {
+      for (const item of group.items) {
+        map.set(item.key, item.label);
+      }
+    }
+    return map;
+  }, [t.categoryGroups]);
 
   const filteredProducts = useMemo(() => {
     let list = produse;
@@ -51,6 +200,19 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
       );
     }
 
+    const from = Number(priceFrom);
+    const to = Number(priceTo);
+    const hasFrom = priceFrom.trim() !== "" && !Number.isNaN(from);
+    const hasTo = priceTo.trim() !== "" && !Number.isNaN(to);
+
+    if (hasFrom) {
+      list = list.filter((produs) => produs.pret >= from);
+    }
+
+    if (hasTo) {
+      list = list.filter((produs) => produs.pret <= to);
+    }
+
     if (sortBy === "price-asc") {
       return [...list].sort((a, b) => a.pret - b.pret);
     }
@@ -60,7 +222,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     }
 
     return list;
-  }, [activeCategory, produse, query, sortBy]);
+  }, [activeCategory, priceFrom, priceTo, produse, query, sortBy]);
 
   return (
     <main className="min-h-screen bg-[#fafaf9]">
@@ -70,42 +232,32 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px w-12 bg-[#1c1917]/20" />
             <span className="text-[11px] font-medium tracking-[0.25em] uppercase text-[#1c1917]/50">
-              Shop
+              {t.shop}
             </span>
           </div>
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
               <h1 className="text-4xl lg:text-5xl font-light text-[#1c1917] leading-tight">
-                Colecția <span className="italic font-normal">completă</span>
+                {t.collectionHeading} <span className="italic font-normal">{t.collectionItalic}</span>
               </h1>
-              <p className="mt-3 max-w-xl text-sm text-[#78716c] leading-relaxed">
-                Mobilier premium pentru fiecare colț al casei tale. Descoperă piesele care transformă spațiul în experiențe.
-              </p>
+              <p className="mt-3 max-w-xl text-sm text-[#78716c] leading-relaxed">{t.collectionDesc}</p>
             </div>
-            
+
             {/* Search & Sort - Desktop */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-3">
               <div className="relative">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a8a29e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
                   type="search"
-                  placeholder="Caută produse..."
+                  placeholder={t.searchPlaceholder}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="w-64 rounded-lg border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 py-2.5 text-sm focus:border-[#1c1917] focus:outline-none transition-colors"
                 />
               </div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="rounded-lg border border-[#e7e5e4] bg-[#fafaf9] px-4 py-2.5 text-sm focus:border-[#1c1917] focus:outline-none cursor-pointer"
-              >
-                <option value="featured">Recomandate</option>
-                <option value="price-asc">Preț: Mic - Mare</option>
-                <option value="price-desc">Preț: Mare - Mic</option>
-              </select>
+              <SortDropdown sortBy={sortBy} setSortBy={setSortBy} t={t} />
             </div>
           </div>
 
@@ -118,11 +270,9 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              Filtre
+              {t.filters}
             </button>
-            <span className="text-sm text-[#78716c]">
-              {filteredProducts.length} produse
-            </span>
+            <span className="text-sm text-[#78716c]">{filteredProducts.length} {t.productsCount}</span>
           </div>
         </div>
       </div>
@@ -138,7 +288,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
               {/* Categories */}
               <div>
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917]/40 mb-4">
-                  Categorii
+                  {t.categories}
                 </h3>
                 <div className="space-y-1 mb-5">
                   <button
@@ -153,26 +303,26 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                       {activeCategory === "All" && (
                         <span className="w-1.5 h-1.5 rounded-full bg-[#1c1917]" />
                       )}
-                      <span className={activeCategory === "All" ? "ml-0" : "ml-4.5"}>Toate</span>
+                      <span className={activeCategory === "All" ? "ml-0" : "ml-4.5"}>{t.all}</span>
                     </span>
                     <span className="text-xs text-[#a8a29e]">{produse.length}</span>
                   </button>
                 </div>
 
                 <div className="space-y-4">
-                  {PRODUCT_CATEGORY_GROUPS.map((group) => (
+                  {t.categoryGroups.map((group) => (
                     <div key={group.title}>
                       <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a8a29e]">
                         {group.title}
                       </p>
                       <div className="space-y-1">
-                        {group.items.map((category) => {
-                          const isActive = activeCategory === category;
-                          const count = produse.filter((p) => p.categorie === category).length;
+                        {group.items.map((item) => {
+                          const isActive = activeCategory === item.key;
+                          const count = produse.filter((p) => p.categorie === item.key).length;
                           return (
                             <button
-                              key={`${group.title}-${category}`}
-                              onClick={() => setSelectedCategory(category)}
+                              key={`${group.title}-${item.key}`}
+                              onClick={() => setSelectedCategory(item.key as ProductCategory)}
                               className={`w-full flex items-center justify-between py-2 text-sm transition-colors ${
                                 isActive
                                   ? "text-[#1c1917] font-medium"
@@ -184,7 +334,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                                   <span className="h-1.5 w-1.5 rounded-full bg-[#1c1917]" />
                                 )}
                                 <span className={isActive ? "ml-0" : "ml-4.5"}>
-                                  {category}
+                                  {item.label}
                                 </span>
                               </span>
                               <span className="text-xs text-[#a8a29e]">{count}</span>
@@ -197,25 +347,48 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                 </div>
               </div>
 
-              {/* Price Range Info */}
+              {/* Price Range Filter */}
               <div className="pt-6 border-t border-[#e7e5e4]">
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917]/40 mb-4">
-                  Preț
+                  {t.price}
                 </h3>
-                <div className="space-y-2 text-sm text-[#78716c]">
-                  <p>De la {produse.length > 0 ? formatNumber(Math.min(...produse.map((p) => p.pret))): "0"} MDL</p>
-                  <p>Până la {produse.length > 0 ? formatNumber(Math.max(...produse.map((p) => p.pret))): "0"} MDL</p>
+                <div className="space-y-3">
+                  <label className="block">
+                    <span className="mb-1 block text-xs text-[#78716c]">{t.from}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={priceFrom}
+                      onChange={(e) => setPriceFrom(e.target.value)}
+                      placeholder={`${formatNumber(minAvailablePrice)}`}
+                      className="w-full rounded-lg border border-[#e7e5e4] bg-white px-3 py-2 text-sm text-[#1c1917] placeholder:text-[#a8a29e] focus:border-[#1c1917] focus:outline-none transition-colors"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs text-[#78716c]">{t.to}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={priceTo}
+                      onChange={(e) => setPriceTo(e.target.value)}
+                      placeholder={`${formatNumber(maxAvailablePrice)}`}
+                      className="w-full rounded-lg border border-[#e7e5e4] bg-white px-3 py-2 text-sm text-[#1c1917] placeholder:text-[#a8a29e] focus:border-[#1c1917] focus:outline-none transition-colors"
+                    />
+                  </label>
+                  <p className="pt-1 text-xs text-[#a8a29e]">
+                    {t.priceRange}: {formatNumber(minAvailablePrice)} - {formatNumber(maxAvailablePrice)} MDL
+                  </p>
                 </div>
               </div>
 
               {/* Contact CTA */}
               <div className="pt-6 border-t border-[#e7e5e4]">
-                <p className="text-sm text-[#78716c] mb-3">Nu găsești ce cauți?</p>
-                <Link 
-                  href="/#contact" 
+                <p className="text-sm text-[#78716c] mb-3">{t.contactCta}</p>
+                <Link
+                  href={`/${lang}/contact`}
                   className="text-sm font-medium text-[#1c1917] underline underline-offset-4 hover:text-[#78716c] transition-colors"
                 >
-                  Contactează-ne
+                  {t.contactLink}
                 </Link>
               </div>
             </div>
@@ -230,69 +403,41 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                   </svg>
                 </div>
-                <p className="text-[#78716c]">Nu există produse pentru filtrul selectat.</p>
-                <button 
-                  onClick={() => {setSelectedCategory("All"); setQuery("");}}
+                <p className="text-[#78716c]">{t.noResults}</p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory("All");
+                    setQuery("");
+                    setPriceFrom("");
+                    setPriceTo("");
+                  }}
                   className="mt-4 text-sm font-medium text-[#1c1917] hover:underline"
                 >
-                  Resetează filtrele
+                  {t.resetFilters}
                 </button>
               </div>
             ) : (
               <>
                 <div className="mb-6 flex items-center justify-between">
                   <p className="text-sm text-[#78716c]">
-                    Afișate <span className="font-medium text-[#1c1917]">{filteredProducts.length}</span> produse
+                    {t.showing} <span className="font-medium text-[#1c1917]">{filteredProducts.length}</span> {t.productsCount}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredProducts.map((produs) => (
-                    <article
+                    <ProductGridCard
                       key={produs._id}
-                      className="group relative bg-white rounded-sm overflow-hidden"
-                    >
-                      {/* Image Container */}
-                      <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
-                        <Image
-                          src={getSafeImageSrc(produs.imagine)}
-                          alt={produs.nume}
-                          fill
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                        />
-                        
-                        {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
-                        
-                        {/* Quick View - appears on hover */}
-                        <div className="absolute inset-x-4 bottom-4 opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
-                          <Link
-                            href={`/produse/${produs._id}`}
-                            className="block w-full bg-white text-center py-3 text-[11px] font-medium uppercase tracking-wider text-[#1c1917] hover:bg-[#1c1917] hover:text-white transition-colors"
-                          >
-                            Vezi Detalii
-                          </Link>
-                        </div>
-
-                        {/* Category Tag */}
-                        {produs.categorie && (
-                          <span className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
-                            {produs.categorie}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-5">
-                        <h2 className="text-base font-medium text-[#1c1917] mb-1 group-hover:text-[#78716c] transition-colors">
-                          {produs.nume}
-                        </h2>
-                        <p className="text-lg font-light text-[#1c1917]">
-                          {formatNumber(produs.pret)} <span className="text-sm text-[#a8a29e]">MDL</span>
-                        </p>
-                      </div>
-                    </article>
+                      produs={produs}
+                      lang={lang}
+                      categoryTag={
+                        produs.categorie
+                          ? categoryLabel.get(produs.categorie) ?? produs.categorie
+                          : undefined
+                      }
+                      viewDetails={t.viewDetails}
+                      formatPrice={formatNumber}
+                    />
                   ))}
                 </div>
               </>

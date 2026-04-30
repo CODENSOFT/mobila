@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
-
+import { useLang } from "@/src/context/LangContext";
 import type { CheckoutFormValues } from "@/src/lib/validations/checkoutSchema";
 
 export default function PersonalDataForm() {
@@ -9,15 +9,17 @@ export default function PersonalDataForm() {
     register,
     formState: { errors },
   } = useFormContext<CheckoutFormValues>();
+  const { dict } = useLang();
+  const t = dict.checkout;
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-[#1a1a1a]">Date personale</h2>
+      <h2 className="mb-4 text-lg font-semibold text-[#1a1a1a]">{t.personalData}</h2>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <input
             {...register("prenume")}
-            placeholder="Prenume"
+            placeholder={t.firstName}
             className={`h-11 w-full rounded-lg border px-3 text-sm ${
               errors.prenume ? "border-red-400" : "border-gray-200"
             }`}
@@ -29,7 +31,7 @@ export default function PersonalDataForm() {
         <div>
           <input
             {...register("nume")}
-            placeholder="Nume"
+            placeholder={t.lastName}
             className={`h-11 w-full rounded-lg border px-3 text-sm ${
               errors.nume ? "border-red-400" : "border-gray-200"
             }`}

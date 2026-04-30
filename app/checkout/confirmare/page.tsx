@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Copy } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toApiUrl } from "@/src/lib/api";
+import { useLang } from "@/src/context/LangContext";
 
 type OrderData = {
   orderNumber: string;
@@ -13,17 +14,19 @@ type OrderData = {
   produse: Array<{ nume: string; cantitate: number; pret: number }>;
 };
 
-function deliveryText(method: OrderData["metodaLivrare"]) {
-  if (method === "express") return "Estimare livrare: 1-2 zile lucrătoare";
-  if (method === "showroom") return "Ridicare din showroom: în aceeași zi";
-  return "Estimare livrare: 3-5 zile lucrătoare";
-}
-
 function ConfirmareContent() {
   const params = useSearchParams();
+  const { lang, dict } = useLang();
+  const t = dict.confirmation;
   const id = params.get("id") ?? "";
   const email = params.get("email") ?? "";
   const [order, setOrder] = useState<OrderData | null>(null);
+
+  function deliveryText(method: OrderData["metodaLivrare"]) {
+    if (method === "express") return t.deliveryExpress;
+    if (method === "showroom") return t.deliveryShowroom;
+    return t.deliveryStandard;
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -53,9 +56,7 @@ function ConfirmareContent() {
     <main className="bg-gray-50 px-4 py-12 lg:px-8">
       <div className="mx-auto max-w-3xl rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
         <CheckCircle2 className="mx-auto h-16 w-16 animate-pulse text-green-500" aria-hidden />
-        <h1 className="mt-4 text-3xl font-semibold text-[#1a1a1a]">
-          Comanda ta a fost plasată cu succes!
-        </h1>
+        <h1 className="mt-4 text-3xl font-semibold text-[#1a1a1a]">{t.title}</h1>
 
         <button
           type="button"
@@ -67,12 +68,12 @@ function ConfirmareContent() {
         </button>
 
         <p className="mt-3 text-sm text-gray-600">
-          Vei primi un email de confirmare la adresa: <strong>{email || "adresa ta de email"}</strong>
+          {t.emailConfirmation} <strong>{email || t.emailFallback}</strong>
         </p>
 
         {order ? (
           <div className="mx-auto mt-6 max-w-xl rounded-xl border border-gray-100 bg-gray-50 p-4 text-left">
-            <p className="mb-2 text-sm font-medium text-[#1a1a1a]">Sumar comandă</p>
+            <p className="mb-2 text-sm font-medium text-[#1a1a1a]">{t.orderSummary}</p>
             <div className="space-y-1 text-sm text-gray-600">
               {order.produse.map((item) => (
                 <div key={item.nume} className="flex justify-between">
@@ -85,7 +86,7 @@ function ConfirmareContent() {
             </div>
             <div className="mt-3 border-t border-gray-200 pt-3">
               <p className="text-sm font-semibold text-[#1a1a1a]">
-                Total: {order.total.toLocaleString()} MDL
+                {t.total}: {order.total.toLocaleString()} MDL
               </p>
               <p className="mt-1 text-xs text-gray-500">{deliveryText(order.metodaLivrare)}</p>
             </div>
@@ -93,17 +94,13 @@ function ConfirmareContent() {
         ) : null}
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link
-            href="/cont/comenzi"
-            className="rounded-lg bg-[#1a1a1a] px-5 py-3 text-sm font-medium text-white hover:bg-[#333]"
-          >
-            Urmărește comanda
+          <Link href={`/${lang}/cont/comenzi`}
+            className="rounded-lg bg-[#1a1a1a] px-5 py-3 text-sm font-medium text-white hover:bg-[#333]">
+            {t.trackOrder}
           </Link>
-          <Link
-            href="/"
-            className="rounded-lg border border-gray-200 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Continuă cumpărăturile
+          <Link href={`/${lang}`}
+            className="rounded-lg border border-gray-200 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            {t.continueShopping}
           </Link>
         </div>
       </div>
@@ -113,7 +110,7 @@ function ConfirmareContent() {
 
 export default function ConfirmarePage() {
   return (
-    <Suspense fallback={<main className="bg-gray-50 px-4 py-12">Se încarcă...</main>}>
+    <Suspense fallback={<main className="bg-gray-50 px-4 py-12" />}>
       <ConfirmareContent />
     </Suspense>
   );

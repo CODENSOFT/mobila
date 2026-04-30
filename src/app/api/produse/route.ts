@@ -123,7 +123,9 @@ export async function POST(request: Request) {
     const contentType = request.headers.get("content-type") ?? "";
 
     let nume = "";
+    let nume_ru = "";
     let descriere = "";
+    let descriere_ru = "";
     let categorie = "";
     let pretNumber = NaN;
     let finalImageUrl = "";
@@ -131,14 +133,18 @@ export async function POST(request: Request) {
     if (contentType.includes("application/json")) {
       const body = (await request.json()) as {
         nume?: string;
+        nume_ru?: string;
         descriere?: string;
+        descriere_ru?: string;
         pret?: number;
         categorie?: string;
         imagineUrl?: string;
       };
 
       nume = typeof body.nume === "string" ? body.nume : "";
+      nume_ru = typeof body.nume_ru === "string" ? body.nume_ru : "";
       descriere = typeof body.descriere === "string" ? body.descriere : "";
+      descriere_ru = typeof body.descriere_ru === "string" ? body.descriere_ru : "";
       categorie = typeof body.categorie === "string" ? body.categorie : "";
       pretNumber = typeof body.pret === "number" ? body.pret : NaN;
       finalImageUrl = typeof body.imagineUrl === "string" ? body.imagineUrl.trim() : "";
@@ -146,14 +152,18 @@ export async function POST(request: Request) {
       const formData = await request.formData();
 
       const numeValue = formData.get("nume");
+      const numeRuValue = formData.get("nume_ru");
       const descriereValue = formData.get("descriere");
+      const descriereRuValue = formData.get("descriere_ru");
       const pretValue = formData.get("pret");
       const categorieValue = formData.get("categorie");
       const imagine = formData.get("imagine");
       const imagineUrl = formData.get("imagineUrl");
 
       nume = typeof numeValue === "string" ? numeValue : "";
+      nume_ru = typeof numeRuValue === "string" ? numeRuValue : "";
       descriere = typeof descriereValue === "string" ? descriereValue : "";
+      descriere_ru = typeof descriereRuValue === "string" ? descriereRuValue : "";
       categorie = typeof categorieValue === "string" ? categorieValue : "";
       pretNumber = typeof pretValue === "string" ? Number(pretValue) : NaN;
 
@@ -184,9 +194,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const numeRuFinala = nume_ru.trim();
+    const descriereRuFinala = descriere_ru.trim();
+
     const produs = await Product.create({
       nume: nume.trim(),
+      ...(numeRuFinala ? { nume_ru: numeRuFinala } : {}),
       descriere: descriere.trim(),
+      ...(descriereRuFinala ? { descriere_ru: descriereRuFinala } : {}),
       pret: pretNumber,
       categorie: categorie.trim(),
       imagine: finalImageUrl,

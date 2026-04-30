@@ -1,17 +1,7 @@
 import { corsHeaders } from "../../../lib/cors";
 
-const OPENAI_API_URL = "https://api.openai.com/v1/responses";
-const ASSISTANT_INSTRUCTIONS = `
-Esti asistentul unei companii de mobila la comanda.
-Reguli:
-- Raspunde doar pe subiecte legate de mobilier, amenajari interioare si comenzi personalizate.
-- Sugereaza produse/categorii potrivite (Bucatarie, Dormitor, Living, Saltele) cand utilizatorul cere recomandari.
-- Mentioneaza optiunile de mobilier la comanda personalizat si produsele din catalog.
-- Daca utilizatorul este interesat de oferta, cere politicos numarul de telefon pentru contact.
-- Mentioneaza canalele disponibile: Website, Instagram, WhatsApp.
-- Scoate in evidenta brandul LABIRINT si experienta din 2007.
-- Pastreaza raspunsurile scurte, clare si utile (2-4 propozitii), ton prietenos si profesional in limba romana.
-`.trim();
+const MAKE_WEBHOOK_URL =
+  "https://hook.eu1.make.com/k5c7p72wc3kvcd0yptw5wgncf32ijdm5";
 
 export async function OPTIONS() {
   return new Response(null, { status: 200, headers: corsHeaders });
@@ -29,45 +19,66 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return Response.json(
-        { message: "Lipseste OPENAI_API_KEY." },
-        { status: 500, headers: corsHeaders }
-      );
+    const session_id: string =
+      typeof body?.session_id === "string" && body.session_id.length > 0
+        ? body.session_id
+        : crypto.randomUUID();
+
+    console.log("[chat] Trimit la Make.com — mesaj:", message, "session_id:", session_id);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+
+    let makeResponse: Response;
+    try {
+      makeResponse = await fetch(MAKE_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mesaj: message, session_id, canal: "website" }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
     }
 
-    const openaiResponse = await fetch(OPENAI_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        instructions: ASSISTANT_INSTRUCTIONS,
-        input: message,
-      }),
-    });
+    console.log("[chat] Status HTTP Make.com:", makeResponse.status);
 
-    if (!openaiResponse.ok) {
-      const errorText = await openaiResponse.text();
-      console.error("OpenAI API error:", openaiResponse.status, errorText);
+    const rawText = await makeResponse.text();
+
+    if (!makeResponse.ok) {
+      console.error("[chat] Make.com error — status:", makeResponse.status, "body:", rawText);
       return Response.json(
-        { message: "Eroare la OpenAI API." },
+        { message: "Eroare la procesarea mesajului." },
         { status: 502, headers: corsHeaders }
       );
     }
 
-    const data = (await openaiResponse.json()) as {
-      output_text?: string;
-    };
+    let data: { raspuns?: string };
+    try {
+      data = JSON.parse(rawText) as { raspuns?: string };
+      console.log("[chat] JSON primit de la Make.com:", data);
+    } catch (parseError) {
+      console.error("[chat] Eroare parsare JSON:", parseError, "body brut:", rawText);
+      return Response.json(
+        { message: "Raspuns invalid de la Make.com." },
+        { status: 502, headers: corsHeaders }
+      );
+    }
+
+    console.log("[chat] Valoare raspuns extrasă:", data.raspuns);
 
     return Response.json(
-      { response: data.output_text ?? "" },
+      { response: data.raspuns ?? "", session_id },
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      console.error("[chat] Make.com timeout");
+      return Response.json(
+        { message: "Raspunsul a intarziat. Incearca din nou." },
+        { status: 504, headers: corsHeaders }
+      );
+    }
     console.error("POST /api/chat error:", error);
     return Response.json(
       { message: "A aparut o eroare." },

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import ImageZoomModal from "./ImageZoomModal";
+import { useLang } from "@/src/context/LangContext";
 
 export function normalizeProductImages(
   imagine: string,
@@ -33,6 +34,8 @@ export default function ProductImageGallery({
   imagini,
   alt,
 }: ProductImageGalleryProps) {
+  const { dict } = useLang();
+  const t = dict.product;
   const urls = useMemo(
     () => normalizeProductImages(imagine, imagini),
     [imagine, imagini]
@@ -119,7 +122,7 @@ export default function ProductImageGallery({
       ) : null}
 
       <p className="text-center text-xs text-[#a8a29e]">
-        Click pe imagine pentru zoom · folosește scroll în vizualizare pentru mărire
+        {t.imageZoomHint}
       </p>
 
       {modalOpen ? (

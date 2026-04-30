@@ -8,6 +8,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import DeliveryAddressForm from "@/src/components/checkout/DeliveryAddressForm";
+import { useLang } from "@/src/context/LangContext";
 import DeliveryMethodSelect from "@/src/components/checkout/DeliveryMethodSelect";
 import DiscountCodeInput from "@/src/components/checkout/DiscountCodeInput";
 import OrderSummaryPanel from "@/src/components/checkout/OrderSummaryPanel";
@@ -22,11 +23,14 @@ import {
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPret, golesteCosul } = useCart();
+  const { lang, dict } = useLang();
+  const t = dict.checkout;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
+  const [expressPrice, setExpressPrice] = useState(50);
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -43,23 +47,44 @@ export default function CheckoutPage() {
   });
 
   const metodaLivrare = form.watch("metodaLivrare");
-  const transport = metodaLivrare === "express" ? 50 : 0;
+  const transport = metodaLivrare === "express" ? expressPrice : 0;
   const discountValue = Math.round((totalPret * discountPercent) / 100);
   const total = totalPret + transport - discountValue;
 
   useEffect(() => {
     if (items.length === 0) {
-      router.replace("/produse");
+      router.replace(`/${lang}/produse`);
     }
-  }, [items.length, router]);
+  }, [items.length, router, lang]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadExpressPrice = async () => {
+      try {
+        const response = await fetch("/api/settings/delivery", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as { expressPrice?: number };
+        if (!isMounted) return;
+        if (typeof data.expressPrice === "number" && Number.isFinite(data.expressPrice)) {
+          setExpressPrice(Math.max(0, Math.round(data.expressPrice)));
+        }
+      } catch {
+        // Keep fallback price when settings are unavailable.
+      }
+    };
+    void loadExpressPrice();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const breadcrumb = useMemo(
     () => [
-      { label: "Coș", href: "/cos" },
-      { label: "Detalii", href: "/checkout", active: true },
-      { label: "Confirmare", href: "#", disabled: true },
+      { label: t.breadcrumb.cart, href: `/${lang}/cos` },
+      { label: t.breadcrumb.details, href: `/${lang}/checkout`, active: true },
+      { label: t.breadcrumb.confirm, href: "#", disabled: true },
     ],
-    []
+    [t, lang]
   );
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -99,19 +124,15 @@ export default function CheckoutPage() {
         | null;
 
       if (!response.ok || !data?.id) {
-        throw new Error(
-          data?.message ?? "A apărut o eroare. Te rugăm să încerci din nou."
-        );
+        throw new Error(data?.message ?? t.error);
       }
 
       golesteCosul();
       router.push(
-        `/checkout/confirmare?id=${encodeURIComponent(data.id)}&email=${encodeURIComponent(
-          values.email
-        )}`
+        `/${lang}/checkout/confirmare?id=${encodeURIComponent(data.id)}&email=${encodeURIComponent(values.email)}`
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "A apărut o eroare.");
+      setError(err instanceof Error ? err.message : t.error);
     } finally {
       setLoading(false);
     }
@@ -144,7 +165,7 @@ export default function CheckoutPage() {
             className="inline-flex w-full items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3 text-left shadow-sm"
           >
             <span className="text-sm font-medium text-[#1a1a1a]">
-              Sumar comandă ({items.length} produse)
+              {t.mobileSummary} ({items.length})
             </span>
             {mobileSummaryOpen ? (
               <ChevronUp className="h-4 w-4" aria-hidden />
@@ -171,7 +192,7 @@ export default function CheckoutPage() {
             <form onSubmit={onSubmit} className="space-y-4 lg:col-span-7">
               <PersonalDataForm />
               <DeliveryAddressForm />
-              <DeliveryMethodSelect />
+              <DeliveryMethodSelect expressPrice={expressPrice} />
               <DiscountCodeInput
                 onApplied={({ code, procent }) => {
                   setDiscountCode(code);
@@ -180,11 +201,11 @@ export default function CheckoutPage() {
               />
 
               <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-lg font-semibold text-[#1a1a1a]">Notă comandă</h2>
+                <h2 className="mb-3 text-lg font-semibold text-[#1a1a1a]">{t.note}</h2>
                 <textarea
                   {...form.register("nota")}
                   rows={4}
-                  placeholder="Ex: Sună înainte de livrare, etaj 3 fără lift"
+                  placeholder={t.notePlaceholder}
                   className="w-full rounded-lg border border-gray-200 p-3 text-sm"
                 />
               </section>
@@ -192,9 +213,7 @@ export default function CheckoutPage() {
               <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <label className="flex items-start gap-2 text-sm text-gray-700">
                   <input type="checkbox" {...form.register("gdprAccept")} className="mt-0.5 h-4 w-4" />
-                  <span>
-                    Am citit și accept Termenii și condițiile și Politica de confidențialitate
-                  </span>
+                  <span>{t.gdpr} {t.terms} {t.and} {t.privacy}</span>
                 </label>
                 {form.formState.errors.gdprAccept ? (
                   <p className="mt-1 text-xs text-red-500">
@@ -204,7 +223,7 @@ export default function CheckoutPage() {
 
                 <label className="mt-3 flex items-start gap-2 text-sm text-gray-700">
                   <input type="checkbox" {...form.register("newsletter")} className="mt-0.5 h-4 w-4" />
-                  <span>Doresc să primesc oferte și noutăți pe email</span>
+                  <span>{t.newsletter}</span>
                 </label>
               </section>
 
@@ -222,13 +241,13 @@ export default function CheckoutPage() {
                 {loading ? (
                   <span className="inline-flex items-center gap-2">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                    Se procesează...
+                    {t.submitting}
                   </span>
                 ) : (
                   <>
-                    Plasează comanda
+                    {t.submit}
                     <span className="inline-flex items-center gap-1 text-xs text-white/80">
-                      <Lock className="h-3.5 w-3.5" aria-hidden /> SSL
+                      <Lock className="h-3.5 w-3.5" aria-hidden /> {t.ssl}
                     </span>
                   </>
                 )}

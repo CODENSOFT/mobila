@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useLang } from "@/src/context/LangContext";
 
 type ContactFormData = {
   nume: string;
@@ -8,13 +9,11 @@ type ContactFormData = {
   mesaj: string;
 };
 
-const initialFormData: ContactFormData = {
-  nume: "",
-  telefon: "",
-  mesaj: "",
-};
+const initialFormData: ContactFormData = { nume: "", telefon: "", mesaj: "" };
 
 export default function ContactForm() {
+  const { dict } = useLang();
+  const t = dict.contact.form;
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -31,15 +30,13 @@ export default function ContactForm() {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        throw new Error("Contact submit failed");
-      }
+      if (!response.ok) throw new Error("Contact submit failed");
 
       setFormData(initialFormData);
-      setSuccessMessage("Mesajul a fost trimis cu succes!");
+      setSuccessMessage(t.success);
     } catch (error) {
       console.error("Eroare la trimiterea formularului:", error);
-      alert("Nu am putut trimite mesajul. Incearca din nou.");
+      alert(t.error);
     } finally {
       setIsSubmitting(false);
     }
@@ -49,13 +46,13 @@ export default function ContactForm() {
     <form onSubmit={handleSubmit} className="mt-2 space-y-5">
       <div className="space-y-1">
         <label htmlFor="contact-nume" className="block text-sm font-medium text-gray-700">
-          Nume
+          {t.name}
         </label>
         <input
           id="contact-nume"
           type="text"
           value={formData.nume}
-          onChange={(event) => setFormData({ ...formData, nume: event.target.value })}
+          onChange={(e) => setFormData({ ...formData, nume: e.target.value })}
           className="w-full rounded-2xl border border-gray-300 px-4 py-3 outline-none transition focus:border-gray-500"
           required
         />
@@ -63,13 +60,13 @@ export default function ContactForm() {
 
       <div className="space-y-1">
         <label htmlFor="contact-telefon" className="block text-sm font-medium text-gray-700">
-          Telefon
+          {t.phone}
         </label>
         <input
           id="contact-telefon"
           type="tel"
           value={formData.telefon}
-          onChange={(event) => setFormData({ ...formData, telefon: event.target.value })}
+          onChange={(e) => setFormData({ ...formData, telefon: e.target.value })}
           className="w-full rounded-2xl border border-gray-300 px-4 py-3 outline-none transition focus:border-gray-500"
           required
         />
@@ -77,12 +74,12 @@ export default function ContactForm() {
 
       <div className="space-y-1">
         <label htmlFor="contact-mesaj" className="block text-sm font-medium text-gray-700">
-          Mesaj
+          {t.message}
         </label>
         <textarea
           id="contact-mesaj"
           value={formData.mesaj}
-          onChange={(event) => setFormData({ ...formData, mesaj: event.target.value })}
+          onChange={(e) => setFormData({ ...formData, mesaj: e.target.value })}
           className="min-h-32 w-full rounded-2xl border border-gray-300 px-4 py-3 outline-none transition focus:border-gray-500"
           required
         />
@@ -93,7 +90,7 @@ export default function ContactForm() {
         disabled={isSubmitting}
         className="rounded-2xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(0,0,0,0.2)] transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-500"
       >
-        {isSubmitting ? "Se trimite..." : "Trimite mesaj"}
+        {isSubmitting ? t.submitting : t.submit}
       </button>
 
       {successMessage ? <p className="text-sm font-medium text-gray-700">{successMessage}</p> : null}

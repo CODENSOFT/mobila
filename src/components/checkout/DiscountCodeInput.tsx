@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-
+import { useLang } from "@/src/context/LangContext";
 import type { CheckoutFormValues } from "@/src/lib/validations/checkoutSchema";
 
 type Props = {
@@ -11,6 +11,8 @@ type Props = {
 
 export default function DiscountCodeInput({ onApplied }: Props) {
   const { setValue, watch } = useFormContext<CheckoutFormValues>();
+  const { dict } = useLang();
+  const t = dict.checkout;
   const codReducere = watch("codReducere") ?? "";
 
   const [status, setStatus] = useState<"idle" | "ok" | "error">("idle");
@@ -32,18 +34,16 @@ export default function DiscountCodeInput({ onApplied }: Props) {
         | { valid: false; message: string };
       if (!response.ok || !data.valid) {
         setStatus("error");
-        setMessage(
-          "message" in data ? data.message : "Cod invalid. Încearcă din nou."
-        );
+        setMessage("message" in data ? data.message : t.discountError);
         return;
       }
       setStatus("ok");
-      setMessage(`Cod valid: -${data.procent}%`);
+      setMessage(t.discountValid.replace("{{procent}}", String(data.procent)));
       setValue("codReducere", data.cod);
       onApplied({ code: data.cod, procent: data.procent });
     } catch {
       setStatus("error");
-      setMessage("A apărut o eroare la validarea codului.");
+      setMessage(t.discountApiError);
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export default function DiscountCodeInput({ onApplied }: Props) {
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-[#1a1a1a]">Cod de reducere</h2>
+      <h2 className="mb-3 text-lg font-semibold text-[#1a1a1a]">{t.discountCode}</h2>
       <div className="flex gap-2">
         <input
           value={codReducere}
@@ -65,7 +65,7 @@ export default function DiscountCodeInput({ onApplied }: Props) {
           disabled={loading || !codReducere.trim()}
           className="h-11 rounded-lg border border-gray-300 px-4 text-sm font-medium hover:bg-gray-50 disabled:opacity-60"
         >
-          Aplică
+          {t.apply}
         </button>
       </div>
       {status !== "idle" ? (
