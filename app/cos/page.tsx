@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import CartItem from "@/src/components/cart/CartItem";
 import { useCart } from "@/src/context/CartContext";
 import { useLang } from "@/src/context/LangContext";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 
 function transportCost(subtotal: number) {
   return subtotal > 500 ? 0 : 50;
@@ -80,7 +81,8 @@ export default function CartPage() {
                     onRemove={() => scoateDinCos(item.id)}
                   />
                   <div className="flex justify-end pb-2 text-sm text-gray-600">
-                    {t.lineTotal}: {(item.pret * item.cantitate).toLocaleString()} MDL
+                    {t.lineTotal}:{" "}
+                    {formatPriceInteger(item.pret * item.cantitate, lang)} MDL
                   </div>
                 </div>
               ))}
@@ -93,16 +95,20 @@ export default function CartPage() {
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex items-center justify-between text-gray-600">
                 <span>{t.subtotal}</span>
-                <span>{subtotal.toLocaleString()} MDL</span>
+                <span>{formatPriceInteger(subtotal, lang)} MDL</span>
               </div>
               <div className="flex items-center justify-between text-gray-600">
                 <span>{t.shipping}</span>
-                <span>{transport === 0 ? t.free : `${transport.toLocaleString()} MDL`}</span>
+                <span>
+                  {transport === 0
+                    ? t.free
+                    : `${formatPriceInteger(transport, lang)} MDL`}
+                </span>
               </div>
               {discountPercent > 0 ? (
                 <div className="flex items-center justify-between text-green-700">
                   <span>{t.discount} ({discountPercent}%)</span>
-                  <span>-{discountValue.toLocaleString()} MDL</span>
+                  <span>-{formatPriceInteger(discountValue, lang)} MDL</span>
                 </div>
               ) : null}
             </div>
@@ -126,7 +132,7 @@ export default function CartPage() {
             <div className="mt-5 border-t border-gray-100 pt-4">
               <div className="flex items-center justify-between text-lg font-semibold text-[#1a1a1a]">
                 <span>{t.total}</span>
-                <span>{finalTotal.toLocaleString()} MDL</span>
+                <span>{formatPriceInteger(finalTotal, lang)} MDL</span>
               </div>
             </div>
 

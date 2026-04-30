@@ -56,9 +56,11 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             titlu: item.title,
             descriere: item.desc,
           }))}
+          copyrightQuality={s.quality}
+          imageOverlayCaption={s.design}
         />
       </FadeInOnScroll>
-      <Testimoniale />
+      <Testimoniale t={dict.testimonials} />
     </main>
   );
 }

@@ -6,6 +6,7 @@ import {
   PRODUCT_CATEGORY_GROUPS,
   type ProductCategory,
 } from "../../constants/categories";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 import type { Product } from "../../types/product";
 
 export const ADMIN_CATEGORIES = PRODUCT_CATEGORIES;
@@ -638,7 +639,7 @@ export default function ProductForm({
                     ) : null}
                     <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                       <span className="text-lg font-bold text-green-600">
-                        {values.pret ? `${Number(values.pret).toLocaleString()} MDL` : "—"}
+                        {values.pret ? `${formatPriceInteger(Number(values.pret))} MDL` : "—"}
                       </span>
                       <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
                         {values.categorie}

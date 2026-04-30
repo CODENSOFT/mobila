@@ -66,6 +66,40 @@
       }
     ]
   },
+  "testimonials": {
+    "label": "TESTIMONIALE",
+    "headingLead": "Ce spun",
+    "headingEm": "clienții",
+    "reviewsTemplate": "{count} recenzii",
+    "verified": "CLIENT VERIFICAT",
+    "imageAlt": "Interior premium cu mobilier modern",
+    "entries": [
+      {
+        "imagine": "/images/testimonial-1.jpg",
+        "stele": 5,
+        "numarRecenzii": 24,
+        "nume": "Maria Constantin",
+        "citat": "Mobilier superb, calitate excepțională! Recomand cu încredere.",
+        "oras": "București"
+      },
+      {
+        "imagine": "/images/testimonial-2.jpg",
+        "stele": 5,
+        "numarRecenzii": 18,
+        "nume": "Andrei Popescu",
+        "citat": "Livrare rapidă, montaj profesional. O experiență de nota 10.",
+        "oras": "Cluj-Napoca"
+      },
+      {
+        "imagine": "/images/testimonial-3.jpg",
+        "stele": 5,
+        "numarRecenzii": 31,
+        "nume": "Elena Ionescu",
+        "citat": "Design elegant, exact ca în poze. Depășește așteptările.",
+        "oras": "Timișoara"
+      }
+    ]
+  },
   "featured": {
     "label": "Selecție Editată",
     "heading": "Piese",

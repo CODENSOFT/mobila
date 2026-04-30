@@ -7,6 +7,7 @@ import HeroSection from "../src/components/sections/HeroSection";
 import Testimoniale from "../src/components/sections/Testimoniale";
 import FadeInOnScroll from "../src/components/ui/FadeInOnScroll";
 import { getFeaturedProducts } from "../src/services/products";
+import { getDictionary } from "./[lang]/dictionaries";
 
 export const metadata: Metadata = {
   title: "LABIRINT | Mobila la comanda Soroca",
@@ -14,7 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const featuredProducts = await getFeaturedProducts();
+  const [featuredProducts, dict] = await Promise.all([
+    getFeaturedProducts(),
+    getDictionary("ro"),
+  ]);
+  const s = dict.services;
 
   return (
     <main className="bg-[#f7f3ec] text-gray-900">
@@ -27,9 +32,12 @@ export default async function Home() {
         <FeaturedProductsSection products={featuredProducts} />
       </FadeInOnScroll>
       <FadeInOnScroll>
-        <ServiciiSection />
+        <ServiciiSection
+          copyrightQuality={s.quality}
+          imageOverlayCaption={s.design}
+        />
       </FadeInOnScroll>
-      <Testimoniale />
+      <Testimoniale t={dict.testimonials} />
     </main>
   );
 }

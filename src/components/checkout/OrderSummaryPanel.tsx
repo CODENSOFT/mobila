@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useLang } from "@/src/context/LangContext";
 import type { CartItem } from "@/src/context/CartContext";
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { getSafeImageSrc } from "@/src/lib/image";
 
 type Props = {
@@ -57,7 +58,7 @@ export default function OrderSummaryPanel({
                 <SummaryLineNume nume={item.nume} lang={lang} />
               </p>
               <p className="mt-1 text-sm text-gray-600">
-                {(item.pret * item.cantitate).toLocaleString()} MDL
+                {formatPriceInteger(item.pret * item.cantitate, lang)} MDL
               </p>
             </div>
           </div>
@@ -67,16 +68,20 @@ export default function OrderSummaryPanel({
       <div className="mt-5 space-y-2 border-t border-gray-100 pt-4 text-sm">
         <div className="flex justify-between text-gray-600">
           <span>{t.subtotal}</span>
-          <span>{subtotal.toLocaleString()} MDL</span>
+          <span>{formatPriceInteger(subtotal, lang)} MDL</span>
         </div>
         <div className="flex justify-between text-gray-600">
           <span>{t.shipping}</span>
-          <span>{transport === 0 ? t.free : `${transport.toLocaleString()} MDL`}</span>
+          <span>
+            {transport === 0
+              ? t.free
+              : `${formatPriceInteger(transport, lang)} MDL`}
+          </span>
         </div>
         {discountValue > 0 ? (
           <div className="flex justify-between text-green-700">
             <span>{t.discount} ({discountCode})</span>
-            <span>-{discountValue.toLocaleString()} MDL</span>
+            <span>-{formatPriceInteger(discountValue, lang)} MDL</span>
           </div>
         ) : null}
       </div>
@@ -84,7 +89,7 @@ export default function OrderSummaryPanel({
       <div className="mt-4 border-t border-gray-100 pt-4">
         <div className="flex justify-between text-lg font-bold text-[#1a1a1a]">
           <span>{t.total}</span>
-          <span>{total.toLocaleString()} MDL</span>
+          <span>{formatPriceInteger(total, lang)} MDL</span>
         </div>
         <p className="mt-1 text-xs text-gray-500">{t.vat}</p>
       </div>

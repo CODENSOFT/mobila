@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { getSafeImageSrc } from "../../lib/image";
 import type { Product } from "../../types/product";
 import Card from "../ui/Card";
@@ -73,7 +74,7 @@ function FeaturedProductCard({
           <h3 className="mb-3 text-[20px] font-medium leading-tight text-white">{numeDisplay}</h3>
           <div className="flex items-center justify-between">
             <p className="text-base font-semibold text-white/95">
-              {product.pret.toLocaleString()}{" "}
+              {formatPriceInteger(product.pret, lang)}{" "}
               <span className="text-sm font-normal text-white/70">MDL</span>
             </p>
             <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">

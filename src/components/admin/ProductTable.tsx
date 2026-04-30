@@ -4,6 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 import type { Product } from "../../types/product";
 
 type ProductTableProps = {
@@ -117,7 +118,7 @@ export default function ProductTable({
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-semibold text-slate-900">{product.pret.toLocaleString()} MDL</span>
+                    <span className="font-semibold text-slate-900">{formatPriceInteger(product.pret)} MDL</span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">

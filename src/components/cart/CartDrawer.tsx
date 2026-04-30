@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import CartItem from "@/src/components/cart/CartItem";
 import { useCart } from "@/src/context/CartContext";
 import { useLang } from "@/src/context/LangContext";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 
 function transportCost(subtotal: number) {
   return subtotal > 500 ? 0 : 50;
@@ -110,15 +111,19 @@ export default function CartDrawer() {
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between text-gray-600">
               <span>{t.subtotal}</span>
-              <span>{totalPret.toLocaleString()} MDL</span>
+              <span>{formatPriceInteger(totalPret, lang)} MDL</span>
             </div>
             <div className="flex items-center justify-between text-gray-600">
               <span>{t.shipping}</span>
-              <span>{transport === 0 ? t.free : `${transport.toLocaleString()} MDL`}</span>
+              <span>
+                {transport === 0
+                  ? t.free
+                  : `${formatPriceInteger(transport, lang)} MDL`}
+              </span>
             </div>
             <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-3 text-base font-semibold text-[#1a1a1a]">
               <span>{t.total}</span>
-              <span>{finalTotal.toLocaleString()} MDL</span>
+              <span>{formatPriceInteger(finalTotal, lang)} MDL</span>
             </div>
           </div>
 

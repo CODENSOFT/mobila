@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Copy } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toApiUrl } from "@/src/lib/api";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { useLang } from "@/src/context/LangContext";
 
 type OrderData = {
@@ -80,13 +81,15 @@ function ConfirmareContent() {
                   <span>
                     {item.nume} x{item.cantitate}
                   </span>
-                  <span>{(item.pret * item.cantitate).toLocaleString()} MDL</span>
+                  <span>
+                    {formatPriceInteger(item.pret * item.cantitate, lang)} MDL
+                  </span>
                 </div>
               ))}
             </div>
             <div className="mt-3 border-t border-gray-200 pt-3">
               <p className="text-sm font-semibold text-[#1a1a1a]">
-                {t.total}: {order.total.toLocaleString()} MDL
+                {t.total}: {formatPriceInteger(order.total, lang)} MDL
               </p>
               <p className="mt-1 text-xs text-gray-500">{deliveryText(order.metodaLivrare)}</p>
             </div>

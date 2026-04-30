@@ -7,6 +7,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import type { CartItem as CartItemType } from "@/src/context/CartContext";
 import { useLang } from "@/src/context/LangContext";
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { getSafeImageSrc } from "@/src/lib/image";
 
 type CartItemProps = {
@@ -34,7 +35,9 @@ export default function CartItem({ item, onChangeQty, onRemove }: CartItemProps)
 
       <div className="min-w-0 flex-1">
         <h3 className="line-clamp-2 text-sm font-medium text-[#1a1a1a]">{numeDisplay}</h3>
-        <p className="mt-1 text-sm text-gray-500">{item.pret.toLocaleString()} MDL / buc</p>
+        <p className="mt-1 text-sm text-gray-500">
+          {formatPriceInteger(item.pret, lang)} MDL / buc
+        </p>
 
         <div className="mt-3 flex items-center justify-between">
           <div className="inline-flex items-center overflow-hidden rounded-lg border border-gray-200">

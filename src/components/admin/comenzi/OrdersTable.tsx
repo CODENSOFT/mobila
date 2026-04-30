@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clipboard, Eye, Trash2 } from "lucide-react";
 
 import type { AdminOrder } from "@/src/hooks/useOrders";
+import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { getSafeImageSrc } from "@/src/lib/image";
 import OrderStatusBadge from "./OrderStatusBadge";
 
@@ -56,7 +57,7 @@ export default function OrdersTable({ comenzi, onChangeStatus, onDelete }: Props
               <div className="mt-2 flex items-center justify-between text-xs text-gray-600">
                 <span>{comanda.produse.length} produse</span>
                 <span className="font-semibold text-[#1a1a1a]">
-                  {comanda.total.toLocaleString()} MDL
+                  {formatPriceInteger(comanda.total)} MDL
                 </span>
               </div>
             </div>
@@ -147,7 +148,7 @@ export default function OrdersTable({ comenzi, onChangeStatus, onDelete }: Props
                   </div>
                 </td>
                 <td className="px-4 py-3 font-semibold text-[#1a1a1a]">
-                  {comanda.total.toLocaleString()} MDL
+                  {formatPriceInteger(comanda.total)} MDL
                 </td>
                 <td className="px-4 py-3">
                   <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700">

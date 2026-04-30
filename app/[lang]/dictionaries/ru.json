@@ -66,6 +66,40 @@
       }
     ]
   },
+  "testimonials": {
+    "label": "ОТЗЫВЫ",
+    "headingLead": "Что говорят",
+    "headingEm": "клиенты",
+    "reviewsTemplate": "{count} отзывов",
+    "verified": "ПОДТВЕРЖДЁННЫЙ КЛИЕНТ",
+    "imageAlt": "Интерьер с современной мебелью",
+    "entries": [
+      {
+        "imagine": "/images/testimonial-1.jpg",
+        "stele": 5,
+        "numarRecenzii": 24,
+        "nume": "Мария Константин",
+        "citat": "Превосходная мебель и исключительное качество! Рекомендую без сомнений.",
+        "oras": "Бухарест"
+      },
+      {
+        "imagine": "/images/testimonial-2.jpg",
+        "stele": 5,
+        "numarRecenzii": 18,
+        "nume": "Андрей Попеску",
+        "citat": "Быстрая доставка, профессиональная сборка. Оценка 10 из 10.",
+        "oras": "Клуж-Напока"
+      },
+      {
+        "imagine": "/images/testimonial-3.jpg",
+        "stele": 5,
+        "numarRecenzii": 31,
+        "nume": "Елена Ионеску",
+        "citat": "Элегантный дизайн, как на фото. Превзошло ожидания.",
+        "oras": "Тимишоара"
+      }
+    ]
+  },
   "featured": {
     "label": "Избранное",
     "heading": "Выдающиеся",

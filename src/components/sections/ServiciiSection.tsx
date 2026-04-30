@@ -46,6 +46,10 @@ export type ServiciiSectionProps = {
   imageLeftAlt?: string;
   imageRightSrc?: string;
   imageRightAlt?: string;
+  /** Shown after © {year} · in the left column footer */
+  copyrightQuality?: string;
+  /** Caption on the right image card */
+  imageOverlayCaption?: string;
 };
 
 export default function ServiciiSection({
@@ -56,6 +60,8 @@ export default function ServiciiSection({
   imageLeftAlt = DEFAULT_IMAGE_LEFT_ALT,
   imageRightSrc = DEFAULT_IMAGE_RIGHT_SRC,
   imageRightAlt = DEFAULT_IMAGE_RIGHT_ALT,
+  copyrightQuality = "Calitate certificată",
+  imageOverlayCaption = "Design & Confort",
 }: ServiciiSectionProps) {
   return (
     <section className="relative overflow-hidden bg-[#F5F0E8] py-24">
@@ -90,7 +96,7 @@ export default function ServiciiSection({
             <p
               className="hidden text-xs tracking-widest text-[#a89e8e] lg:block"
             >
-              © {new Date().getFullYear()} · Calitate certificată
+              © {new Date().getFullYear()} · {copyrightQuality}
             </p>
           </div>
 
@@ -157,7 +163,7 @@ export default function ServiciiSection({
                 className="absolute bottom-5 left-5 rounded-lg bg-white/80 px-4 py-2.5 shadow-md backdrop-blur-sm"
               >
                 <p className="text-xs font-light italic tracking-widest text-[#5c5044]">
-                  Design &amp; Confort
+                  {imageOverlayCaption}
                 </p>
               </div>
             </div>
