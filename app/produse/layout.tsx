@@ -4,7 +4,7 @@ import { getDictionary } from "../[lang]/dictionaries";
 import { CartProvider } from "@/src/context/CartContext";
 import { LangProvider } from "@/src/context/LangContext";
 
-export default async function CheckoutLayout({
+export default async function ProduseLayout({
   children,
 }: {
   children: React.ReactNode;

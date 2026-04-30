@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getDictionary } from "../[lang]/dictionaries";
 import { CartProvider } from "@/src/context/CartContext";
 import { LangProvider } from "@/src/context/LangContext";

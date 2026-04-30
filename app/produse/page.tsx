@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import ProduseClient from "./produse-client";
 import { getAllProducts } from "../../src/services/products";
