@@ -20,6 +20,22 @@ export default function OrderDetailSidebar({ comanda, onUpdateStatus, onCancel }
   const [status, setStatus] = useState<AdminOrder["status"]>(comanda.status);
   const [awb, setAwb] = useState(comanda.awb ?? "");
   const [loading, setLoading] = useState(false);
+  const comandaWithChat = comanda as AdminOrder & {
+    tip_mobila?: string;
+    dimensiuni?: string;
+    material?: string;
+    culoare?: string;
+    canal?: string;
+    sursa?: string;
+  };
+  const chatBotFields = [
+    { label: "Tip mobilă", value: comandaWithChat.tip_mobila },
+    { label: "Dimensiuni", value: comandaWithChat.dimensiuni },
+    { label: "Material", value: comandaWithChat.material },
+    { label: "Culoare", value: comandaWithChat.culoare },
+    { label: "Canal", value: comandaWithChat.canal },
+    { label: "Sursă", value: comandaWithChat.sursa },
+  ].filter((field) => typeof field.value === "string" && field.value.trim().length > 0);
 
   return (
     <div className="space-y-4">
@@ -84,6 +100,19 @@ export default function OrderDetailSidebar({ comanda, onUpdateStatus, onCancel }
           {comanda.client.codPostal}
         </p>
       </section>
+
+      {chatBotFields.length > 0 ? (
+        <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold text-[#1a1a1a]">Detalii comandă chat-bot</h3>
+          <div className="space-y-2">
+            {chatBotFields.map((field) => (
+              <p key={field.label} className="text-sm text-gray-700">
+                <span className="font-medium text-[#1a1a1a]">{field.label}:</span> {field.value}
+              </p>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
         <h3 className="mb-3 text-sm font-semibold text-[#1a1a1a]">Acțiuni rapide</h3>
