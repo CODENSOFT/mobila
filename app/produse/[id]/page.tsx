@@ -69,26 +69,38 @@ function parseDescription(description: string): DescriptionBlock[] {
 }
 
 async function getProdusById(id: string): Promise<Product | null> {
-  const headersList = await headers();
-  const host = headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") ?? "http";
-  const apiBaseUrl = "https://mobila-production.up.railway.app";
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host");
+    const protocol = headersList.get("x-forwarded-proto") ?? "http";
+    const apiBaseUrl = "https://mobila-production.up.railway.app";
 
-  if (!apiBaseUrl && !host) {
+    if (!apiBaseUrl && !host) {
+      console.error("[produse/[id]] Missing host and API base URL", { id });
+      return null;
+    }
+
+    const requestUrl = `${apiBaseUrl ?? `${protocol}://${host}`}/api/produse?id=${encodeURIComponent(id)}`;
+    const response = await fetch(requestUrl, { cache: "no-store" });
+
+    if (!response.ok) {
+      console.error("[produse/[id]] Product fetch failed", {
+        id,
+        status: response.status,
+        statusText: response.statusText,
+      });
+      return null;
+    }
+
+    const produs = (await response.json()) as Product;
+    return produs;
+  } catch (error) {
+    console.error("[produse/[id]] Unexpected error while fetching product", {
+      id,
+      error,
+    });
     return null;
   }
-
-  const response = await fetch(
-    `${apiBaseUrl ?? `${protocol}://${host}`}/api/produse?id=${encodeURIComponent(id)}`,
-    { cache: "no-store" }
-  );
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const produs = (await response.json()) as Product;
-  return produs;
 }
 
 export async function generateMetadata({
