@@ -21,6 +21,7 @@ type Product = {
   _id: string;
   nume: string;
   descriere: string;
+  descriere_ro?: string;
   pret: number;
   imagine: string;
   imagini?: string[];
@@ -138,7 +139,9 @@ export default async function ProdusPage({
 }) {
   const { id } = await params;
   const produs = await getProdusById(id);
-  const descriptionBlocks = produs ? parseDescription(produs.descriere) : [];
+  const descriptionBlocks = produs
+    ? parseDescription(produs.descriere ?? produs.descriere_ro ?? "")
+    : [];
 
   if (!produs) {
     return (
