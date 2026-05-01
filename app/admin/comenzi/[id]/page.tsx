@@ -49,11 +49,45 @@ export default function AdminOrderDetailPage() {
     );
   }
 
+  const comandaWithChat = comanda as AdminOrder & {
+    tip_mobila?: string;
+    dimensiuni?: string;
+    material?: string;
+    culoare?: string;
+    canal?: string;
+    sursa?: string;
+  };
+  const produseGoale = !Array.isArray(comanda.produse) || comanda.produse.length === 0;
+  const showChatBotDetails =
+    comandaWithChat.sursa === "chat-bot" || produseGoale;
+  const chatBotFields = [
+    { label: "Tip mobilă", value: comandaWithChat.tip_mobila },
+    { label: "Dimensiuni", value: comandaWithChat.dimensiuni },
+    { label: "Material", value: comandaWithChat.material },
+    { label: "Culoare", value: comandaWithChat.culoare },
+    { label: "Canal", value: comandaWithChat.canal },
+    { label: "Sursă", value: comandaWithChat.sursa },
+  ];
+
   return (
     <main className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900">Detaliu comandă</h1>
       <div className="grid gap-4 lg:grid-cols-12">
         <div className="space-y-4 lg:col-span-8">
+          {showChatBotDetails ? (
+            <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="mb-4 text-base font-semibold text-[#1a1a1a]">Detalii comandă chat-bot</h2>
+              <div className="space-y-2">
+                {chatBotFields.map((field) => (
+                  <p key={field.label} className="text-sm text-gray-700">
+                    <span className="font-medium text-[#1a1a1a]">{field.label}:</span>{" "}
+                    {typeof field.value === "string" && field.value.trim() ? field.value : "—"}
+                  </p>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
             <h2 className="mb-4 text-base font-semibold text-[#1a1a1a]">Produse comandate</h2>
             <div className="space-y-3">
@@ -74,6 +108,9 @@ export default function AdminOrderDetailPage() {
                   <p className="text-sm font-semibold">{(p.pret * p.cantitate).toLocaleString()} MDL</p>
                 </div>
               ))}
+              {comanda.produse.length === 0 ? (
+                <p className="text-sm text-gray-500">Nu există produse asociate acestei comenzi.</p>
+              ) : null}
             </div>
             <div className="mt-4 space-y-1 text-sm">
               <div className="flex justify-between text-gray-600">
