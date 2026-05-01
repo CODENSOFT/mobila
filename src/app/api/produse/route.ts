@@ -11,6 +11,10 @@ const parseLimit = (raw: string | null, fallback: number, max: number) => {
   return Math.min(n, max);
 };
 
+function normalizeUtf8Text(value: string): string {
+  return Buffer.from(value, "utf8").toString("utf8");
+}
+
 export async function OPTIONS() {
   return new Response(null, { status: 200, headers: corsHeaders });
 }
@@ -142,9 +146,13 @@ export async function POST(request: Request) {
       };
 
       nume = typeof body.nume === "string" ? body.nume : "";
-      nume_ru = typeof body.nume_ru === "string" ? body.nume_ru : "";
+      nume_ru =
+        typeof body.nume_ru === "string" ? normalizeUtf8Text(body.nume_ru) : "";
       descriere = typeof body.descriere === "string" ? body.descriere : "";
-      descriere_ru = typeof body.descriere_ru === "string" ? body.descriere_ru : "";
+      descriere_ru =
+        typeof body.descriere_ru === "string"
+          ? normalizeUtf8Text(body.descriere_ru)
+          : "";
       categorie = typeof body.categorie === "string" ? body.categorie : "";
       pretNumber = typeof body.pret === "number" ? body.pret : NaN;
       finalImageUrl = typeof body.imagineUrl === "string" ? body.imagineUrl.trim() : "";
@@ -161,9 +169,13 @@ export async function POST(request: Request) {
       const imagineUrl = formData.get("imagineUrl");
 
       nume = typeof numeValue === "string" ? numeValue : "";
-      nume_ru = typeof numeRuValue === "string" ? numeRuValue : "";
+      nume_ru =
+        typeof numeRuValue === "string" ? normalizeUtf8Text(numeRuValue) : "";
       descriere = typeof descriereValue === "string" ? descriereValue : "";
-      descriere_ru = typeof descriereRuValue === "string" ? descriereRuValue : "";
+      descriere_ru =
+        typeof descriereRuValue === "string"
+          ? normalizeUtf8Text(descriereRuValue)
+          : "";
       categorie = typeof categorieValue === "string" ? categorieValue : "";
       pretNumber = typeof pretValue === "string" ? Number(pretValue) : NaN;
 
@@ -194,8 +206,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const numeRuFinala = nume_ru.trim();
-    const descriereRuFinala = descriere_ru.trim();
+    const numeRuFinala = normalizeUtf8Text(nume_ru.trim());
+    const descriereRuFinala = normalizeUtf8Text(descriere_ru.trim());
 
     const produs = await Product.create({
       nume: nume.trim(),

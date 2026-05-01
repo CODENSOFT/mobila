@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import ProduseClient from "@/app/produse/produse-client";
 import { getAllProducts } from "@/src/services/products";
