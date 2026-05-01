@@ -19,7 +19,7 @@ import ProduseSimilare from "../../../src/components/sections/ProduseSimilare";
 type Product = {
   _id: string;
   nume: string;
-  descriere: string;
+  descriere?: string;
   descriere_ro?: string;
   pret: number;
   imagine: string;
@@ -75,7 +75,11 @@ async function getProdusById(id: string): Promise<Product | null> {
       cache: "no-store",
     });
     if (!response.ok) return null;
-    return (await response.json()) as Product;
+    const produs = (await response.json()) as Product;
+    return {
+      ...produs,
+      descriere: produs.descriere ?? produs.descriere_ro ?? "",
+    };
   } catch (error) {
     console.error("[produse/[id]] error", { id, error });
     return null;
@@ -99,7 +103,7 @@ export async function generateMetadata({
 
   return {
     title: `${produs.nume} | LABIRINT`,
-    description: produs.descriere.slice(0, 160),
+    description: (produs.descriere ?? produs.descriere_ro ?? "").slice(0, 160),
   };
 }
 

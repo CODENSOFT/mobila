@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -10,24 +9,33 @@ type Product = {
   _id: string;
   nume: string;
   descriere: string;
+  descriere_ro?: string;
   pret: number;
   imagine: string;
   imagini?: string[];
   categorie?: string;
 };
 
-async function getProdusById(id: string): Promise<Product | null> {
-  const headersList = await headers();
-  const host = headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") ?? "http";
-  const apiBaseUrl = "https://mobila-production.up.railway.app";
+type RawProduct = Omit<Product, "descriere"> & {
+  descriere?: string;
+};
 
-  const response = await fetch(
-    `${apiBaseUrl ?? `${protocol}://${host}`}/api/produse?id=${encodeURIComponent(id)}`,
-    { cache: "no-store" }
-  );
-  if (!response.ok) return null;
-  return (await response.json()) as Product;
+async function getProdusById(id: string): Promise<Product | null> {
+  try {
+    const apiBaseUrl = "https://mobila-production.up.railway.app";
+    const response = await fetch(`${apiBaseUrl}/api/produse?id=${encodeURIComponent(id)}`, {
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const produs = (await response.json()) as RawProduct;
+    return {
+      ...produs,
+      descriere: produs.descriere ?? produs.descriere_ro ?? "",
+    };
+  } catch (error) {
+    console.error("[[lang]/produse/[id]] error", { id, error });
+    return null;
+  }
 }
 
 export async function generateStaticParams() {
