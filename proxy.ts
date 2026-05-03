@@ -4,23 +4,35 @@ import type { NextRequest } from "next/server";
 const LOCALES = ["ro", "ru"];
 const DEFAULT_LOCALE = "ro";
 
-function detectLocale(request: NextRequest): string {
-  // "Limba de bază" trebuie să fie mereu româna.
-  // Dacă userul alege manual `/${lang}`, acel slug rămâne sursa de adevăr.
-  return DEFAULT_LOCALE;
-}
-
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Admin panel auth — protect /panou-mobila-2026 (except /login)
+  if (pathname.startsWith("/panou-mobila-2026")) {
+    if (
+      pathname === "/panou-mobila-2026/login" ||
+      pathname.startsWith("/panou-mobila-2026/login/")
+    ) {
+      return NextResponse.next();
+    }
+    const expected = process.env.ADMIN_PASSWORD;
+    if (!expected) {
+      return NextResponse.redirect(new URL("/panou-mobila-2026/login", request.url));
+    }
+    const cookie = request.cookies.get("admin_auth")?.value;
+    if (cookie !== expected) {
+      return NextResponse.redirect(new URL("/panou-mobila-2026/login", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Locale redirect — send paths without /ro or /ru prefix to /ro
   const hasLocale = LOCALES.some(
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
   );
+  if (hasLocale) return NextResponse.next();
 
-  if (hasLocale) return;
-
-  const locale = detectLocale(request);
-  request.nextUrl.pathname = `/${locale}${pathname}`;
+  request.nextUrl.pathname = `/${DEFAULT_LOCALE}${pathname}`;
   return NextResponse.redirect(request.nextUrl);
 }
 

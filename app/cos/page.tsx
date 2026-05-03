@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
-import { useMemo, useState } from "react";
 
 import CartItem from "@/src/components/cart/CartItem";
 import { useCart } from "@/src/context/CartContext";
@@ -17,25 +16,9 @@ export default function CartPage() {
   const { items, totalPret, actualizeazaCantitate, scoateDinCos, golesteCosul } = useCart();
   const { lang, dict } = useLang();
   const t = dict.cos;
-  const [codReducere, setCodReducere] = useState("");
-  const [discountPercent, setDiscountPercent] = useState(0);
-
   const subtotal = totalPret;
   const transport = transportCost(subtotal);
-  const discountValue = useMemo(
-    () => Math.round((subtotal * discountPercent) / 100),
-    [subtotal, discountPercent]
-  );
-  const finalTotal = subtotal + transport - discountValue;
-
-  const aplicaReducerea = () => {
-    const code = codReducere.trim().toUpperCase();
-    if (code === "LAB10") {
-      setDiscountPercent(10);
-      return;
-    }
-    setDiscountPercent(0);
-  };
+  const finalTotal = subtotal + transport;
 
   if (items.length === 0) {
     return (
@@ -104,28 +87,6 @@ export default function CartPage() {
                     ? t.free
                     : `${formatPriceInteger(transport, lang)} MDL`}
                 </span>
-              </div>
-              {discountPercent > 0 ? (
-                <div className="flex items-center justify-between text-green-700">
-                  <span>{t.discount} ({discountPercent}%)</span>
-                  <span>-{formatPriceInteger(discountValue, lang)} MDL</span>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="mt-4 rounded-lg border border-gray-200 p-3">
-              <label htmlFor="coupon" className="text-xs uppercase tracking-wide text-gray-500">
-                {t.discountCode}
-              </label>
-              <div className="mt-2 flex gap-2">
-                <input id="coupon" value={codReducere}
-                  onChange={(event) => setCodReducere(event.target.value)}
-                  className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none ring-0 focus:border-gray-400"
-                  placeholder="ex: LAB10" />
-                <button type="button" onClick={aplicaReducerea}
-                  className="h-10 rounded-md border border-gray-300 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
-                  {t.apply}
-                </button>
               </div>
             </div>
 

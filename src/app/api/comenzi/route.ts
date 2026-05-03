@@ -1,4 +1,4 @@
-import { isValidObjectId, Types } from "mongoose";
+import mongoose, { isValidObjectId, Types } from "mongoose";
 
 import { buildCorsHeaders } from "@/src/lib/cors";
 import { connectDB } from "@/src/lib/db";
@@ -64,74 +64,218 @@ type ChatBotOrderBody = {
   data_creare?: string | Date;
 };
 
-function normalizeOrderBody(body: LooseOrderBody): CreateOrderBody | null {
-  if (!Array.isArray(body.produse) || body.produse.length === 0) return null;
+function trimStr(v: unknown): string {
+  return v == null ? "" : String(v).trim();
+}
 
-  const hasClientObject = !!body.client;
-  const client = hasClientObject
-    ? body.client
-    : {
-        prenume: "",
-        nume: body.nume ?? "",
-        email: body.email ?? "no-reply@labirint.local",
-        telefon: body.telefon ?? "",
-        strada: body.adresa ?? "",
-        numar: "-",
-        oras: body.oras ?? "Chișinău",
-        judet: body.judet ?? "Chișinău",
-        codPostal: body.codPostal ?? "MD-2001",
-      };
+const MD_PHONE_RE = /^(\+373|0)[0-9]{8}$/;
+const MD_POSTAL_RE = /^(\d{4}|MD-\d{4})$/i;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!client || !client.nume || !client.telefon) {
-    return null;
+/** Validare client pentru payload-ul din checkout (obiect `client` nested). */
+function validateStructuredClient(c: {
+  prenume: string;
+  nume: string;
+  email: string;
+  telefon: string;
+  strada: string;
+  numar: string;
+  oras: string;
+  judet: string;
+  codPostal: string;
+}): string | null {
+  const missing: string[] = [];
+
+  if (c.prenume.length < 2) {
+    missing.push("prenumele (minim 2 caractere)");
+  }
+  if (c.nume.length < 2) {
+    missing.push("numele (minim 2 caractere)");
+  }
+  if (!EMAIL_RE.test(c.email)) {
+    missing.push("o adresă de email validă");
+  }
+  if (!MD_PHONE_RE.test(c.telefon)) {
+    missing.push("telefonul în format moldovenesc (ex: 079123456 sau +37379123456)");
   }
 
-  const hasNumericTotal = typeof body.total === "number" && Number.isFinite(body.total);
-  if (!hasNumericTotal || (body.total ?? 0) <= 0) return null;
+  const addrParts = [c.strada, c.numar, c.oras, c.judet, c.codPostal];
+  const anyAddr = addrParts.some((p) => p.length > 0);
+  const allAddr = addrParts.every((p) => p.length > 0);
 
-  const subtotal = typeof body.subtotal === "number" && Number.isFinite(body.subtotal)
-    ? body.subtotal
-    : body.total ?? 0;
+  if (anyAddr && !allAddr) {
+    return "Adresa: completează strada, numărul, orașul, raionul și codul poștal, sau lasă toate câmpurile de adresă goale.";
+  }
+
+  if (allAddr) {
+    if (c.strada.length < 3) {
+      missing.push("strada (minim 3 caractere)");
+    }
+    if (!c.numar.length) {
+      missing.push("numărul străzii");
+    }
+    if (c.oras.length < 2) {
+      missing.push("orașul");
+    }
+    if (c.judet.length < 2) {
+      missing.push("raionul / municipiul");
+    }
+    if (!MD_POSTAL_RE.test(c.codPostal)) {
+      missing.push("codul poștal (ex: MD-2001)");
+    }
+  }
+
+  if (missing.length) {
+    return `Date incomplete sau invalide. Verifică: ${missing.join(", ")}.`;
+  }
+  return null;
+}
+
+type NormalizeOrderResult =
+  | { ok: true; body: CreateOrderBody }
+  | { ok: false; message: string };
+
+function normalizeOrderBody(body: LooseOrderBody): NormalizeOrderResult {
+  if (!Array.isArray(body.produse) || body.produse.length === 0) {
+    return { ok: false, message: "Comanda nu conține produse (coșul este gol sau datele lipsesc)." };
+  }
+
+  const hasClientObject = !!body.client && typeof body.client === "object";
+
+  let client: CreateOrderBody["client"];
+
+  if (hasClientObject) {
+    const raw = body.client as Record<string, unknown>;
+    client = {
+      prenume: trimStr(raw.prenume),
+      nume: trimStr(raw.nume),
+      email: trimStr(raw.email),
+      telefon: trimStr(raw.telefon).replace(/\s/g, ""),
+      strada: trimStr(raw.strada),
+      numar: trimStr(raw.numar),
+      oras: trimStr(raw.oras),
+      judet: trimStr(raw.judet),
+      codPostal: trimStr(raw.codPostal),
+    };
+    const clientErr = validateStructuredClient(client);
+    if (clientErr) {
+      return { ok: false, message: clientErr };
+    }
+  } else {
+    const nume = trimStr(body.nume);
+    const telefon = trimStr(body.telefon);
+    if (!nume || !telefon) {
+      return {
+        ok: false,
+        message: "Pentru această comandă sunt obligatorii numele și numărul de telefon.",
+      };
+    }
+    client = {
+      prenume: "",
+      nume,
+      email: trimStr(body.email) || "no-reply@labirint.local",
+      telefon,
+      strada: trimStr(body.adresa),
+      numar: "-",
+      oras: trimStr(body.oras) || "Chișinău",
+      judet: trimStr(body.judet) || "Chișinău",
+      codPostal: trimStr(body.codPostal) || "MD-2001",
+    };
+  }
+
+  const totalRaw = body.total;
+  const total =
+    typeof totalRaw === "number" && Number.isFinite(totalRaw)
+      ? totalRaw
+      : Number(totalRaw);
+  if (!Number.isFinite(total) || total <= 0) {
+    return {
+      ok: false,
+      message: "Totalul comenzii lipsește sau nu este valid (trebuie să fie mai mare ca 0).",
+    };
+  }
+
+  const subRaw = body.subtotal;
+  const subtotal =
+    typeof subRaw === "number" && Number.isFinite(subRaw)
+      ? subRaw
+      : Number.isFinite(Number(subRaw))
+        ? Number(subRaw)
+        : total;
+  const transportRaw = body.transport;
   const transport =
-    typeof body.transport === "number" && Number.isFinite(body.transport) ? body.transport : 0;
+    typeof transportRaw === "number" && Number.isFinite(transportRaw)
+      ? transportRaw
+      : Number.isFinite(Number(transportRaw))
+        ? Number(transportRaw)
+        : 0;
+  const reducereRaw = body.reducere;
   const reducere =
-    typeof body.reducere === "number" && Number.isFinite(body.reducere) ? body.reducere : 0;
-  const total = body.total;
+    typeof reducereRaw === "number" && Number.isFinite(reducereRaw)
+      ? reducereRaw
+      : Number.isFinite(Number(reducereRaw))
+        ? Number(reducereRaw)
+        : 0;
+
+  const metodaPlata = body.metodaPlata ?? "ramburs";
+  if (!["card", "ramburs", "transfer"].includes(metodaPlata)) {
+    return { ok: false, message: "Metoda de plată selectată nu este validă." };
+  }
+  const metodaLivrare = body.metodaLivrare ?? "standard";
+  if (!["standard", "express", "showroom"].includes(metodaLivrare)) {
+    return { ok: false, message: "Metoda de livrare selectată nu este validă." };
+  }
 
   const normalizedProducts = body.produse
-    .filter(
-      (p) =>
-        typeof p === "object" &&
-        p !== null &&
-        typeof p.pret === "number" &&
-        Number.isFinite(p.pret) &&
-        p.pret >= 0 &&
-        typeof p.cantitate === "number" &&
-        Number.isFinite(p.cantitate) &&
-        p.cantitate > 0
-    )
-    .map((p) => ({
-      id: p.id ?? "",
-      nume: p.nume ?? "Produs",
-      imagine: p.imagine ?? "/images/categories/dormitor.png",
-      pret: p.pret,
-      cantitate: Math.trunc(p.cantitate),
-      slug: p.slug ?? "",
-    }));
+    .filter((p) => {
+      if (typeof p !== "object" || p === null) return false;
+      const pretNum =
+        typeof p.pret === "number" && Number.isFinite(p.pret) ? p.pret : Number(p.pret);
+      const qtyNum =
+        typeof p.cantitate === "number" && Number.isFinite(p.cantitate)
+          ? p.cantitate
+          : Number(p.cantitate);
+      return Number.isFinite(pretNum) && pretNum >= 0 && Number.isFinite(qtyNum) && qtyNum > 0;
+    })
+    .map((p) => {
+      const pretNum =
+        typeof p.pret === "number" && Number.isFinite(p.pret) ? p.pret : Number(p.pret);
+      const qtyNum =
+        typeof p.cantitate === "number" && Number.isFinite(p.cantitate)
+          ? p.cantitate
+          : Number(p.cantitate);
+      return {
+        id: p.id ?? "",
+        nume: p.nume ?? "Produs",
+        imagine: p.imagine ?? "/images/categories/dormitor.png",
+        pret: Math.max(0, Math.round(pretNum)),
+        cantitate: Math.trunc(qtyNum),
+        slug: p.slug ?? "",
+      };
+    });
 
-  if (normalizedProducts.length === 0) return null;
+  if (normalizedProducts.length === 0) {
+    return {
+      ok: false,
+      message:
+        "Niciun produs valid în comandă. Verifică că fiecare articol are preț și cantitate numerice (cantitatea minim 1).",
+    };
+  }
 
   return {
-    client,
-    produse: normalizedProducts,
-    subtotal,
-    transport,
-    reducere,
-    total,
-    codReducere: body.codReducere ?? "",
-    metodaPlata: body.metodaPlata ?? "ramburs",
-    metodaLivrare: body.metodaLivrare ?? "standard",
-    nota: body.nota ?? "",
+    ok: true,
+    body: {
+      client,
+      produse: normalizedProducts,
+      subtotal,
+      transport,
+      reducere,
+      total,
+      codReducere: body.codReducere ?? "",
+      metodaPlata: metodaPlata as CreateOrderBody["metodaPlata"],
+      metodaLivrare: metodaLivrare as CreateOrderBody["metodaLivrare"],
+      nota: typeof body.nota === "string" ? body.nota : "",
+    },
   };
 }
 
@@ -368,14 +512,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = normalizeOrderBody(rawBody as LooseOrderBody);
-
-    if (!body || !body.client || !Array.isArray(body.produse) || body.produse.length === 0) {
+    const normalized = normalizeOrderBody(rawBody as LooseOrderBody);
+    if (normalized.ok === false) {
       return Response.json(
-        { message: "Date incomplete" },
+        { message: normalized.message },
         { status: 400, headers: buildCorsHeaders(request) }
       );
     }
+    const body = normalized.body;
 
     const productIds = body.produse
       .map((p) => p.id)
@@ -476,13 +620,30 @@ export async function POST(request: Request) {
       { status: 201, headers: buildCorsHeaders(request) }
     );
   } catch (error) {
+    if (error instanceof mongoose.Error.ValidationError) {
+      const issues = Object.values(error.errors).map((e) => e.message);
+      return Response.json(
+        {
+          message:
+            issues.length > 0
+              ? issues.join(" ")
+              : "Unele date nu sunt valide. Verifică formularul și încearcă din nou.",
+          issues,
+        },
+        { status: 400, headers: buildCorsHeaders(request) }
+      );
+    }
+
     const details = getErrorDetails(error);
     console.error("POST /api/comenzi error:", details.message);
     if (details.stack) {
       console.error(details.stack);
     }
     return Response.json(
-      { message: "Eroare server", error: details.message },
+      {
+        message: "Eroare server. Te rugăm să încerci din nou sau să ne contactezi.",
+        error: details.message,
+      },
       { status: 500, headers: buildCorsHeaders(request) }
     );
   }

@@ -45,6 +45,7 @@ export async function POST(request: Request) {
       nume,
       telefon,
       mesaj,
+      sursa: "panou_admin",
       status: allowedStatuses.includes(status) ? status : "new",
     });
     return Response.json(client, { status: 201, headers: corsHeaders });

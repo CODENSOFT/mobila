@@ -94,7 +94,7 @@ export function useOrders(initialFilters?: Partial<OrdersFilters>) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(toApiUrl(`/api/admin/comenzi?${queryString}`), {
+      const response = await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi?${queryString}`), {
         cache: "no-store",
       });
       if (!response.ok) throw new Error("Nu s-au putut încărca comenzile.");
@@ -136,7 +136,7 @@ export function useOrders(initialFilters?: Partial<OrdersFilters>) {
         awb?: string;
       }
     ) => {
-      const response = await fetch(toApiUrl(`/api/admin/comenzi/${id}`), {
+      const response = await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi/${id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -154,7 +154,7 @@ export function useOrders(initialFilters?: Partial<OrdersFilters>) {
 
   const deleteOrder = useCallback(
     async (id: string) => {
-      const response = await fetch(toApiUrl(`/api/admin/comenzi/${id}`), { method: "DELETE" });
+      const response = await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi/${id}`), { method: "DELETE" });
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as
           | { message?: string }
@@ -170,7 +170,7 @@ export function useOrders(initialFilters?: Partial<OrdersFilters>) {
     async (format: "csv" | "excel") => {
       const params = new URLSearchParams(queryString);
       params.set("format", format);
-      const response = await fetch(toApiUrl(`/api/admin/comenzi/export?${params.toString()}`));
+      const response = await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi/export?${params.toString()}`));
       if (!response.ok) {
         throw new Error("Exportul a eșuat.");
       }

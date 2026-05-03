@@ -10,7 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import DeliveryAddressForm from "@/src/components/checkout/DeliveryAddressForm";
 import { useLang } from "@/src/context/LangContext";
 import DeliveryMethodSelect from "@/src/components/checkout/DeliveryMethodSelect";
-import DiscountCodeInput from "@/src/components/checkout/DiscountCodeInput";
 import OrderSummaryPanel from "@/src/components/checkout/OrderSummaryPanel";
 import PersonalDataForm from "@/src/components/checkout/PersonalDataForm";
 import { useCart } from "@/src/context/CartContext";
@@ -28,8 +27,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [discountCode, setDiscountCode] = useState("");
   const [expressPrice, setExpressPrice] = useState(50);
 
   const form = useForm<CheckoutFormValues>({
@@ -37,19 +34,37 @@ export default function CheckoutPage() {
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
+      prenume: "",
+      nume: "",
+      email: "",
+      telefon: "",
+      strada: "",
+      numar: "",
+      bloc: "",
+      scara: "",
+      apartament: "",
+      oras: "",
+      raion: "",
+      codPostal: "",
       metodaLivrare: "standard",
       metodaPlata: "ramburs",
       gdprAccept: false,
       newsletter: false,
-      codReducere: "",
       nota: "",
+      cardNumber: "",
+      cardTitular: "",
+      cardExp: "",
+      cardCvv: "",
     },
   });
 
   const metodaLivrare = form.watch("metodaLivrare");
   const transport = metodaLivrare === "express" ? expressPrice : 0;
-  const discountValue = Math.round((totalPret * discountPercent) / 100);
-  const total = totalPret + transport - discountValue;
+  const discountValue = 0;
+  const subtotalSafe = Number.isFinite(totalPret)
+    ? totalPret
+    : items.reduce((sum, item) => sum + Math.max(0, Number(item.pret) || 0) * item.cantitate, 0);
+  const total = Math.max(0, Math.round(subtotalSafe + transport));
 
   useEffect(() => {
     if (items.length === 0) {
@@ -107,12 +122,16 @@ export default function CheckoutPage() {
             judet: values.raion,
             codPostal: values.codPostal,
           },
-          produse: items,
-          subtotal: totalPret,
+          produse: items.map((item) => ({
+            ...item,
+            pret: Math.max(0, Math.round(Number(item.pret) || 0)),
+            cantitate: item.cantitate,
+          })),
+          subtotal: subtotalSafe,
           transport,
           reducere: discountValue,
           total,
-          codReducere: discountCode || values.codReducere,
+          codReducere: "",
           metodaPlata: values.metodaPlata,
           metodaLivrare: values.metodaLivrare,
           nota: values.nota,
@@ -120,11 +139,30 @@ export default function CheckoutPage() {
       });
 
       const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; id?: string; message?: string }
+        | { ok?: boolean; id?: string; message?: string; issues?: unknown[] }
         | null;
 
+      if (response.status === 500) {
+        console.error("POST /api/comenzi returned 500", {
+          url: toApiUrl("/api/comenzi"),
+          status: response.status,
+          statusText: response.statusText,
+          response: data,
+        });
+      }
+
       if (!response.ok || !data?.id) {
-        throw new Error(data?.message ?? t.error);
+        const msg = typeof data?.message === "string" ? data.message.trim() : "";
+        const issues =
+          Array.isArray(data?.issues)
+            ? (data.issues as unknown[])
+                .filter((x): x is string => typeof x === "string")
+                .map((x) => x.trim())
+                .filter(Boolean)
+            : [];
+        const extra = issues.filter((line) => !msg.includes(line)).join(" — ");
+        const combined = [msg, extra].filter(Boolean).join(" — ").trim() || t.error;
+        throw new Error(combined);
       }
 
       golesteCosul();
@@ -177,10 +215,9 @@ export default function CheckoutPage() {
             <div className="mt-3">
               <OrderSummaryPanel
                 items={items}
-                subtotal={totalPret}
+                subtotal={subtotalSafe}
                 transport={transport}
                 discountValue={discountValue}
-                discountCode={discountCode}
                 total={total}
               />
             </div>
@@ -193,12 +230,6 @@ export default function CheckoutPage() {
               <PersonalDataForm />
               <DeliveryAddressForm />
               <DeliveryMethodSelect expressPrice={expressPrice} />
-              <DiscountCodeInput
-                onApplied={({ code, procent }) => {
-                  setDiscountCode(code);
-                  setDiscountPercent(procent);
-                }}
-              />
 
               <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <h2 className="mb-3 text-lg font-semibold text-[#1a1a1a]">{t.note}</h2>
@@ -235,7 +266,7 @@ export default function CheckoutPage() {
 
               <button
                 type="submit"
-                disabled={loading || !form.formState.isValid}
+                disabled={loading}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1a1a1a] px-6 py-3 text-sm font-medium text-white hover:bg-[#333] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
@@ -258,10 +289,9 @@ export default function CheckoutPage() {
           <aside className="hidden lg:col-span-5 lg:block">
             <OrderSummaryPanel
               items={items}
-              subtotal={totalPret}
+              subtotal={subtotalSafe}
               transport={transport}
               discountValue={discountValue}
-              discountCode={discountCode}
               total={total}
             />
           </aside>

@@ -13,39 +13,6 @@ const BASE_CATEGORIES = [
   { key: "Mese" as const, image: "/images/categories/mese.png", size: "small" },
 ];
 
-const categories = [
-  {
-    title: "Dormitor",
-    subtitle: "Relaxare & Confort",
-    image: "/images/categories/dormitor.png",
-    size: "large"
-  },
-  {
-    title: "Bucatarii",
-    subtitle: "Functionalitate & Stil",
-    image: "/images/categories/bucatarii.png",
-    size: "medium"
-  },
-  {
-    title: "Dulapuri",
-    subtitle: "Spatiu & Organizare",
-    image: "/images/categories/dulapuri.png",
-    size: "medium"
-  },
-  {
-    title: "Scaune",
-    subtitle: "Confort & Design",
-    image: "/images/categories/scaune.png",
-    size: "small"
-  },
-  {
-    title: "Mese",
-    subtitle: "Calitate & Utilitate",
-    image: "/images/categories/mese.png",
-    size: "small"
-  },
-];
-
 const DEFAULT_T: CatDict = {
   heading: "Descoperă mai mult pentru tine",
   explore: "Explorează colecția",
@@ -64,12 +31,20 @@ const DEFAULT_T: CatDict = {
   },
 };
 
-export default function CategoriesSection({ t = DEFAULT_T }: { t?: CatDict }) {
+export default function CategoriesSection({
+  t = DEFAULT_T,
+  productsBasePath = "/produse",
+}: {
+  t?: CatDict;
+  productsBasePath?: string;
+}) {
   const cats = BASE_CATEGORIES.map((c) => ({
     ...c,
     title: t.items[c.key],
     subtitle: t.subtitles[c.key],
   }));
+  const categoryHref = (category: string) =>
+    `${productsBasePath}?categorie=${encodeURIComponent(category)}`;
 
   return (
     <section className="relative overflow-hidden bg-[#fafaf9] py-24 lg:py-32">
@@ -87,7 +62,7 @@ export default function CategoriesSection({ t = DEFAULT_T }: { t?: CatDict }) {
 
           {/* Featured - Dormitor */}
           <Card className="group relative col-span-12 lg:col-span-7 lg:row-span-2 h-[500px] lg:h-[700px] overflow-hidden rounded-sm bg-[#1c1917]">
-            <Link href={`/produse?categorie=Dormitor`} aria-label={cats[0].title} className="absolute inset-0 z-20" />
+            <Link href={categoryHref("Dormitor")} aria-label={cats[0].title} className="absolute inset-0 z-20" />
             <Image src={cats[0].image} alt={cats[0].title} fill className="object-cover opacity-90 transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100" sizes="(max-width: 1024px) 100vw, 70vw" />
             <div className="absolute inset-0 bg-linear-to-t from-[#0c0c0c]/90 via-[#0c0c0c]/20 to-transparent" />
             <div className="absolute left-6 top-6 lg:left-10 lg:top-10">
@@ -113,7 +88,7 @@ export default function CategoriesSection({ t = DEFAULT_T }: { t?: CatDict }) {
 
           {/* Bucatarii */}
           <Card className="group relative col-span-12 lg:col-span-5 h-[300px] lg:h-[340px] overflow-hidden rounded-sm bg-[#1c1917]">
-            <Link href={`/produse?categorie=Bucatarii`} aria-label={cats[1].title} className="absolute inset-0 z-20" />
+            <Link href={categoryHref("Bucatarii")} aria-label={cats[1].title} className="absolute inset-0 z-20" />
             <Image src={cats[1].image} alt={cats[1].title} fill className="object-cover opacity-90 transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100" sizes="(max-width: 1024px) 100vw, 42vw" />
             <div className="absolute inset-0 bg-linear-to-t from-[#0c0c0c]/80 via-[#0c0c0c]/10 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
@@ -128,7 +103,7 @@ export default function CategoriesSection({ t = DEFAULT_T }: { t?: CatDict }) {
 
           {/* Dulapuri */}
           <Card className="group relative col-span-12 lg:col-span-5 h-[300px] lg:h-[340px] overflow-hidden rounded-sm bg-[#1c1917]">
-            <Link href={`/produse?categorie=Dulapuri`} aria-label={cats[2].title} className="absolute inset-0 z-20" />
+            <Link href={categoryHref("Dulapuri")} aria-label={cats[2].title} className="absolute inset-0 z-20" />
             <Image src={cats[2].image} alt={cats[2].title} fill className="object-cover opacity-90 transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100" sizes="(max-width: 1024px) 100vw, 42vw" />
             <div className="absolute inset-0 bg-linear-to-t from-[#0c0c0c]/80 via-[#0c0c0c]/10 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
@@ -143,7 +118,7 @@ export default function CategoriesSection({ t = DEFAULT_T }: { t?: CatDict }) {
 
           {/* Scaune */}
           <Card className="group relative col-span-6 lg:col-span-4 h-[260px] lg:h-[300px] overflow-hidden rounded-sm bg-[#1c1917]">
-            <Link href={`/produse?categorie=Scaune`} aria-label={cats[3].title} className="absolute inset-0 z-20" />
+            <Link href={categoryHref("Scaune")} aria-label={cats[3].title} className="absolute inset-0 z-20" />
             <Image src={cats[3].image} alt={cats[3].title} fill className="object-cover opacity-90 transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100" sizes="(max-width: 1024px) 50vw, 33vw" />
             <div className="absolute inset-0 bg-linear-to-t from-[#0c0c0c]/80 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-6">
@@ -157,7 +132,7 @@ export default function CategoriesSection({ t = DEFAULT_T }: { t?: CatDict }) {
 
           {/* Mese */}
           <Card className="group relative col-span-6 lg:col-span-4 h-[260px] lg:h-[300px] overflow-hidden rounded-sm bg-[#1c1917]">
-            <Link href={`/produse?categorie=Mese`} aria-label={cats[4].title} className="absolute inset-0 z-20" />
+            <Link href={categoryHref("Mese")} aria-label={cats[4].title} className="absolute inset-0 z-20" />
             <Image src={cats[4].image} alt={cats[4].title} fill className="object-cover opacity-90 transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100" sizes="(max-width: 1024px) 50vw, 33vw" />
             <div className="absolute inset-0 bg-linear-to-t from-[#0c0c0c]/80 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-6">
@@ -171,7 +146,7 @@ export default function CategoriesSection({ t = DEFAULT_T }: { t?: CatDict }) {
 
           {/* CTA Card */}
           <Card className="group relative col-span-12 lg:col-span-4 h-[260px] lg:h-[300px] overflow-hidden rounded-sm bg-[#1c1917] flex flex-col justify-between p-6 lg:p-8 cursor-pointer hover:bg-[#1c1917]/95 transition-colors duration-500">
-            <Link href="/produse" aria-label={t.viewAll} className="absolute inset-0 z-20" />
+            <Link href={productsBasePath} aria-label={t.viewAll} className="absolute inset-0 z-20" />
             <div>
               <div className="text-[11px] uppercase tracking-[0.2em] text-[#66a925] mb-2">{t.new}</div>
               <h3 className="text-2xl font-light text-white mb-2">{t.viewAll}</h3>

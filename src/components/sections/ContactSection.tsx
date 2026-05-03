@@ -67,16 +67,14 @@ export default function ContactSection({ showForm = false, form }: ContactSectio
                 {t.social}
               </h3>
               <div className="flex items-center gap-4">
-                {[
-                  { name: "Facebook", href: "https://facebook.com/labirint" },
-                  { name: "Instagram", href: "https://instagram.com/labirint" },
-                  { name: "Telegram", href: "https://t.me/labirint" },
-                ].map((s) => (
-                  <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer"
-                    className="px-4 py-2 border border-[#e7e5e4] text-sm text-[#57534e] hover:border-[#1c1917] hover:text-[#1c1917] transition-colors">
-                    {s.name}
-                  </a>
-                ))}
+                <a
+                  href="https://www.facebook.com/share/1DRxEK2czY/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 border border-[#e7e5e4] text-sm text-[#57534e] hover:border-[#1c1917] hover:text-[#1c1917] transition-colors"
+                >
+                  Facebook
+                </a>
               </div>
             </div>
           </div>

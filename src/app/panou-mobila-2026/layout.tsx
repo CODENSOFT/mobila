@@ -2,20 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package2, ReceiptText } from "lucide-react";
+import { FileText, LayoutDashboard, Package2, ReceiptText } from "lucide-react";
 
-type AdminLayoutProps = {
+type PanouLayoutProps = {
   children: React.ReactNode;
 };
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin", label: "Produse", icon: Package2 },
-  { href: "/admin/comenzi", label: "Comenzi", icon: ReceiptText },
+  { href: "/panou-mobila-2026/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/panou-mobila-2026", label: "Produse", icon: Package2 },
+  { href: "/panou-mobila-2026/comenzi", label: "Comenzi", icon: ReceiptText },
+  {
+    href: "/panou-mobila-2026/solicitari-oferte",
+    label: "Solicitări oferte",
+    icon: FileText,
+  },
 ];
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function PanouMobilaLayout({ children }: PanouLayoutProps) {
   const pathname = usePathname();
+
+  if (pathname?.startsWith("/panou-mobila-2026/login")) {
+    return <>{children}</>;
+  }
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -41,7 +50,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {navItems.map((item) => {
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/admin" && pathname.startsWith(item.href));
+                  (item.href !== "/panou-mobila-2026" && pathname.startsWith(item.href));
                 const Icon = item.icon;
                 return (
                   <Link

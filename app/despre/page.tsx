@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import Button from "../../src/components/ui/Button";
 import FadeInOnScroll from "../../src/components/ui/FadeInOnScroll";
 import AboutSnippet from "../../src/components/sections/AboutSnippet";
 
@@ -269,7 +268,7 @@ export default function DesprePage() {
                 <div className="relative">
                   <div className="absolute left-[19px] top-0 h-full w-px bg-[#e7e5e4]" />
                   <div className="space-y-0">
-                    {timeline.map((item, i) => (
+                    {timeline.map((item) => (
                       <div key={item.year} className="relative flex gap-6 pb-10 last:pb-0">
                         <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e7e5e4] bg-[#f0ece6]">
                           <span className="text-[10px] font-semibold text-[#78716c]">{item.year.slice(-2)}</span>
@@ -313,8 +312,8 @@ export default function DesprePage() {
                 {/* Quote card */}
                 <div className="mt-8 border-l-2 border-[#a3c585] bg-white/50 p-8 backdrop-blur-sm">
                   <p className="text-lg font-light italic leading-relaxed text-[#1c1917]">
-                    "Fiecare piesă de mobilier pe care o livrăm poartă semnătura noastră — calitate
-                    fără compromisuri."
+                    &ldquo;Fiecare piesă de mobilier pe care o livrăm poartă semnătura noastră — calitate
+                    fără compromisuri.&rdquo;
                   </p>
                   <div className="mt-4 flex items-center gap-3">
                     <div className="h-px w-8 bg-[#1c1917]/20" />
@@ -474,7 +473,7 @@ export default function DesprePage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-              {services.map((s, i) => (
+              {services.map((s) => (
                 <div
                   key={s.title}
                   className="group relative flex flex-col border border-[#e7e5e4] bg-white p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] lg:p-10"
@@ -621,7 +620,7 @@ export default function DesprePage() {
               <div className="relative mt-10 flex flex-col gap-4 sm:flex-row lg:mt-0 lg:justify-end">
                 <Link
                   href="/produse"
-                  className="inline-flex items-center justify-center gap-3 bg-white px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917] transition-all hover:bg-[#a3c585] hover:text-white"
+                  className="inline-flex items-center justify-center gap-3 bg-[#a3c585] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white"
                 >
                   Vezi produsele
                 </Link>

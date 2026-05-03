@@ -5,15 +5,15 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import type { ProductCategory } from "../../../../src/constants/categories";
-import { toApiUrl } from "../../../../src/lib/api";
-import type { Product } from "../../../../src/types/product";
+import type { ProductCategory } from "@/src/constants/categories";
+import { toApiUrl } from "@/src/lib/api";
+import type { Product } from "@/src/types/product";
 
-const ProductForm = dynamic(() => import("../../../../src/components/admin/ProductForm"), {
+const ProductForm = dynamic(() => import("@/src/components/admin/ProductForm"), {
   ssr: false,
 });
 
-export default function AdminEditProductPage() {
+export default function PanouEditProductPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
@@ -74,7 +74,7 @@ export default function AdminEditProductPage() {
     }
 
     alert("Produs actualizat cu succes.");
-    router.push("/admin");
+    router.push("/panou-mobila-2026");
   };
 
   return (
@@ -82,7 +82,7 @@ export default function AdminEditProductPage() {
       <header className="flex items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Editeaza produs</h1>
         <Link
-          href="/admin"
+          href="/panou-mobila-2026"
           className="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
         >
           Inapoi

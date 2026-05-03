@@ -135,7 +135,7 @@ export async function GET(request: Request) {
       { headers: buildCorsHeaders(request) }
     );
   } catch (error) {
-    console.error("GET /api/admin/comenzi failed", error);
+    console.error("GET /api/panou-mobila-2026/comenzi failed", error);
     return NextResponse.json(
       { message: "Nu s-au putut încărca comenzile." },
       { status: 500, headers: buildCorsHeaders(request) }

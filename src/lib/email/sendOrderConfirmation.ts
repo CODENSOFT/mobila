@@ -54,6 +54,16 @@ export async function sendOrderConfirmation(payload: OrderEmailPayload) {
     )
     .join("");
 
+  const addressLine = (() => {
+    const parts = [
+      `${payload.client.strada} ${payload.client.numar}`.trim(),
+      payload.client.oras,
+      payload.client.judet,
+      payload.client.codPostal,
+    ].filter((p) => typeof p === "string" && p.trim().length > 0);
+    return parts.length > 0 ? parts.join(", ") : "Necompletată (clientul nu a indicat adresă)";
+  })();
+
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;">
       <h2>Comanda ${payload.orderNumber} confirmată ✓</h2>
@@ -65,7 +75,7 @@ export async function sendOrderConfirmation(payload: OrderEmailPayload) {
         <tbody>${productsHtml}</tbody>
       </table>
       <p style="margin-top:14px;"><strong>Total plătit:</strong> ${payload.total.toLocaleString()} MDL</p>
-      <p><strong>Adresă livrare:</strong> ${payload.client.strada} ${payload.client.numar}, ${payload.client.oras}, ${payload.client.judet}, ${payload.client.codPostal}</p>
+      <p><strong>Adresă livrare:</strong> ${addressLine}</p>
       <p><strong>Timp estimat:</strong> ${deliveryETA[payload.metodaLivrare]}</p>
       <p style="margin-top:20px;">
         <a href="https://labirint.example/contact" style="background:#1a1a1a;color:#fff;padding:10px 14px;border-radius:6px;text-decoration:none;">Contactează-ne</a>

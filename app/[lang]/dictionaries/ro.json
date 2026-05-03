@@ -263,6 +263,7 @@
     "firstName": "Prenume",
     "lastName": "Nume",
     "deliveryAddress": "Adresa de livrare",
+    "deliveryAddressHint": "Pentru livrare la adresă, completează toate câmpurile obligatorii. Pentru ridicare din showroom poți lăsa adresa goală.",
     "street": "Strada",
     "number": "Număr",
     "block": "Bloc",

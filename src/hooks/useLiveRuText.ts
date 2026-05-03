@@ -9,30 +9,34 @@ import { translateRoToRuCached } from "@/src/lib/liveRuTranslate";
  * Pentru română: returnează textul sursă.
  */
 export function useLiveRuText(romanian: string, lang: string): { text: string; loading: boolean } {
+  const isRu = lang === "ru";
   const [text, setText] = useState(romanian);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (lang !== "ru") {
-      setText(romanian);
-      setLoading(false);
-      return;
-    }
+    if (!isRu) return;
 
     let cancelled = false;
-    setLoading(true);
-    setText(romanian);
 
-    void translateRoToRuCached(romanian).then((ru) => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setLoading(true);
+      setText(romanian);
+      const ru = await translateRoToRuCached(romanian);
       if (cancelled) return;
       setText(ru ?? romanian);
       setLoading(false);
-    });
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [lang, romanian]);
+  }, [isRu, romanian]);
+
+  if (!isRu) {
+    return { text: romanian, loading: false };
+  }
 
   return { text, loading };
 }

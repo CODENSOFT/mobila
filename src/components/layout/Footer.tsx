@@ -50,17 +50,14 @@ export default function Footer() {
             </p>
 
             <div className="flex items-center gap-3 pt-2">
-              {["Facebook", "Instagram"].map((social) => (
-                <a
-                  key={social}
-                  href={`https://${social.toLowerCase()}.com/labirint`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 border border-white/10 text-xs text-white/60 hover:text-white hover:border-white/30 transition-all duration-300"
-                >
-                  {social}
-                </a>
-              ))}
+              <a
+                href="https://www.facebook.com/share/1DRxEK2czY/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 border border-white/10 text-xs text-white/60 hover:text-white hover:border-white/30 transition-all duration-300"
+              >
+                Facebook
+              </a>
             </div>
           </div>
 
@@ -119,11 +116,18 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center justify-center gap-2 md:flex-row">
             <p className="text-xs text-white/40">
-              © {new Date().getFullYear()} LABIRINT | SRL GASNASGRUP — {t.rights}
+              Created by{" "}
+              <a
+                href="https://codensoft.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/60 underline decoration-white/30 underline-offset-2 transition-colors hover:text-white"
+              >
+                Codensoft.md
+              </a>
             </p>
-            <div className="text-xs text-white/40">labirint.md</div>
           </div>
         </div>
       </div>

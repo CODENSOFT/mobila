@@ -4,17 +4,17 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Box, CircleDollarSign, Layers3 } from "lucide-react";
 
-import type { ProductCategory } from "../../src/constants/categories";
-import ConfirmModal from "../../src/components/admin/ConfirmModal";
-import ProductTable from "../../src/components/admin/ProductTable";
-import { toApiUrl } from "../../src/lib/api";
-import type { Product } from "../../src/types/product";
+import type { ProductCategory } from "@/src/constants/categories";
+import ConfirmModal from "@/src/components/admin/ConfirmModal";
+import ProductTable from "@/src/components/admin/ProductTable";
+import { toApiUrl } from "@/src/lib/api";
+import type { Product } from "@/src/types/product";
 
-const ProductForm = dynamic(() => import("../../src/components/admin/ProductForm"), {
+const ProductForm = dynamic(() => import("@/src/components/admin/ProductForm"), {
   ssr: false,
 });
 
-export default function AdminPage() {
+export default function PanouProdusePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);

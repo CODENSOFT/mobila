@@ -1,4 +1,4 @@
-import { Package, Clock3, Truck, Wallet } from "lucide-react";
+import { Package, Clock3, Truck } from "lucide-react";
 
 export default function OrderStatCards({
   stats,
@@ -29,16 +29,10 @@ export default function OrderStatCards({
       sub: "azi",
       icon: Truck,
     },
-    {
-      label: "Venituri",
-      value: `${stats.venituriLuna.toLocaleString()} MDL`,
-      sub: "luna aceasta",
-      icon: Wallet,
-    },
   ];
 
   return (
-    <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {cards.map((card) => {
         const Icon = card.icon;
         return (

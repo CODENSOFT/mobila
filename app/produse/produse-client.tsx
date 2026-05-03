@@ -8,7 +8,11 @@ import { useLiveRuText } from "@/src/hooks/useLiveRuText";
 import { useSearchParams } from "next/navigation";
 import { getSafeImageSrc } from "../../src/lib/image";
 import type { Product, ProductCategory } from "../../src/types/product";
-import { PRODUCT_CATEGORY_GROUPS } from "../../src/constants/categories";
+import {
+  PRODUCT_CATEGORY_GROUPS,
+  getCategoriesForBucatarieGroup,
+  getCategoriesForDormitorGroup,
+} from "../../src/constants/categories";
 
 type Category = "All" | ProductCategory;
 
@@ -20,10 +24,21 @@ const categories: Category[] = [
 const isKnownCategory = (value: string): value is ProductCategory =>
   categories.includes(value as Category) && value !== "All";
 
+/** Query values from home/footer cards vs keys stored on products / sidebar. */
+const CATEGORY_QUERY_ALIASES: Record<string, ProductCategory> = {
+  Dormitor: "Dormitoare",
+  Bucatarii: "Bucătării",
+};
+
 const normalizeCategory = (value?: string | null): Category => {
   if (!value) return "All";
-  return isKnownCategory(value) ? value : "All";
+  const trimmed = value.trim();
+  const resolved = CATEGORY_QUERY_ALIASES[trimmed] ?? trimmed;
+  return isKnownCategory(resolved) ? resolved : "All";
 };
+
+const DORMITOR_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForDormitorGroup());
+const BUCATARIE_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForBucatarieGroup());
 
 type SortKey = "featured" | "price-asc" | "price-desc";
 
@@ -187,7 +202,21 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     let list = produse;
 
     if (activeCategory !== "All") {
-      list = list.filter((produs) => produs.categorie === activeCategory);
+      if (activeCategory === "Dormitoare") {
+        list = list.filter(
+          (produs) =>
+            typeof produs.categorie === "string" &&
+            DORMITOR_CATEGORY_SET.has(produs.categorie as ProductCategory)
+        );
+      } else if (activeCategory === "Bucătării") {
+        list = list.filter(
+          (produs) =>
+            typeof produs.categorie === "string" &&
+            BUCATARIE_CATEGORY_SET.has(produs.categorie as ProductCategory)
+        );
+      } else {
+        list = list.filter((produs) => produs.categorie === activeCategory);
+      }
     }
 
     const q = query.trim().toLowerCase();

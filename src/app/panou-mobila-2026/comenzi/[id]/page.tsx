@@ -10,7 +10,7 @@ import type { AdminOrder } from "@/src/hooks/useOrders";
 import { getSafeImageSrc } from "@/src/lib/image";
 import { toApiUrl } from "@/src/lib/api";
 
-export default function AdminOrderDetailPage() {
+export default function PanouOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [comanda, setComanda] = useState<AdminOrder | null>(null);
   const [notaInterna, setNotaInterna] = useState("");
@@ -22,7 +22,7 @@ export default function AdminOrderDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(toApiUrl(`/api/admin/comenzi/${id}`), { cache: "no-store" });
+      const response = await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi/${id}`), { cache: "no-store" });
       if (!response.ok) throw new Error("Nu s-a putut încărca comanda.");
       const data = (await response.json()) as AdminOrder;
       setComanda(data);
@@ -162,7 +162,7 @@ export default function AdminOrderDetailPage() {
             <button
               type="button"
               onClick={async () => {
-                await fetch(toApiUrl(`/api/admin/comenzi/${comanda._id}`), {
+                await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi/${comanda._id}`), {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ notaInterna }),
@@ -180,7 +180,7 @@ export default function AdminOrderDetailPage() {
           <OrderDetailSidebar
             comanda={comanda}
             onUpdateStatus={async (payload) => {
-              await fetch(toApiUrl(`/api/admin/comenzi/${comanda._id}`), {
+              await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi/${comanda._id}`), {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -189,7 +189,7 @@ export default function AdminOrderDetailPage() {
             }}
             onCancel={async () => {
               if (!window.confirm("Sigur vrei să anulezi comanda?")) return;
-              await fetch(toApiUrl(`/api/admin/comenzi/${comanda._id}`), { method: "DELETE" });
+              await fetch(toApiUrl(`/api/panou-mobila-2026/comenzi/${comanda._id}`), { method: "DELETE" });
               await fetchOrder();
             }}
           />

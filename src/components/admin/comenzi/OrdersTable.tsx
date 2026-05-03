@@ -77,7 +77,7 @@ export default function OrdersTable({ comenzi, onChangeStatus, onDelete }: Props
                 <option value="anulata">Anulată</option>
               </select>
               <Link
-                href={`/admin/comenzi/${comanda._id}`}
+                href={`/panou-mobila-2026/comenzi/${comanda._id}`}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100"
                 title="Vezi detalii"
               >
@@ -170,7 +170,7 @@ export default function OrdersTable({ comenzi, onChangeStatus, onDelete }: Props
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
                     <Link
-                      href={`/admin/comenzi/${comanda._id}`}
+                      href={`/panou-mobila-2026/comenzi/${comanda._id}`}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100"
                       title="Vezi detalii"
                     >

@@ -123,7 +123,7 @@ export default function ProductTable({
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                       <Link
-                        href={`/admin/edit/${product._id}`}
+                        href={`/panou-mobila-2026/edit/${product._id}`}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 hover:shadow-sm"
                       >
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

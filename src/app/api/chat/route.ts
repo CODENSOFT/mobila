@@ -43,9 +43,8 @@ export async function POST(request: Request) {
 
     console.log("[chat] Status HTTP Make.com:", makeResponse.status);
 
-    const rawText = await makeResponse.text();
-
     if (!makeResponse.ok) {
+      const rawText = await makeResponse.text();
       console.error("[chat] Make.com error — status:", makeResponse.status, "body:", rawText);
       return Response.json(
         { message: "Eroare la procesarea mesajului." },
@@ -53,24 +52,31 @@ export async function POST(request: Request) {
       );
     }
 
-    let data: { raspuns?: string };
+    const rawText = await makeResponse.text();
+    console.log("[chat] Raw response from Make.com:", rawText);
+
+    let raspuns: string | null = null;
     try {
-      data = JSON.parse(rawText) as { raspuns?: string };
-      console.log("[chat] JSON primit de la Make.com:", data);
-    } catch (parseError) {
-      console.error("[chat] Eroare parsare JSON:", parseError, "body brut:", rawText);
+      const data = JSON.parse(rawText);
+      raspuns = data?.raspuns ?? null;
+    } catch (e) {
+      console.error("[chat] Parse error:", e);
+      console.error("[chat] Raw text was:", rawText);
       return Response.json(
-        { message: "Raspuns invalid de la Make.com." },
-        { status: 502, headers: corsHeaders }
+        { error: "Raspuns invalid de la Make.com" },
+        { status: 500, headers: corsHeaders }
       );
     }
 
-    console.log("[chat] Valoare raspuns extrasă:", data.raspuns);
+    if (!raspuns || !String(raspuns).trim()) {
+      console.error("[chat] Raspuns gol. Raw:", rawText);
+      return Response.json(
+        { error: "Raspuns invalid de la Make.com" },
+        { status: 500, headers: corsHeaders }
+      );
+    }
 
-    return Response.json(
-      { response: data.raspuns ?? "", session_id },
-      { status: 200, headers: corsHeaders }
-    );
+    return Response.json({ raspuns, session_id }, { status: 200, headers: corsHeaders });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       console.error("[chat] Make.com timeout");

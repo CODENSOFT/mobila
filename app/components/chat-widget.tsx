@@ -38,7 +38,7 @@ export default function ChatWidget() {
       });
 
       const raw = await response.text();
-      let data: { response?: string; session_id?: string; message?: string } = {};
+      let data: { raspuns?: string; session_id?: string; message?: string } = {};
       try {
         data = raw ? (JSON.parse(raw) as typeof data) : {};
       } catch {
@@ -67,7 +67,10 @@ export default function ChatWidget() {
         ...prev,
         {
           role: "assistant",
-          content: data.response?.trim() || "Nu am putut genera un raspuns acum.",
+          content:
+            data.raspuns?.trim() ||
+            data.message?.trim() ||
+            "Nu am putut genera un raspuns acum.",
         },
       ]);
     } catch (error) {

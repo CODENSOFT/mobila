@@ -31,7 +31,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
     <main className="bg-[#f7f3ec] text-gray-900">
       <HeroSection />
       <FadeInOnScroll>
-        <CategoriesSection t={dict.categories} />
+        <CategoriesSection t={dict.categories} productsBasePath={`/${lang}/produse`} />
       </FadeInOnScroll>
       <HeroSplit
         title={hs.title}

@@ -59,3 +59,20 @@ export const PRODUCT_CATEGORIES = [
 ] as const;
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
+
+const GROUP_TITLES = {
+  dormitor: "PENTRU DORMITOR",
+  bucatarie: "PENTRU BUCĂTĂRIE",
+} as const;
+
+/** Toate subcategoriile din secțiunea „PENTRU DORMITOR” (folosit la filtrare mega-card). */
+export function getCategoriesForDormitorGroup(): readonly ProductCategory[] {
+  const g = PRODUCT_CATEGORY_GROUPS.find((x) => x.title === GROUP_TITLES.dormitor);
+  return (g?.items ?? []) as readonly ProductCategory[];
+}
+
+/** Toate subcategoriile din secțiunea „PENTRU BUCĂTĂRIE”. */
+export function getCategoriesForBucatarieGroup(): readonly ProductCategory[] {
+  const g = PRODUCT_CATEGORY_GROUPS.find((x) => x.title === GROUP_TITLES.bucatarie);
+  return (g?.items ?? []) as readonly ProductCategory[];
+}

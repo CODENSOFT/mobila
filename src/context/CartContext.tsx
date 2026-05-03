@@ -68,6 +68,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         .filter((item) => item && typeof item.id === "string")
         .map((item) => ({
           ...item,
+          pret: Math.max(0, Math.round(Number(item.pret) || 0)),
           cantitate: clampQty(Number(item.cantitate ?? 1)),
         }));
       setItems(safeItems);
@@ -93,6 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const adaugaInCos = useCallback(
     (produs: Omit<CartItem, "cantitate">) => {
+      const pret = Math.max(0, Math.round(Number(produs.pret) || 0));
       setItems((prev) => {
         const existing = prev.find((item) => item.id === produs.id);
         if (existing) {
@@ -102,7 +104,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               : item
           );
         }
-        return [...prev, { ...produs, cantitate: 1 }];
+        return [...prev, { ...produs, pret, cantitate: 1 }];
       });
       pushToast(`${produs.nume} adăugat în coș`);
     },

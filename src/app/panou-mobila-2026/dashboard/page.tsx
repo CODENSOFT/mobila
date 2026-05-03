@@ -3,8 +3,8 @@ import Link from "next/link";
 import { ArrowRight, Box, ClipboardList, Grid2X2, LayoutPanelLeft } from "lucide-react";
 
 import DeliverySettingsCard from "@/src/components/admin/DeliverySettingsCard";
-import { PRODUCT_CATEGORY_GROUPS } from "../../../src/constants/categories";
-import type { Product } from "../../../src/types/product";
+import { PRODUCT_CATEGORY_GROUPS } from "@/src/constants/categories";
+import type { Product } from "@/src/types/product";
 
 type DashboardStats = {
   total: number;
@@ -69,7 +69,7 @@ function buildStats(products: Product[]): DashboardStats {
   return stats;
 }
 
-export default async function AdminDashboardPage() {
+export default async function PanouDashboardPage() {
   const products = await getProducts();
   const stats = buildStats(products);
   const populatedCategories = Object.values(stats.byCategory).filter((value) => value > 0).length;
@@ -84,7 +84,7 @@ export default async function AdminDashboardPage() {
           </p>
         </div>
         <Link
-          href="/admin"
+          href="/panou-mobila-2026"
           className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Gestionează produse
@@ -151,13 +151,13 @@ export default async function AdminDashboardPage() {
           <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">Acțiuni rapide</h3>
           <div className="mt-4 grid gap-2">
             <Link
-              href="/admin"
+              href="/panou-mobila-2026"
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
               Adaugă sau editează produse
             </Link>
             <Link
-              href="/admin/comenzi"
+              href="/panou-mobila-2026/comenzi"
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
               Verifică comenzile noi

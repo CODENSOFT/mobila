@@ -17,7 +17,7 @@ const DEFAULT_FILTERS = {
   sortBy: "newest" as const,
 };
 
-export default function AdminComenziPage() {
+export default function PanouComenziPage() {
   const {
     comenzi,
     loading,

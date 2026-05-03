@@ -11,7 +11,8 @@ export default function DeliveryAddressForm() {
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-[#1a1a1a]">{t.deliveryAddress}</h2>
+      <h2 className="mb-1 text-lg font-semibold text-[#1a1a1a]">{t.deliveryAddress}</h2>
+      <p className="mb-4 text-sm text-gray-500">{t.deliveryAddressHint}</p>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <input {...register("strada")} placeholder={t.street}
           className={`h-11 rounded-lg border px-3 text-sm ${errors.strada ? "border-red-400" : "border-gray-200"}`} />

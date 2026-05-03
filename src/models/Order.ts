@@ -1,4 +1,4 @@
-import { model, models, Schema, type InferSchemaType, type Model, type Types } from "mongoose";
+import mongoose, { model, Schema, type InferSchemaType, type Types } from "mongoose";
 
 const orderProductSchema = new Schema(
   {
@@ -32,10 +32,10 @@ const orderSchema = new Schema(
       nume: { type: String, required: true, trim: true },
       email: { type: String, required: true, trim: true },
       telefon: { type: String, required: true, trim: true },
-      adresa: { type: String, required: true, trim: true },
-      oras: { type: String, required: true, trim: true },
-      judet: { type: String, required: true, trim: true },
-      codPostal: { type: String, required: true, trim: true },
+      adresa: { type: String, required: false, default: "", trim: true },
+      oras: { type: String, required: false, default: "", trim: true },
+      judet: { type: String, required: false, default: "", trim: true },
+      codPostal: { type: String, required: false, default: "", trim: true },
     },
     produse: { type: [orderProductSchema], default: [] },
     subtotal: { type: Number, required: true, min: 0 },
@@ -87,8 +87,10 @@ export type OrderDocument = InferSchemaType<typeof orderSchema> & {
   _id: Types.ObjectId;
 };
 
-const Order =
-  (models.Order as Model<OrderDocument> | undefined) ??
-  model<OrderDocument>("Order", orderSchema);
+// deleteModel + re-register ensures the updated schema (required: false on
+// address fields) takes effect on every hot-reload, not just fresh starts.
+try { mongoose.deleteModel("Order"); } catch { /* not registered yet */ }
+
+const Order = model<OrderDocument>("Order", orderSchema);
 
 export default Order;

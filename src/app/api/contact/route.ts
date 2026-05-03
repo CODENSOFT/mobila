@@ -24,7 +24,12 @@ export async function POST(request: Request) {
     }
 
     await connectDB();
-    const client = await Client.create({ nume, telefon, mesaj });
+    const client = await Client.create({
+      nume,
+      telefon,
+      mesaj,
+      sursa: "formular_contact",
+    });
 
     const payload = {
       nume,
