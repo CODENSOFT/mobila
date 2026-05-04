@@ -22,10 +22,6 @@ const navItems = [
 export default function PanouMobilaLayout({ children }: PanouLayoutProps) {
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/panou-mobila-2026/login")) {
-    return <>{children}</>;
-  }
-
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

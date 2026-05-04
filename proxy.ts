@@ -7,22 +7,8 @@ const DEFAULT_LOCALE = "ro";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Admin panel auth — protect /panou-mobila-2026 (except /login)
+  // Panou admin — no locale prefix (skip redirect below)
   if (pathname.startsWith("/panou-mobila-2026")) {
-    if (
-      pathname === "/panou-mobila-2026/login" ||
-      pathname.startsWith("/panou-mobila-2026/login/")
-    ) {
-      return NextResponse.next();
-    }
-    const expected = process.env.ADMIN_PASSWORD;
-    if (!expected) {
-      return NextResponse.redirect(new URL("/panou-mobila-2026/login", request.url));
-    }
-    const cookie = request.cookies.get("admin_auth")?.value;
-    if (cookie !== expected) {
-      return NextResponse.redirect(new URL("/panou-mobila-2026/login", request.url));
-    }
     return NextResponse.next();
   }
 
