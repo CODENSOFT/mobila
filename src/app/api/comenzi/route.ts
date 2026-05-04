@@ -440,7 +440,8 @@ export async function POST(request: Request) {
       try {
         const rt = (rawBody as { raw_text: string }).raw_text;
         const extracted = rt.split("##COMANDA##")[1]?.split("##SFARSIT##")[0];
-        rawBody = JSON.parse(extracted ?? "");
+        const normalized = extracted?.replace(/'/g, '"');
+        rawBody = JSON.parse(normalized ?? "");
       } catch {
         return Response.json(
           { message: "Raw text parse error" },

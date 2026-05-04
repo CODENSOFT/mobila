@@ -1,0 +1,55 @@
+
+> mobila-site@0.1.0 build
+> next build
+
+▲ Next.js 16.2.2 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1957ms
+  Running TypeScript ...
+  Finished TypeScript in 3.1s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/25) ...
+  Generating static pages using 1 worker (6/25) 
+  Generating static pages using 1 worker (12/25) 
+  Generating static pages using 1 worker (18/25) 
+✓ Generating static pages using 1 worker (25/25) in 201ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /admin/comenzi
+├ ƒ /admin/comenzi/[id]
+├ ƒ /admin/dashboard
+├ ƒ /admin/edit/[id]
+├ ƒ /api/admin/comenzi
+├ ƒ /api/admin/comenzi/[id]
+├ ƒ /api/admin/comenzi/export
+├ ƒ /api/blog
+├ ƒ /api/chat
+├ ƒ /api/clienti
+├ ƒ /api/clienti/[id]
+├ ƒ /api/comenzi
+├ ƒ /api/contact
+├ ƒ /api/produse
+├ ƒ /api/produse/[id]
+├ ƒ /api/reduceri/valideaza
+├ ƒ /api/stats
+├ ○ /blog
+├ ƒ /blog/[slug]
+├ ○ /checkout
+├ ○ /checkout/confirmare
+├ ○ /contact
+├ ○ /cos
+├ ○ /despre
+├ ○ /despre-noi
+├ ƒ /produse
+└ ƒ /produse/[id]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

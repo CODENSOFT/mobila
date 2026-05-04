@@ -44,8 +44,8 @@ export async function POST(request: Request) {
     console.log("[chat] Status HTTP Make.com:", makeResponse.status);
 
     if (!makeResponse.ok) {
-      const rawText = await makeResponse.text();
-      console.error("[chat] Make.com error — status:", makeResponse.status, "body:", rawText);
+      const errBody = await makeResponse.text();
+      console.error("[chat] Make.com error — status:", makeResponse.status, "body:", errBody);
       return Response.json(
         { message: "Eroare la procesarea mesajului." },
         { status: 502, headers: corsHeaders }
@@ -55,21 +55,27 @@ export async function POST(request: Request) {
     const rawText = await makeResponse.text();
     console.log("[chat] Raw response from Make.com:", rawText);
 
+    const match = rawText.match(
+      /"raspuns":\s*"([\s\S]*?)(?=##COMANDA##|"[\s\n]*\})/
+    );
     let raspuns: string | null = null;
-    try {
-      const data = JSON.parse(rawText);
-      raspuns = data?.raspuns ?? null;
-    } catch (e) {
-      console.error("[chat] Parse error:", e);
-      console.error("[chat] Raw text was:", rawText);
-      return Response.json(
-        { error: "Raspuns invalid de la Make.com" },
-        { status: 500, headers: corsHeaders }
-      );
+    if (match && match[1]) {
+      raspuns = match[1]
+        .replace(/\\n/g, "\n")
+        .replace(/\\t/g, "\t")
+        .replace(/\\"/g, '"')
+        .trim();
+    } else {
+      const simpleMatch = rawText.match(/"raspuns":\s*"([^"]+)"/);
+      if (simpleMatch && simpleMatch[1]) {
+        raspuns = simpleMatch[1].trim();
+      }
     }
 
-    if (!raspuns || !String(raspuns).trim()) {
-      console.error("[chat] Raspuns gol. Raw:", rawText);
+    console.log("[chat] Raspuns extras:", raspuns);
+
+    if (!raspuns) {
+      console.error("[chat] Nu am putut extrage raspunsul. Raw:", rawText);
       return Response.json(
         { error: "Raspuns invalid de la Make.com" },
         { status: 500, headers: corsHeaders }
