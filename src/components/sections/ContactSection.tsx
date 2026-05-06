@@ -75,6 +75,14 @@ export default function ContactSection({ showForm = false, form }: ContactSectio
                 >
                   Facebook
                 </a>
+                <a
+                  href="https://www.instagram.com/labirint.md/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 border border-[#e7e5e4] text-sm text-[#57534e] hover:border-[#1c1917] hover:text-[#1c1917] transition-colors"
+                >
+                  Instagram
+                </a>
               </div>
             </div>
           </div>

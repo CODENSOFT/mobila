@@ -58,6 +58,14 @@ export default function Footer() {
               >
                 Facebook
               </a>
+              <a
+                href="https://www.instagram.com/labirint.md/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 border border-white/10 text-xs text-white/60 hover:text-white hover:border-white/30 transition-all duration-300"
+              >
+                Instagram
+              </a>
             </div>
           </div>
 

@@ -4,7 +4,18 @@ import Button from "../ui/Button";
 const HERO_IMAGE =
   "https://draperandkramer.com/wp-content/uploads/2022/04/insights-exploring-interior-design-trends-textured-furniture-draperandkramer_20220427_header-image.jpg";
 
-export default function HeroSection() {
+type Props = {
+  t: {
+    badge: string;
+    heading1: string;
+    heading2: string;
+    description: string;
+    cta: string;
+  };
+  productsHref: string;
+};
+
+export default function HeroSection({ t, productsHref }: Props) {
   return (
     <section className="relative min-h-screen w-full overflow-hidden">
       <div className="absolute inset-0">
@@ -23,24 +34,23 @@ export default function HeroSection() {
       <div className="relative mx-auto flex min-h-screen max-w-7xl items-center px-6 py-20">
         <div className="max-w-3xl">
           <p className="mb-6 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand-green)]">
-            LABIRINT
+            {t.badge}
           </p>
           <h1 className="text-5xl font-light leading-[1.1] tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Mobilă la comandă
+            {t.heading1}
             <br />
-            <span className="font-serif italic text-[var(--brand-green)]">de încredere</span>
+            <span className="font-serif italic text-[var(--brand-green)]">{t.heading2}</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg font-light leading-8 text-white/85">
-            Din 2007 oferim produse de calitate, garantii reale si mobilier personalizat, cu accent
-            pe satisfactia fiecarui client.
+            {t.description}
           </p>
 
           <Button
-            href="/produse"
+            href={productsHref}
             variant="outline"
             className="mt-10 rounded-none border-[var(--brand-green)] bg-transparent px-10 py-4 font-['Inter'] text-xs uppercase tracking-widest text-[var(--brand-green)] hover:bg-[color:rgba(102,169,37,0.12)] hover:text-[var(--brand-green)]"
           >
-            Descoperă Colecția
+            {t.cta}
           </Button>
         </div>
       </div>

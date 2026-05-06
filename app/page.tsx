@@ -23,7 +23,7 @@ export default async function Home() {
 
   return (
     <main className="bg-[#f7f3ec] text-gray-900">
-      <HeroSection />
+      <HeroSection t={dict.hero} productsHref="/ro/produse" />
       <FadeInOnScroll>
         <CategoriesSection />
       </FadeInOnScroll>

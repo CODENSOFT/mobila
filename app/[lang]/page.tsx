@@ -29,7 +29,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
 
   return (
     <main className="bg-[#f7f3ec] text-gray-900">
-      <HeroSection />
+      <HeroSection t={dict.hero} productsHref={`/${lang}/produse`} />
       <FadeInOnScroll>
         <CategoriesSection t={dict.categories} productsBasePath={`/${lang}/produse`} />
       </FadeInOnScroll>
