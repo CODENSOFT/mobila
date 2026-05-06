@@ -37,7 +37,7 @@ export default function PanouComenziPage() {
 
   return (
     <main className="space-y-5 bg-gray-50">
-      <header className="flex flex-wrap items-center justify-between gap-3">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Comenzi</h1>
           <span className="mt-1 inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
@@ -45,11 +45,11 @@ export default function PanouComenziPage() {
           </span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
           <button
             type="button"
             onClick={() => void exportComenzi("csv")}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50"
           >
             <Download className="h-4 w-4" aria-hidden />
             Export CSV
@@ -57,7 +57,7 @@ export default function PanouComenziPage() {
           <button
             type="button"
             onClick={() => void exportComenzi("excel")}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50"
           >
             <FileSpreadsheet className="h-4 w-4" aria-hidden />
             Export Excel
@@ -95,11 +95,11 @@ export default function PanouComenziPage() {
         />
       )}
 
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white p-4 text-sm shadow-sm">
+      <section className="flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-4 text-sm shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-gray-600">
           Afișezi {total === 0 ? 0 : start}-{end} din {total} comenzi
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
           <button
             type="button"
             disabled={filters.page <= 1}
@@ -110,7 +110,7 @@ export default function PanouComenziPage() {
           >
             Anterior
           </button>
-          <span>
+          <span className="text-xs sm:text-sm">
             Pagina {filters.page} / {pagini}
           </span>
           <button
@@ -132,7 +132,7 @@ export default function PanouComenziPage() {
                 limit: Number(e.target.value),
               }))
             }
-            className="h-8 rounded-lg border border-gray-200 px-2"
+            className="h-8 min-w-20 rounded-lg border border-gray-200 px-2"
           >
             <option value={10}>10</option>
             <option value={20}>20</option>

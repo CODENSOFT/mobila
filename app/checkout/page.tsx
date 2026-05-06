@@ -21,7 +21,7 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, totalPret, golesteCosul } = useCart();
+  const { items, totalPret, golesteCosul, inchideCos } = useCart();
   const { lang, dict } = useLang();
   const t = dict.checkout;
   const [loading, setLoading] = useState(false);
@@ -65,6 +65,10 @@ export default function CheckoutPage() {
     ? totalPret
     : items.reduce((sum, item) => sum + Math.max(0, Number(item.pret) || 0) * item.cantitate, 0);
   const total = Math.max(0, Math.round(subtotalSafe + transport));
+
+  useEffect(() => {
+    inchideCos();
+  }, [inchideCos]);
 
   useEffect(() => {
     if (items.length === 0) {

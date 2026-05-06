@@ -351,7 +351,7 @@ export default function ProductForm({
       <form onSubmit={handleSubmit} className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8 border-b border-slate-200 pb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 {isEdit ? "Editează produs" : "Produs nou"}
@@ -362,7 +362,7 @@ export default function ProductForm({
             </div>
             {message && (
               <div
-                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm ${
+                className={`flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm sm:w-auto sm:max-w-md ${
                   message.type === "success"
                     ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                     : "border border-red-200 bg-red-50 text-red-700"
@@ -377,7 +377,7 @@ export default function ProductForm({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 )}
-                {message.text}
+                <span className="min-w-0 wrap-break-word">{message.text}</span>
               </div>
             )}
           </div>
@@ -491,7 +491,7 @@ export default function ProductForm({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="mb-2 flex flex-col gap-2 sm:mb-1 sm:flex-row sm:items-center sm:justify-between">
                     <label className="text-sm font-medium text-gray-700">
                       Descriere (RU)
                       <span className="ml-1 text-xs font-normal text-gray-400">— opțional</span>
@@ -500,7 +500,7 @@ export default function ProductForm({
                       type="button"
                       onClick={() => void handleTranslateRoRu()}
                       disabled={isTranslating || (!values.nume.trim() && !descriptionRO.trim())}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:py-1"
                     >
                       {isTranslating ? (
                         <>

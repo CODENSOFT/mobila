@@ -129,6 +129,7 @@ export default function CartDrawer() {
 
           <Link
             href={`/${lang}/checkout`}
+            onClick={inchideCos}
             className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[#1a1a1a] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#333]"
           >
             {t.checkout}

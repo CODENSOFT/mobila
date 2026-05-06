@@ -74,8 +74,57 @@ export default function ProductTable({
         </select>
       </div>
 
+      <div className="space-y-3 md:hidden">
+        {filteredProducts.map((product) => (
+          <article
+            key={product._id}
+            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+          >
+            <div className="flex items-start gap-3">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                <Image
+                  src={product.imagine?.trim() || "/images/categories/dormitor.png"}
+                  alt={product.nume}
+                  fill
+                  className="object-cover"
+                  sizes="56px"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate font-medium text-slate-900">{product.nume}</h4>
+                <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{product.descriere}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                    {product.categorie ?? "Fără categorie"}
+                  </span>
+                  <span className="text-sm font-semibold text-slate-900">
+                    {formatPriceInteger(product.pret)} MDL
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 flex gap-2">
+              <Link
+                href={`/panou-mobila-2026/edit/${product._id}`}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() => onDelete(product._id)}
+                disabled={deletingId === product._id}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deletingId === product._id ? "..." : "Delete"}
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -121,7 +170,7 @@ export default function ProductTable({
                     <span className="font-semibold text-slate-900">{formatPriceInteger(product.pret)} MDL</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/panou-mobila-2026/edit/${product._id}`}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 hover:shadow-sm"

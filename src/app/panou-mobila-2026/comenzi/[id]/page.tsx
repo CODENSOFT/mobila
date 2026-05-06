@@ -92,7 +92,10 @@ export default function PanouOrderDetailPage() {
             <h2 className="mb-4 text-base font-semibold text-[#1a1a1a]">Produse comandate</h2>
             <div className="space-y-3">
               {comanda.produse.map((p, idx) => (
-                <div key={`${p.nume}-${idx}`} className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                <div
+                  key={`${p.nume}-${idx}`}
+                  className="grid grid-cols-[48px_1fr] gap-3 border-b border-gray-100 pb-3 sm:grid-cols-[48px_1fr_auto_auto_auto] sm:items-center"
+                >
                   <div className="relative h-12 w-12 overflow-hidden rounded-md bg-gray-100">
                     <Image
                       src={getSafeImageSrc(p.imagine)}
@@ -102,9 +105,9 @@ export default function PanouOrderDetailPage() {
                       sizes="48px"
                     />
                   </div>
-                  <p className="flex-1 text-sm">{p.nume}</p>
-                  <p className="text-sm">{p.pret.toLocaleString()} MDL</p>
-                  <p className="text-sm">x{p.cantitate}</p>
+                  <p className="text-sm sm:pr-2">{p.nume}</p>
+                  <p className="text-xs text-gray-600 sm:text-sm">{p.pret.toLocaleString()} MDL</p>
+                  <p className="text-xs text-gray-600 sm:text-sm">x{p.cantitate}</p>
                   <p className="text-sm font-semibold">{(p.pret * p.cantitate).toLocaleString()} MDL</p>
                 </div>
               ))}
