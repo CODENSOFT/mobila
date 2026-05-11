@@ -97,9 +97,16 @@ export default function ProductTable({
                   <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
                     {product.categorie ?? "Fără categorie"}
                   </span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {formatPriceInteger(product.pret)} MDL
-                  </span>
+                  {product.areReducere && product.pretReducere ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-sm font-semibold text-red-600">{formatPriceInteger(product.pretReducere)} MDL</span>
+                      <span className="text-xs text-slate-400 line-through">{formatPriceInteger(product.pret)}</span>
+                    </span>
+                  ) : (
+                    <span className="text-sm font-semibold text-slate-900">
+                      {formatPriceInteger(product.pret)} MDL
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -167,7 +174,17 @@ export default function ProductTable({
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-semibold text-slate-900">{formatPriceInteger(product.pret)} MDL</span>
+                    {product.areReducere && product.pretReducere ? (
+                      <span className="flex items-center gap-2">
+                        <span className="font-semibold text-red-600">{formatPriceInteger(product.pretReducere)} MDL</span>
+                        <span className="text-xs text-slate-400 line-through">{formatPriceInteger(product.pret)}</span>
+                        {product.procentReducere && (
+                          <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">-{product.procentReducere}%</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-slate-900">{formatPriceInteger(product.pret)} MDL</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">

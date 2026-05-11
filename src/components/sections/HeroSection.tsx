@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Button from "../ui/Button";
 
-const HERO_IMAGE =
-  "https://draperandkramer.com/wp-content/uploads/2022/04/insights-exploring-interior-design-trends-textured-furniture-draperandkramer_20220427_header-image.jpg";
+const HERO_IMAGE = "/images/herolabirint.png";
 
 type Props = {
   t: {
@@ -21,7 +20,7 @@ export default function HeroSection({ t, productsHref }: Props) {
       <div className="absolute inset-0">
         <Image
           src={HERO_IMAGE}
-          alt="Interior premium"
+          alt="LABIRINT — mobilă la comandă"
           fill
           priority
           className="object-cover"

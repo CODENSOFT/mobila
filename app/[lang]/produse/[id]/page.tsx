@@ -16,6 +16,9 @@ type Product = {
   imagine: string;
   imagini?: string[];
   categorie?: string;
+  areReducere?: boolean;
+  pretReducere?: number;
+  procentReducere?: number;
 };
 
 type RawProduct = Omit<Product, "descriere"> & {

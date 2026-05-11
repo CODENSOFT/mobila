@@ -19,6 +19,9 @@ type ProductFormValues = {
   pret: string;
   categorie: AdminCategory;
   imagineUrl: string;
+  areReducere: boolean;
+  pretReducere: string;
+  procentReducere: string;
 };
 
 type ProductFormPayload = {
@@ -30,6 +33,9 @@ type ProductFormPayload = {
   categorie: AdminCategory;
   imagineUrl: string;
   imagineFile?: File | null;
+  areReducere: boolean;
+  pretReducere?: number;
+  procentReducere?: number;
 };
 
 type ProductFormProps = {
@@ -46,6 +52,9 @@ function toInitialValues(product?: Product): ProductFormValues {
     pret: product?.pret ? String(product.pret) : "",
     categorie: (product?.categorie as AdminCategory) ?? ADMIN_CATEGORIES[0],
     imagineUrl: product?.imagine ?? "",
+    areReducere: product?.areReducere ?? false,
+    pretReducere: product?.pretReducere ? String(product.pretReducere) : "",
+    procentReducere: product?.procentReducere ? String(product.procentReducere) : "",
   };
 }
 
@@ -306,6 +315,9 @@ export default function ProductForm({
         categorie: values.categorie,
         imagineUrl: values.imagineUrl.trim(),
         imagineFile: imageFile,
+        areReducere: values.areReducere,
+        pretReducere: values.areReducere && values.pretReducere ? Number(values.pretReducere) : undefined,
+        procentReducere: values.areReducere && values.procentReducere ? Number(values.procentReducere) : undefined,
       });
 
       if (mode === "create") {
@@ -532,6 +544,73 @@ export default function ProductForm({
               </div>
             </div>
 
+            {/* Reducere */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                Reducere
+              </h2>
+              <div className="space-y-4">
+                <label className="flex cursor-pointer items-center gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={values.areReducere}
+                    onClick={() => setValues((p) => ({ ...p, areReducere: !p.areReducere }))}
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                      values.areReducere ? "bg-red-500" : "bg-gray-200"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                        values.areReducere ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className="text-sm font-medium text-gray-700">Are reducere</span>
+                </label>
+
+                {values.areReducere && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Preț redus
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={values.pretReducere}
+                          onChange={(e) => setValues((p) => ({ ...p, pretReducere: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400"
+                          placeholder="0.00"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MDL</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Procent reducere <span className="text-xs font-normal text-gray-400">— opțional</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="1"
+                          max="99"
+                          step="1"
+                          value={values.procentReducere}
+                          onChange={(e) => setValues((p) => ({ ...p, procentReducere: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400"
+                          placeholder="ex: 20"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">%</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Image Upload */}
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
@@ -608,6 +687,11 @@ export default function ProductForm({
                         alt="Preview"
                         className="h-full w-full object-cover"
                       />
+                      {values.areReducere && (
+                        <span className="absolute left-2 top-2 rounded bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                          {values.procentReducere ? `-${values.procentReducere}%` : "REDUCERE"}
+                        </span>
+                      )}
                     </div>
                   ) : (
                     <div className="flex aspect-square items-center justify-center bg-gray-50">
@@ -638,9 +722,22 @@ export default function ProductForm({
                       </p>
                     ) : null}
                     <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <span className="text-lg font-bold text-green-600">
-                        {values.pret ? `${formatPriceInteger(Number(values.pret))} MDL` : "—"}
-                      </span>
+                      <div>
+                        {values.areReducere && values.pretReducere ? (
+                          <>
+                            <span className="text-lg font-bold text-red-600">
+                              {formatPriceInteger(Number(values.pretReducere))} MDL
+                            </span>
+                            <span className="ml-2 text-sm text-gray-400 line-through">
+                              {values.pret ? `${formatPriceInteger(Number(values.pret))} MDL` : ""}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-lg font-bold text-green-600">
+                            {values.pret ? `${formatPriceInteger(Number(values.pret))} MDL` : "—"}
+                          </span>
+                        )}
+                      </div>
                       <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
                         {values.categorie}
                       </span>

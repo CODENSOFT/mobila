@@ -133,6 +133,9 @@ export async function POST(request: Request) {
     let categorie = "";
     let pretNumber = NaN;
     let finalImageUrl = "";
+    let areReducere = false;
+    let pretReducereNumber = NaN;
+    let procentReducereNumber = NaN;
 
     if (contentType.includes("application/json")) {
       const body = (await request.json()) as {
@@ -143,6 +146,9 @@ export async function POST(request: Request) {
         pret?: number;
         categorie?: string;
         imagineUrl?: string;
+        areReducere?: boolean;
+        pretReducere?: number;
+        procentReducere?: number;
       };
 
       nume = typeof body.nume === "string" ? body.nume : "";
@@ -156,6 +162,9 @@ export async function POST(request: Request) {
       categorie = typeof body.categorie === "string" ? body.categorie : "";
       pretNumber = typeof body.pret === "number" ? body.pret : NaN;
       finalImageUrl = typeof body.imagineUrl === "string" ? body.imagineUrl.trim() : "";
+      areReducere = body.areReducere === true;
+      pretReducereNumber = typeof body.pretReducere === "number" ? body.pretReducere : NaN;
+      procentReducereNumber = typeof body.procentReducere === "number" ? body.procentReducere : NaN;
     } else {
       const formData = await request.formData();
 
@@ -188,6 +197,13 @@ export async function POST(request: Request) {
       } else if (hasImageUrl && typeof imagineUrl === "string") {
         finalImageUrl = imagineUrl.trim();
       }
+
+      const areReducereValue = formData.get("areReducere");
+      areReducere = areReducereValue === "true";
+      const pretReducereValue = formData.get("pretReducere");
+      pretReducereNumber = typeof pretReducereValue === "string" && pretReducereValue ? Number(pretReducereValue) : NaN;
+      const procentReducereValue = formData.get("procentReducere");
+      procentReducereNumber = typeof procentReducereValue === "string" && procentReducereValue ? Number(procentReducereValue) : NaN;
     }
 
     if (
@@ -209,6 +225,11 @@ export async function POST(request: Request) {
     const numeRuFinala = normalizeUtf8Text(nume_ru.trim());
     const descriereRuFinala = normalizeUtf8Text(descriere_ru.trim());
 
+    const pretReducereFinal = areReducere && Number.isFinite(pretReducereNumber) ? pretReducereNumber : null;
+    const procentReducereFinal = areReducere && Number.isFinite(procentReducereNumber) ? procentReducereNumber : null;
+
+    console.info("[POST /api/produse]", { areReducere, pretReducereFinal, procentReducereFinal });
+
     const produs = await Product.create({
       nume: nume.trim(),
       ...(numeRuFinala ? { nume_ru: numeRuFinala } : {}),
@@ -217,6 +238,9 @@ export async function POST(request: Request) {
       pret: pretNumber,
       categorie: categorie.trim(),
       imagine: finalImageUrl,
+      areReducere,
+      pretReducere: pretReducereFinal,
+      procentReducere: procentReducereFinal,
     });
 
     return Response.json(produs, { status: 201, headers: corsHeaders });

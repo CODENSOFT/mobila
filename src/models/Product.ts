@@ -11,6 +11,9 @@ const productSchema = new Schema(
     imagini: { type: [String], default: undefined },
     categorie: { type: String, required: true, trim: true },
     slug: { type: String, trim: true, sparse: true },
+    areReducere: { type: Boolean, default: false },
+    pretReducere: { type: Number },
+    procentReducere: { type: Number },
   },
   { timestamps: true }
 );

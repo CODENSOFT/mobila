@@ -16,6 +16,9 @@ type ProdusSimilar = {
   imagini?: string[];
   categorie?: string;
   slug?: string;
+  areReducere?: boolean;
+  pretReducere?: number;
+  procentReducere?: number;
 };
 
 function imaginePrincipala(p: ProdusSimilar): string {
@@ -74,12 +77,24 @@ function SimilarProductCard({
               {produs.categorie}
             </span>
           ) : null}
+          {produs.areReducere && (
+            <span className="absolute right-4 top-4 rounded bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              {produs.procentReducere ? `-${produs.procentReducere}%` : "REDUCERE"}
+            </span>
+          )}
         </div>
         <div className="p-5">
           <h3 className="mb-1 text-base font-medium text-[#1c1917] transition-colors group-hover:text-[#78716c]">
             {numeDisplay}
           </h3>
-          <p className="text-lg font-light text-[#1c1917]">{formatPretRon(produs.pret)}</p>
+          {produs.areReducere && produs.pretReducere ? (
+            <div>
+              <p className="text-lg font-light text-red-600">{formatPretRon(produs.pretReducere)}</p>
+              <p className="text-sm text-[#a8a29e] line-through">{formatPretRon(produs.pret)}</p>
+            </div>
+          ) : (
+            <p className="text-lg font-light text-[#1c1917]">{formatPretRon(produs.pret)}</p>
+          )}
         </div>
       </Link>
     </article>

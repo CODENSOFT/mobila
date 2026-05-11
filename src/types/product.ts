@@ -13,4 +13,7 @@ export type Product = {
   imagini?: string[];
   slug?: string;
   categorie?: ProductCategory;
+  areReducere?: boolean;
+  pretReducere?: number;
+  procentReducere?: number;
 };

@@ -23,7 +23,7 @@ type FeaturedDict = {
 };
 
 const DEFAULT_T: FeaturedDict = {
-  label: "Selecție Editată",
+  label: "",
   heading: "Piese",
   headingItalic: "remarcabile",
   description: "Mobilier contemporan pentru interioare premium, construit pe proporții echilibrate și materiale autentice.",
@@ -67,16 +67,36 @@ function FeaturedProductCard({
           </span>
         </div>
 
+        {product.areReducere && (
+          <span className="absolute right-4 top-4 rounded bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            {product.procentReducere ? `-${product.procentReducere}%` : "REDUCERE"}
+          </span>
+        )}
+
         <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-6">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/70">
             {product.categorie || furniture}
           </p>
           <h3 className="mb-3 text-[20px] font-medium leading-tight text-white">{numeDisplay}</h3>
           <div className="flex items-center justify-between">
-            <p className="text-base font-semibold text-white/95">
-              {formatPriceInteger(product.pret, lang)}{" "}
-              <span className="text-sm font-normal text-white/70">MDL</span>
-            </p>
+            <div>
+              {product.areReducere && product.pretReducere ? (
+                <>
+                  <p className="text-base font-semibold text-red-400">
+                    {formatPriceInteger(product.pretReducere, lang)}{" "}
+                    <span className="text-sm font-normal text-red-300">MDL</span>
+                  </p>
+                  <p className="text-xs text-white/50 line-through">
+                    {formatPriceInteger(product.pret, lang)} MDL
+                  </p>
+                </>
+              ) : (
+                <p className="text-base font-semibold text-white/95">
+                  {formatPriceInteger(product.pret, lang)}{" "}
+                  <span className="text-sm font-normal text-white/70">MDL</span>
+                </p>
+              )}
+            </div>
             <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
               {viewDetails}
             </span>
@@ -111,12 +131,14 @@ export default function FeaturedProductsSection({
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="mb-16 flex flex-col gap-8 lg:mb-20 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-px w-12 bg-[#1c1917]/20" />
-              <span className="text-[11px] font-medium tracking-[0.25em] uppercase text-[#1c1917]/50">
-                {t.label}
-              </span>
-            </div>
+            {t.label.trim() ? (
+              <div className="flex items-center gap-3">
+                <div className="h-px w-12 bg-[#1c1917]/20" />
+                <span className="text-[11px] font-medium tracking-[0.25em] uppercase text-[#1c1917]/50">
+                  {t.label}
+                </span>
+              </div>
+            ) : null}
             <h2 className="text-3xl lg:text-5xl font-light text-[#1c1917] leading-tight">
               {t.heading} <span className="italic font-normal">{t.headingItalic}</span>
             </h2>

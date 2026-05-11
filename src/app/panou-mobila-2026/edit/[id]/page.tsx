@@ -51,19 +51,29 @@ export default function PanouEditProductPage() {
     categorie: ProductCategory;
     imagineUrl: string;
     imagineFile?: File | null;
+    areReducere: boolean;
+    pretReducere?: number;
+    procentReducere?: number;
   }) => {
+    const putBody = {
+      nume: payload.nume,
+      nume_ru: payload.nume_ru,
+      descriere: payload.descriere,
+      descriere_ru: payload.descriere_ru,
+      pret: payload.pret,
+      categorie: payload.categorie,
+      imagineUrl: payload.imagineUrl,
+      areReducere: payload.areReducere,
+      pretReducere: payload.pretReducere,
+      procentReducere: payload.procentReducere,
+    };
+
+    console.log("[handleUpdate] body trimis la PUT:", JSON.stringify(putBody, null, 2));
+
     const response = await fetch(toApiUrl(`/api/produse/${params.id}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nume: payload.nume,
-        nume_ru: payload.nume_ru,
-        descriere: payload.descriere,
-        descriere_ru: payload.descriere_ru,
-        pret: payload.pret,
-        categorie: payload.categorie,
-        imagineUrl: payload.imagineUrl,
-      }),
+      body: JSON.stringify(putBody),
     });
 
     if (!response.ok) {

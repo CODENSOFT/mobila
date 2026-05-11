@@ -157,15 +157,31 @@ function ProductGridCard({
             {categoryTag}
           </span>
         ) : null}
+        {produs.areReducere && (
+          <span className="absolute right-4 top-4 rounded bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            {produs.procentReducere ? `-${produs.procentReducere}%` : "REDUCERE"}
+          </span>
+        )}
       </div>
 
       <div className="p-5">
         <h2 className="text-base font-medium text-[#1c1917] mb-1 group-hover:text-[#78716c] transition-colors">
           {numeDisplay}
         </h2>
-        <p className="text-lg font-light text-[#1c1917]">
-          {formatPrice(produs.pret)} <span className="text-sm text-[#a8a29e]">MDL</span>
-        </p>
+        {produs.areReducere && produs.pretReducere ? (
+          <div>
+            <p className="text-lg font-light text-red-600">
+              {formatPrice(produs.pretReducere)} <span className="text-sm text-red-400">MDL</span>
+            </p>
+            <p className="text-sm text-[#a8a29e] line-through">
+              {formatPrice(produs.pret)} MDL
+            </p>
+          </div>
+        ) : (
+          <p className="text-lg font-light text-[#1c1917]">
+            {formatPrice(produs.pret)} <span className="text-sm text-[#a8a29e]">MDL</span>
+          </p>
+        )}
       </div>
     </article>
   );

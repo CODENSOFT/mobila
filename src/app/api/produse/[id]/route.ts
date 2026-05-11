@@ -32,6 +32,9 @@ export async function PUT(request: Request, context: RouteContext) {
       pret?: number;
       categorie?: string;
       imagineUrl?: string;
+      areReducere?: boolean;
+      pretReducere?: number;
+      procentReducere?: number;
     };
 
     if (
@@ -48,18 +51,29 @@ export async function PUT(request: Request, context: RouteContext) {
     const descriereRuFinala =
       typeof body.descriere_ru === "string" ? body.descriere_ru.trim() : "";
 
+    const areReducere = body.areReducere === true;
+    const pretReducere = areReducere && typeof body.pretReducere === "number" ? body.pretReducere : null;
+    const procentReducere = areReducere && typeof body.procentReducere === "number" ? body.procentReducere : null;
+
+    console.info("[PUT /api/produse]", { id, areReducere, pretReducere, procentReducere });
+
     const updated = await Product.findByIdAndUpdate(
       id,
       {
-        nume: body.nume.trim(),
-        nume_ru: numeRuFinala,
-        descriere: body.descriere.trim(),
-        descriere_ru: descriereRuFinala,
-        pret: body.pret,
-        categorie: body.categorie.trim(),
-        imagine: body.imagineUrl.trim(),
+        $set: {
+          nume: body.nume.trim(),
+          nume_ru: numeRuFinala,
+          descriere: body.descriere.trim(),
+          descriere_ru: descriereRuFinala,
+          pret: body.pret,
+          categorie: body.categorie.trim(),
+          imagine: body.imagineUrl.trim(),
+          areReducere,
+          pretReducere,
+          procentReducere,
+        },
       },
-      { returnDocument: "after" }
+      { new: true, strict: false }
     ).lean();
 
     if (!updated) {

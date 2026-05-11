@@ -25,6 +25,9 @@ type Product = {
   imagine: string;
   imagini?: string[];
   categorie?: string;
+  areReducere?: boolean;
+  pretReducere?: number;
+  procentReducere?: number;
 };
 
 type DescriptionBlock =
@@ -178,11 +181,18 @@ export default async function ProdusPage({
         <div className="grid lg:grid-cols-[1fr_480px] xl:grid-cols-[1fr_520px] gap-10 lg:gap-16 items-start">
 
           {/* Left — gallery */}
-          <ProductImageGallery
-            imagine={produs.imagine}
-            imagini={produs.imagini}
-            alt={produs.nume}
-          />
+          <div className="relative">
+            <ProductImageGallery
+              imagine={produs.imagine}
+              imagini={produs.imagini}
+              alt={produs.nume}
+            />
+            {produs.areReducere && (
+              <span className="absolute left-4 top-4 z-10 rounded bg-red-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white">
+                {produs.procentReducere ? `-${produs.procentReducere}%` : "REDUCERE"}
+              </span>
+            )}
+          </div>
 
           {/* Right — details (sticky on desktop) */}
           <div className="lg:sticky lg:top-8 flex flex-col gap-0">
@@ -203,11 +213,30 @@ export default async function ProdusPage({
             </h1>
 
             {/* Price block */}
-            <div className="flex items-end gap-3 mb-6">
-              <span className="text-4xl lg:text-5xl font-extralight text-[#1c1917] leading-none tabular-nums">
-                {produs.pret.toLocaleString("ro-RO")}
-              </span>
-              <span className="text-base text-[#a8a29e] mb-1">MDL</span>
+            <div className="flex flex-wrap items-end gap-3 mb-6">
+              {produs.areReducere && produs.pretReducere ? (
+                <>
+                  <span className="text-4xl lg:text-5xl font-extralight text-red-600 leading-none tabular-nums">
+                    {produs.pretReducere.toLocaleString("ro-RO")}
+                  </span>
+                  <span className="text-base text-red-400 mb-1">MDL</span>
+                  <span className="text-2xl text-[#a8a29e] line-through leading-none mb-0.5 tabular-nums">
+                    {produs.pret.toLocaleString("ro-RO")}
+                  </span>
+                  {produs.procentReducere && (
+                    <span className="mb-1 rounded bg-red-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-white">
+                      -{produs.procentReducere}%
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="text-4xl lg:text-5xl font-extralight text-[#1c1917] leading-none tabular-nums">
+                    {produs.pret.toLocaleString("ro-RO")}
+                  </span>
+                  <span className="text-base text-[#a8a29e] mb-1">MDL</span>
+                </>
+              )}
             </div>
 
             <div className="h-px bg-[#e7e5e4] mb-6" />

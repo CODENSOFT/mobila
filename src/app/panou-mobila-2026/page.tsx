@@ -49,6 +49,9 @@ export default function PanouProdusePage() {
     categorie: ProductCategory;
     imagineUrl: string;
     imagineFile?: File | null;
+    areReducere: boolean;
+    pretReducere?: number;
+    procentReducere?: number;
   }) => {
     const hasFile = payload.imagineFile instanceof File;
 
@@ -69,6 +72,9 @@ export default function PanouProdusePage() {
             if (payload.imagineFile) {
               formData.append("imagine", payload.imagineFile);
             }
+            formData.append("areReducere", String(payload.areReducere));
+            if (payload.pretReducere) formData.append("pretReducere", String(payload.pretReducere));
+            if (payload.procentReducere) formData.append("procentReducere", String(payload.procentReducere));
             return formData;
           })(),
         })
