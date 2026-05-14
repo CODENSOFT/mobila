@@ -12,9 +12,7 @@ import FadeInOnScroll from "@/src/components/ui/FadeInOnScroll";
 import { getDiscountedProducts, getFeaturedProducts, getTopProducts } from "@/src/services/products";
 import { getDictionary, isLocale } from "./dictionaries";
 
-export async function generateStaticParams() {
-  return [{ lang: "ro" }, { lang: "ru" }];
-}
+export const dynamic = "force-dynamic";
 
 export default async function HomePage({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
