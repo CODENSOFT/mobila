@@ -39,7 +39,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    const sanitized = ids.slice(0, 6).filter((id) => typeof id === "string" && id.trim().length > 0);
+    const sanitized = ids.filter((id) => typeof id === "string" && id.trim().length > 0);
 
     await SiteSettings.findOneAndUpdate(
       { key: SETTINGS_KEY },

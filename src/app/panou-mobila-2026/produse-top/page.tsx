@@ -44,11 +44,9 @@ export default function ProduseTopAdminPage() {
   }, []);
 
   const toggle = (id: string) => {
-    setSelectedIds((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= 6) return prev;
-      return [...prev, id];
-    });
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
     setSaved(false);
   };
 
@@ -82,7 +80,7 @@ export default function ProduseTopAdminPage() {
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Produse de top</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Selectează până la 6 produse care vor apărea în secțiunea „Produse de top" de pe pagina principală.
+            Selectează produsele care vor apărea în secțiunea „Produse de top" de pe pagina principală.
           </p>
         </div>
         <button
@@ -101,10 +99,7 @@ export default function ProduseTopAdminPage() {
       </header>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-        <span className="font-semibold text-slate-900">{selectedIds.length}/6</span> produse selectate
-        {selectedIds.length === 6 && (
-          <span className="ml-2 text-amber-700">— limita maximă atinsă.</span>
-        )}
+        <span className="font-semibold text-slate-900">{selectedIds.length}</span> produse selectate
       </div>
 
       {isLoading ? (
@@ -126,12 +121,9 @@ export default function ProduseTopAdminPage() {
                 key={product._id}
                 type="button"
                 onClick={() => toggle(product._id)}
-                disabled={!isSelected && selectedIds.length >= 6}
                 className={`group relative flex items-center gap-4 rounded-xl border p-3 text-left transition-all ${
                   isSelected
                     ? "border-amber-400 bg-amber-50 shadow-[0_0_0_2px_rgba(180,120,0,0.2)]"
-                    : selectedIds.length >= 6
-                    ? "cursor-not-allowed border-slate-200 bg-white opacity-50"
                     : "border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50/50"
                 }`}
               >
