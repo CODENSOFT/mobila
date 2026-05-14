@@ -1,59 +1,43 @@
-import { headers } from "next/headers";
-
-import { getApiBaseUrl } from "../lib/api";
 import { connectDB } from "../lib/db";
 import ProductModel from "../models/Product";
 import SiteSettings from "../models/SiteSettings";
 import type { Product } from "../types/product";
 
-async function getBaseUrl() {
-  const apiBaseUrl = getApiBaseUrl();
-  if (apiBaseUrl) {
-    return apiBaseUrl;
-  }
-
-  const headersList = await headers();
-  const host = headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") ?? "http";
-
-  if (!host) {
-    return null;
-  }
-
-  return `${protocol}://${host}`;
+function docToProduct(d: Record<string, unknown>): Product {
+  return { ...d, _id: String(d._id) } as unknown as Product;
 }
 
 export async function getAllProducts(): Promise<Product[]> {
-  const baseUrl = await getBaseUrl();
-  if (!baseUrl) {
-    return [];
-  }
-
-  const response = await fetch(`${baseUrl}/api/produse`, { cache: "no-store" });
-  if (!response.ok) {
-    return [];
-  }
-
-  return (await response.json()) as Product[];
+  await connectDB();
+  const docs = await ProductModel.find().lean();
+  return docs.map(docToProduct);
 }
 
 export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
-  const products = await getAllProducts();
-  return products.filter((p) => !p.areReducere).slice(0, limit);
+  await connectDB();
+  const docs = await ProductModel.find({ areReducere: { $ne: true } })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+  return docs.map(docToProduct);
 }
 
 export async function getDiscountedProducts(limit = 6): Promise<Product[]> {
-  const products = await getAllProducts();
-  return products
-    .filter((p) => p.areReducere && typeof p.pretReducere === "number")
-    .slice(0, limit);
+  await connectDB();
+  const docs = await ProductModel.find({ areReducere: true })
+    .sort({ createdAt: -1 })
+    .lean();
+  return docs
+    .filter((d) => typeof d.pretReducere === "number")
+    .slice(0, limit)
+    .map(docToProduct);
 }
 
 export async function getTopProducts(): Promise<Product[]> {
   try {
     await connectDB();
 
-    const settings = await SiteSettings.findOne({ key: "produse-top" }).lean();
+    const settings = await SiteSettings.findOne({ key: "produse-top" }).lean<{ topProductIds?: string[] }>();
     const ids: string[] = Array.isArray(settings?.topProductIds) ? settings.topProductIds : [];
     if (ids.length === 0) return [];
 
@@ -63,7 +47,7 @@ export async function getTopProducts(): Promise<Product[]> {
     return ids
       .map((id) => byId.get(id))
       .filter((d): d is NonNullable<typeof d> => d !== undefined)
-      .map((d) => ({ ...d, _id: String(d._id) } as unknown as Product));
+      .map(docToProduct);
   } catch {
     return [];
   }
