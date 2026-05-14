@@ -2,14 +2,14 @@ import { notFound } from "next/navigation";
 import { Clock, ShieldCheck, Truck } from "lucide-react";
 
 import HeroSection from "@/src/components/sections/HeroSection";
-import HeroSplit from "@/src/components/sections/HeroSplit";
 import CategoriesSection from "@/src/components/sections/CategoriesSection";
 import FeaturedProductsSection from "@/src/components/sections/FeaturedProductsSection";
 import PretScazutSection from "@/src/components/sections/PretScazutSection";
+import ProduseTopSection from "@/src/components/sections/ProduseTopSection";
 import ServiciiSection from "@/src/components/sections/ServiciiSection";
 import Testimoniale from "@/src/components/sections/Testimoniale";
 import FadeInOnScroll from "@/src/components/ui/FadeInOnScroll";
-import { getDiscountedProducts, getFeaturedProducts } from "@/src/services/products";
+import { getDiscountedProducts, getFeaturedProducts, getTopProducts } from "@/src/services/products";
 import { getDictionary, isLocale } from "./dictionaries";
 
 export async function generateStaticParams() {
@@ -20,13 +20,13 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
 
-  const [dict, featuredProducts, discountedProducts] = await Promise.all([
+  const [dict, featuredProducts, discountedProducts, topProducts] = await Promise.all([
     getDictionary(lang),
     getFeaturedProducts(),
     getDiscountedProducts(),
+    getTopProducts(),
   ]);
 
-  const hs = dict.heroSplit;
   const s = dict.services;
 
   return (
@@ -40,19 +40,18 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         <CategoriesSection t={dict.categories} productsBasePath={`/${lang}/produse`} />
       </FadeInOnScroll>
       <FadeInOnScroll>
+        <ProduseTopSection
+          products={topProducts}
+          lang={lang}
+        />
+      </FadeInOnScroll>
+      <FadeInOnScroll>
         <FeaturedProductsSection
           products={featuredProducts}
           t={dict.featured}
           lang={lang}
         />
       </FadeInOnScroll>
-      <HeroSplit
-        title={hs.title}
-        description={hs.description}
-        categoriesLinkLabel={hs.viewAll}
-        categoriesHref={`/${lang}/produse`}
-        tickerMessages={hs.ticker}
-      />
       <FadeInOnScroll>
         <PretScazutSection
           products={discountedProducts}

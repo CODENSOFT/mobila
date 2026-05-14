@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toApiUrl } from "@/src/lib/api";
+import { discountBadgeText } from "@/src/lib/discount";
 import { getSafeImageSrc } from "@/src/lib/image";
 import { useLang } from "@/src/context/LangContext";
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
@@ -79,7 +80,7 @@ function SimilarProductCard({
           ) : null}
           {produs.areReducere && (
             <span className="absolute right-4 top-4 rounded bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-              {produs.procentReducere ? `-${produs.procentReducere}%` : "REDUCERE"}
+              {produs.procentReducere ? `-${produs.procentReducere}%` : discountBadgeText(lang)}
             </span>
           )}
         </div>

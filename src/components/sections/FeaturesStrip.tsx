@@ -21,6 +21,8 @@ const DEFAULT_ITEMS: FeaturesStripItem[] = [
 
 const ICONS: LucideIcon[] = [TreePine, Ruler, ShieldCheck, Truck, Wrench, Award];
 
+const MOBILE_VISIBLE = new Set([0, 1, 3]);
+
 export default function FeaturesStrip({
   items = DEFAULT_ITEMS,
 }: {
@@ -28,17 +30,15 @@ export default function FeaturesStrip({
 }) {
   return (
     <div className="relative">
-      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-12 lg:py-8">
-        <ul className="grid grid-cols-3 gap-x-3 gap-y-7 md:grid-cols-6 md:gap-x-2 lg:gap-x-4">
+      <div className="px-4 py-6 sm:px-6 lg:px-12 lg:py-8">
+        <ul className="flex justify-between gap-x-2 lg:gap-x-4">
           {items.map((item, index) => {
             const Icon = ICONS[index] ?? Award;
-            const visibleOnMobile = index >= 2 && index <= 4;
+            const mobileVisible = MOBILE_VISIBLE.has(index);
             return (
               <li
                 key={item.title}
-                className={`group relative flex flex-col items-center text-center ${
-                  visibleOnMobile ? "" : "hidden md:flex"
-                }`}
+                className={`group relative flex flex-1 flex-col items-center text-center ${mobileVisible ? "" : "hidden sm:flex"}`}
               >
                 <span className="relative mb-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/[0.04] transition-all duration-300 group-hover:scale-110 group-hover:border-[var(--brand-green)] group-hover:bg-[color:rgba(102,169,37,0.15)] group-hover:shadow-[0_0_24px_rgba(102,169,37,0.4)] lg:h-14 lg:w-14">
                   <Icon
@@ -54,7 +54,9 @@ export default function FeaturesStrip({
                   {item.subtitle}
                 </span>
                 {index < items.length - 1 ? (
-                  <span className="pointer-events-none absolute right-0 top-3 hidden h-12 w-px -translate-x-1/2 bg-linear-to-b from-transparent via-white/12 to-transparent md:block lg:top-4 lg:h-16" />
+                  <span className={`pointer-events-none absolute right-0 top-3 h-12 w-px -translate-x-1/2 bg-linear-to-b from-transparent via-white/12 to-transparent lg:top-4 lg:h-16 ${
+                    mobileVisible && index !== 3 ? "block" : "hidden sm:block"
+                  }`} />
                 ) : null}
               </li>
             );

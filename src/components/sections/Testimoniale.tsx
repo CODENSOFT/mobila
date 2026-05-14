@@ -118,7 +118,7 @@ export default function Testimoniale({ t }: TestimonialeProps) {
                 {d.label}
               </span>
             </div>
-            <h2 className="text-3xl lg:text-4xl font-light text-[#1c1917]">
+            <h2 className="text-2xl lg:text-3xl font-light text-[#1c1917]">
               {d.headingLead}{" "}
               <span className="italic font-normal">{d.headingEm}</span>
             </h2>

@@ -37,7 +37,7 @@ export default function HeroSection({ t, productsHref, features }: Props) {
           <p className="mb-6 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand-green)]">
             {t.badge}
           </p>
-          <h1 className="text-5xl font-light leading-[1.1] tracking-tight text-white sm:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-light leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
             {t.heading1}
             <br />
             <span className="font-serif italic text-[var(--brand-green)]">{t.heading2}</span>

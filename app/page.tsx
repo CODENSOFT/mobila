@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import HeroSplit from "../src/components/sections/HeroSplit";
 import ServiciiSection from "../src/components/sections/ServiciiSection";
 import CategoriesSection from "../src/components/sections/CategoriesSection";
 import FeaturedProductsSection from "../src/components/sections/FeaturedProductsSection";
 import PretScazutSection from "../src/components/sections/PretScazutSection";
+import ProduseTopSection from "../src/components/sections/ProduseTopSection";
 import HeroSection from "../src/components/sections/HeroSection";
 import Testimoniale from "../src/components/sections/Testimoniale";
 import FadeInOnScroll from "../src/components/ui/FadeInOnScroll";
-import { getDiscountedProducts, getFeaturedProducts } from "../src/services/products";
+import { getDiscountedProducts, getFeaturedProducts, getTopProducts } from "../src/services/products";
 import { getDictionary } from "./[lang]/dictionaries";
 
 export const metadata: Metadata = {
@@ -16,9 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [featuredProducts, discountedProducts, dict] = await Promise.all([
+  const [featuredProducts, discountedProducts, topProducts, dict] = await Promise.all([
     getFeaturedProducts(),
     getDiscountedProducts(),
+    getTopProducts(),
     getDictionary("ro"),
   ]);
   const s = dict.services;
@@ -34,9 +35,11 @@ export default async function Home() {
         <CategoriesSection />
       </FadeInOnScroll>
       <FadeInOnScroll>
+        <ProduseTopSection products={topProducts} lang="ro" />
+      </FadeInOnScroll>
+      <FadeInOnScroll>
         <FeaturedProductsSection products={featuredProducts} />
       </FadeInOnScroll>
-      <HeroSplit />
       <FadeInOnScroll>
         <PretScazutSection products={discountedProducts} t={dict.pretScazut} lang="ro" />
       </FadeInOnScroll>

@@ -342,43 +342,6 @@ export default async function DesprePage({ params }: PageProps<"/[lang]/despre">
           </div>
         </section>
       </FadeInOnScroll>
-
-      {/* CTA */}
-      <FadeInOnScroll>
-        <section className="border-t border-stone-200/80 bg-[#f0ece6] px-6 py-24 lg:px-12 lg:py-32">
-          <div className="mx-auto max-w-7xl">
-            <div className="relative overflow-hidden bg-[#1c1917] px-8 py-12 shadow-[0_24px_60px_rgba(28,25,23,0.12)] lg:grid lg:grid-cols-2 lg:items-center lg:gap-12 lg:px-14 lg:py-16">
-              <div
-                className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-(--brand-green)/10 blur-3xl"
-                aria-hidden
-              />
-              <div className="relative">
-                <h2 className="text-2xl font-extralight leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
-                  {t.cta.heading}{" "}
-                  <span className="font-serif italic text-(--brand-green)">{t.cta.italic}</span>
-                </h2>
-                <p className="mt-5 max-w-md text-sm leading-relaxed text-white/55">{t.cta.description}</p>
-              </div>
-              <div className="relative mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:mt-0 lg:justify-end">
-                <Button
-                  href={`/${lang}/produse`}
-                  variant="solid"
-                  className="rounded-none border-0 bg-white px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917] hover:bg-(--brand-green) hover:text-white"
-                >
-                  {t.cta.viewProducts}
-                </Button>
-                <Button
-                  href={`/${lang}/contact`}
-                  variant="outline"
-                  className="rounded-none border-white/25 bg-transparent px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80 hover:border-white/50 hover:bg-white/5 hover:text-white"
-                >
-                  {t.cta.contact}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </FadeInOnScroll>
     </main>
   );
 }

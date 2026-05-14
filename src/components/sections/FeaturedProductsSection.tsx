@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
+import { discountBadgeText } from "@/src/lib/discount";
 import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { getSafeImageSrc } from "../../lib/image";
 import type { Product } from "../../types/product";
@@ -69,7 +70,7 @@ function FeaturedProductCard({
 
         {product.areReducere && (
           <span className="absolute right-4 top-4 rounded bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-            {product.procentReducere ? `-${product.procentReducere}%` : "REDUCERE"}
+            {product.procentReducere ? `-${product.procentReducere}%` : discountBadgeText(lang)}
           </span>
         )}
 

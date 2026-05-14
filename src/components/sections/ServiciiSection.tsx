@@ -84,7 +84,7 @@ export default function ServiciiSection({
                 {badge}
               </p>
               <h2
-                className="text-4xl font-light tracking-tight text-[#1c1917] lg:text-6xl"
+                className="text-3xl font-light tracking-tight text-[#1c1917] lg:text-5xl"
               >
                 {sectionTitle}
               </h2>

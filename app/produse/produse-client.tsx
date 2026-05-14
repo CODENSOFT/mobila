@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLang } from "@/src/context/LangContext";
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
 import { useSearchParams } from "next/navigation";
+import { discountBadgeText } from "../../src/lib/discount";
 import { getSafeImageSrc } from "../../src/lib/image";
 import type { Product, ProductCategory } from "../../src/types/product";
 import {
@@ -33,6 +34,7 @@ const CATEGORY_QUERY_ALIASES: Record<string, ProductCategory> = {
 const normalizeCategory = (value?: string | null): Category => {
   if (!value) return "All";
   const trimmed = value.trim();
+  if (trimmed === "Reduceri") return "Reduceri";
   const resolved = CATEGORY_QUERY_ALIASES[trimmed] ?? trimmed;
   return isKnownCategory(resolved) ? resolved : "All";
 };
@@ -159,7 +161,7 @@ function ProductGridCard({
         ) : null}
         {produs.areReducere && (
           <span className="absolute right-4 top-4 rounded bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-            {produs.procentReducere ? `-${produs.procentReducere}%` : "REDUCERE"}
+            {produs.procentReducere ? `-${produs.procentReducere}%` : discountBadgeText(lang)}
           </span>
         )}
       </div>

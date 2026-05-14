@@ -597,44 +597,6 @@ export default function DesprePage() {
           </div>
         </section>
       </FadeInOnScroll>
-
-      {/* ─── CTA FINAL ─── */}
-      <FadeInOnScroll>
-        <section className="bg-[#f0ece6] px-6 py-28 lg:px-12 lg:py-36">
-          <div className="mx-auto max-w-7xl">
-            <div className="relative overflow-hidden bg-[#1c1917] p-10 lg:grid lg:grid-cols-2 lg:items-center lg:gap-12 lg:p-16">
-              {/* Decorativ */}
-              <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#a3c585]/10 blur-3xl" />
-
-              <div className="relative">
-                <h2 className="text-3xl font-extralight leading-[1.1] tracking-tight text-white sm:text-4xl lg:text-5xl">
-                  Hai să discutăm despre{" "}
-                  <span className="font-serif italic text-[#a3c585]">proiectul tău</span>
-                </h2>
-                <p className="mt-5 max-w-md text-sm leading-[1.8] text-white/50">
-                  Fie că ai nevoie de mobilier gata sau la comandă, te ajutăm să alegi soluția
-                  potrivită. Primul pas este o conversație.
-                </p>
-              </div>
-
-              <div className="relative mt-10 flex flex-col gap-4 sm:flex-row lg:mt-0 lg:justify-end">
-                <Link
-                  href="/produse"
-                  className="inline-flex items-center justify-center gap-3 bg-[#a3c585] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white"
-                >
-                  Vezi produsele
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-3 border border-white/20 bg-transparent px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70 transition-all hover:border-white/40 hover:text-white"
-                >
-                  Contactează-ne
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      </FadeInOnScroll>
     </main>
   );
 }

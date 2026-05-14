@@ -52,8 +52,8 @@ export default function CategoriesSection({
       <div className="pointer-events-none absolute bottom-0 left-0 h-[500px] w-[500px] rounded-full bg-linear-to-tr from-[#f0f7eb]/60 via-transparent to-transparent blur-3xl" />
 
       <div className="relative mx-auto max-w-[1400px] px-6 lg:px-12">
-        <div className="mb-16 lg:mb-24 text-left">
-          <h2 className="text-4xl font-light tracking-tight text-[#1c1917] lg:text-6xl">
+        <div className="mb-6 lg:mb-8 text-left">
+          <h2 className="text-3xl font-light tracking-tight text-[#1c1917] lg:text-5xl">
             {t.heading}
           </h2>
         </div>
