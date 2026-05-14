@@ -47,7 +47,7 @@ export default function CategoriesSection({
     `${productsBasePath}?categorie=${encodeURIComponent(category)}`;
 
   return (
-    <section className="relative overflow-hidden bg-[#fafaf9] py-24 lg:py-32">
+    <section className="relative overflow-hidden bg-[#fafaf9] pt-24 pb-10 lg:pt-32 lg:pb-14">
       <div className="pointer-events-none absolute top-0 right-0 h-[600px] w-[600px] rounded-full bg-linear-to-bl from-[#e8f5e0]/40 via-transparent to-transparent blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-0 h-[500px] w-[500px] rounded-full bg-linear-to-tr from-[#f0f7eb]/60 via-transparent to-transparent blur-3xl" />
 

@@ -14,7 +14,7 @@ import {
   getCategoriesForDormitorGroup,
 } from "../../src/constants/categories";
 
-type Category = "All" | ProductCategory;
+type Category = "All" | "Reduceri" | ProductCategory;
 
 const categories: Category[] = [
   "All",
@@ -190,11 +190,20 @@ function ProductGridCard({
 export default function ProduseClient({ produse }: { produse: Product[] }) {
   const { lang, dict } = useLang();
   const t = dict.products;
+  const tReduceri = dict.pretScazut;
   const formatNumber = (value: number) => value.toLocaleString("ro-RO");
   const searchParams = useSearchParams();
   const categoryFromUrlValid = normalizeCategory(searchParams.get("categorie"));
   const minAvailablePrice = produse.length > 0 ? Math.min(...produse.map((p) => p.pret)) : 0;
   const maxAvailablePrice = produse.length > 0 ? Math.max(...produse.map((p) => p.pret)) : 0;
+
+  const discountedProducts = useMemo(
+    () =>
+      produse.filter(
+        (p) => p.areReducere && typeof p.pretReducere === "number"
+      ),
+    [produse]
+  );
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [query, setQuery] = useState("");
@@ -217,7 +226,11 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
   const filteredProducts = useMemo(() => {
     let list = produse;
 
-    if (activeCategory !== "All") {
+    if (activeCategory === "Reduceri") {
+      list = list.filter(
+        (produs) => produs.areReducere && typeof produs.pretReducere === "number"
+      );
+    } else if (activeCategory !== "All") {
       if (activeCategory === "Dormitoare") {
         list = list.filter(
           (produs) =>
@@ -352,6 +365,26 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                     </span>
                     <span className="text-xs text-[#a8a29e]">{produse.length}</span>
                   </button>
+                  {discountedProducts.length > 0 && (
+                    <button
+                      onClick={() => setSelectedCategory("Reduceri")}
+                      className={`w-full flex items-center justify-between py-2.5 text-sm transition-colors ${
+                        activeCategory === "Reduceri"
+                          ? "text-red-700 font-medium"
+                          : "text-red-700/80 hover:text-red-700"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        {activeCategory === "Reduceri" && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                        )}
+                        <span className={activeCategory === "Reduceri" ? "ml-0" : "ml-4.5"}>
+                          {tReduceri.label}
+                        </span>
+                      </span>
+                      <span className="text-xs text-red-500/70">{discountedProducts.length}</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-4">

@@ -9,8 +9,18 @@
     "badge": "LABIRINT",
     "heading1": "Mobilă la comandă în Moldova",
     "heading2": "de încredere",
-    "description": "Din 2007 oferim produse de calitate, garantii reale si mobilier personalizat, cu accent pe satisfactia fiecarui client.",
+    "description": "",
     "cta": "Descoperă Colecția"
+  },
+  "featuresStrip": {
+    "items": [
+      { "title": "Materiale naturale de calitate", "subtitle": "Lemn masiv, MDF premium" },
+      { "title": "Dimensiuni personalizate", "subtitle": "Adaptate spațiului tău" },
+      { "title": "Garanție 24 luni", "subtitle": "Reparații gratuite" },
+      { "title": "Livrare în toată Moldova", "subtitle": "Orașe și sate" },
+      { "title": "Montaj profesional inclus", "subtitle": "Echipă specializată" },
+      { "title": "Producție din 2007", "subtitle": "Atelier propriu Soroca" }
+    ]
   },
   "heroSplit": {
     "title": "Designuri de calitate premium, create pentru casa ta",
@@ -102,13 +112,23 @@
   },
   "featured": {
     "label": "",
-    "heading": "Piese",
-    "headingItalic": "remarcabile",
+    "heading": "Produse",
+    "headingItalic": "noi",
     "description": "Mobilier contemporan pentru interioare premium, construit pe proporții echilibrate și materiale autentice.",
     "viewAll": "Toată colecția",
     "empty": "Colecția va fi disponibilă în curând.",
     "labels": ["Nou", "Popular", "Ediție Limitată", "Premium", "Sezon", "Recomandat"],
     "defaultLabel": "Colecție",
+    "furniture": "Mobilier",
+    "viewDetails": "Vezi detalii"
+  },
+  "pretScazut": {
+    "label": "Reduceri",
+    "heading": "Preț",
+    "headingItalic": "Scăzut",
+    "description": "Selecție de piese cu preț redus, disponibile cât timp sunt în stoc.",
+    "viewAll": "Toate reducerile",
+    "empty": "Momentan nu sunt produse la preț redus.",
     "furniture": "Mobilier",
     "viewDetails": "Vezi detalii"
   },

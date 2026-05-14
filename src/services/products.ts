@@ -36,5 +36,12 @@ export async function getAllProducts(): Promise<Product[]> {
 
 export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
   const products = await getAllProducts();
-  return products.slice(0, limit);
+  return products.filter((p) => !p.areReducere).slice(0, limit);
+}
+
+export async function getDiscountedProducts(limit = 6): Promise<Product[]> {
+  const products = await getAllProducts();
+  return products
+    .filter((p) => p.areReducere && typeof p.pretReducere === "number")
+    .slice(0, limit);
 }

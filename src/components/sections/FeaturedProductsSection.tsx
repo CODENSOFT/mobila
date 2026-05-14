@@ -24,8 +24,8 @@ type FeaturedDict = {
 
 const DEFAULT_T: FeaturedDict = {
   label: "",
-  heading: "Piese",
-  headingItalic: "remarcabile",
+  heading: "Produse",
+  headingItalic: "noi",
   description: "Mobilier contemporan pentru interioare premium, construit pe proporții echilibrate și materiale autentice.",
   viewAll: "Toată colecția",
   empty: "Colecția va fi disponibilă în curând.",
@@ -127,7 +127,7 @@ export default function FeaturedProductsSection({
   }
 
   return (
-    <section className="bg-[#fafaf9] py-24 lg:py-32">
+    <section className="bg-[#fafaf9] pt-6 pb-24 lg:pt-10 lg:pb-32">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="mb-16 flex flex-col gap-8 lg:mb-20 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-4">
