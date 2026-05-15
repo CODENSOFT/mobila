@@ -10,6 +10,7 @@ import ServiciiSection from "@/src/components/sections/ServiciiSection";
 import Testimoniale from "@/src/components/sections/Testimoniale";
 import FadeInOnScroll from "@/src/components/ui/FadeInOnScroll";
 import { getDiscountedProducts, getFeaturedProducts, getTopProducts } from "@/src/services/products";
+import AutoRefresh from "@/src/components/ui/AutoRefresh";
 import { getDictionary, isLocale } from "./dictionaries";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
 
   return (
     <main className="bg-[#f7f3ec] text-gray-900">
+      <AutoRefresh />
       <HeroSection
         t={dict.hero}
         productsHref={`/${lang}/produse`}

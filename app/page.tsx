@@ -10,6 +10,7 @@ import HeroSection from "../src/components/sections/HeroSection";
 import Testimoniale from "../src/components/sections/Testimoniale";
 import FadeInOnScroll from "../src/components/ui/FadeInOnScroll";
 import { getDiscountedProducts, getFeaturedProducts, getTopProducts } from "../src/services/products";
+import AutoRefresh from "../src/components/ui/AutoRefresh";
 import { getDictionary } from "./[lang]/dictionaries";
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default async function Home() {
 
   return (
     <main className="bg-[#f7f3ec] text-gray-900">
+      <AutoRefresh />
       <HeroSection
         t={dict.hero}
         productsHref="/ro/produse"
