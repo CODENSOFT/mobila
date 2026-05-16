@@ -112,7 +112,7 @@ export default function ProduseTopSection({
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-white py-24 lg:py-32">
+    <section className="bg-white pt-0 pb-24 lg:pb-32">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="mb-16 flex flex-col gap-8 lg:mb-20 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-4">
