@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
-import ServiciiSection from "../src/components/sections/ServiciiSection";
 import CategoriesSection from "../src/components/sections/CategoriesSection";
 import FeaturedProductsSection from "../src/components/sections/FeaturedProductsSection";
 import PretScazutSection from "../src/components/sections/PretScazutSection";
 import ProduseTopSection from "../src/components/sections/ProduseTopSection";
-import HeroSection from "../src/components/sections/HeroSection";
-import Testimoniale from "../src/components/sections/Testimoniale";
 import FadeInOnScroll from "../src/components/ui/FadeInOnScroll";
-import { getDiscountedProducts, getFeaturedProducts, getTopProducts } from "../src/services/products";
 import AutoRefresh from "../src/components/ui/AutoRefresh";
+import { getDiscountedProducts, getFeaturedProducts, getTopProducts } from "../src/services/products";
 import { getDictionary } from "./[lang]/dictionaries";
 
 export const metadata: Metadata = {
@@ -25,35 +22,22 @@ export default async function Home() {
     getTopProducts(),
     getDictionary("ro"),
   ]);
-  const s = dict.services;
 
   return (
     <main className="bg-[#f7f3ec] text-gray-900">
       <AutoRefresh />
-      <HeroSection
-        t={dict.hero}
-        productsHref="/ro/produse"
-        features={dict.featuresStrip?.items}
-      />
-      <FadeInOnScroll>
-        <CategoriesSection />
-      </FadeInOnScroll>
       <FadeInOnScroll>
         <ProduseTopSection products={topProducts} lang="ro" />
       </FadeInOnScroll>
       <FadeInOnScroll>
-        <FeaturedProductsSection products={featuredProducts} />
+        <FeaturedProductsSection products={featuredProducts} t={dict.featured} lang="ro" />
       </FadeInOnScroll>
       <FadeInOnScroll>
         <PretScazutSection products={discountedProducts} t={dict.pretScazut} lang="ro" />
       </FadeInOnScroll>
       <FadeInOnScroll>
-        <ServiciiSection
-          copyrightQuality={s.quality}
-          imageOverlayCaption={s.design}
-        />
+        <CategoriesSection t={dict.categories} productsBasePath="/ro/produse" />
       </FadeInOnScroll>
-      <Testimoniale t={dict.testimonials} />
     </main>
   );
 }

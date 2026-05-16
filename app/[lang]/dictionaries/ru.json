@@ -124,8 +124,8 @@
   },
   "pretScazut": {
     "label": "Скидки",
-    "heading": "Низкая",
-    "headingItalic": "цена",
+    "heading": "",
+    "headingItalic": "Reducere",
     "description": "Подборка товаров по сниженным ценам, пока есть в наличии.",
     "viewAll": "Все скидки",
     "empty": "Сейчас нет товаров по сниженной цене.",

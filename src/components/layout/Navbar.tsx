@@ -39,17 +39,11 @@ export default function Navbar() {
     router.push(newPath);
   }, [restPath, router]);
 
-  const isLight = !isHomePage || isScrolled;
+  const isLight = true;
 
   return (
     <header
-      className={`${isHomePage ? "fixed" : "sticky"} top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isHomePage
-          ? isLight
-            ? "bg-white/95 backdrop-blur-sm border-b border-gray-100"
-            : "bg-transparent"
-          : "bg-white/95 backdrop-blur-sm border-b border-gray-100"
-      }`}
+      className="sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-sm border-b border-gray-100"
     >
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <nav className="flex h-20 lg:h-24 items-center justify-between">

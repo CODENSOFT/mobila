@@ -124,8 +124,8 @@
   },
   "pretScazut": {
     "label": "Reduceri",
-    "heading": "Preț",
-    "headingItalic": "Scăzut",
+    "heading": "",
+    "headingItalic": "Reducere",
     "description": "Selecție de piese cu preț redus, disponibile cât timp sunt în stoc.",
     "viewAll": "Toate reducerile",
     "empty": "Momentan nu sunt produse la preț redus.",

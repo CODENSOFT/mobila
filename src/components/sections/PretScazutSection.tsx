@@ -23,8 +23,8 @@ type PretScazutDict = {
 
 const DEFAULT_T: PretScazutDict = {
   label: "Reduceri",
-  heading: "Pret",
-  headingItalic: "Scazut",
+  heading: "",
+  headingItalic: "Reducere",
   description: "Selectie de piese cu pret redus, disponibile cat timp sunt in stoc.",
   viewAll: "Toate reducerile",
   empty: "Momentan nu sunt produse la pret redus.",
