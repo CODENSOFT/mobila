@@ -116,12 +116,6 @@ export default function ProduseTopSection({
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="mb-16 flex flex-col gap-8 lg:mb-20 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-px w-12 bg-amber-700/40" />
-              <span className="text-[11px] font-medium tracking-[0.25em] uppercase text-amber-800/80">
-                {t.label}
-              </span>
-            </div>
             <h2 className="text-3xl lg:text-5xl font-light text-[#1c1917] leading-tight">
               {t.heading} <span className="italic font-normal text-amber-800">{t.headingItalic}</span>
             </h2>
