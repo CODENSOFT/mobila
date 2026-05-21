@@ -9,6 +9,7 @@ import Footer from "@/src/components/layout/Footer";
 import Navbar from "@/src/components/layout/Navbar";
 import { CartProvider } from "@/src/context/CartContext";
 import { LangProvider } from "@/src/context/LangContext";
+import LangGuard from "@/src/components/ui/LangGuard";
 import { getDictionary, isLocale } from "./dictionaries";
 
 export async function generateStaticParams() {
@@ -26,6 +27,7 @@ export default async function LangLayout({
 
   return (
     <LangProvider lang={lang} dict={dict}>
+      <LangGuard />
       <CartProvider>
         <Navbar />
         <CartDrawer />

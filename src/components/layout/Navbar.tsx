@@ -35,6 +35,7 @@ export default function Navbar() {
   }, []);
 
   const switchLang = useCallback((targetLang: string) => {
+    localStorage.setItem("lang", targetLang);
     document.cookie = `lang=${targetLang}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     const newPath = restPath ? `/${targetLang}/${restPath}` : `/${targetLang}`;
     router.replace(newPath);
