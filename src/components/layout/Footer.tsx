@@ -40,7 +40,7 @@ export default function Footer() {
               <span>
                 <span className="block text-xl font-medium tracking-tight">LABIRINT</span>
                 <span className="mt-1 block text-[10px] uppercase tracking-[0.3em] text-(--brand-green)">
-                  Mobilier Premium
+                  {dict.nav.tagline}
                 </span>
               </span>
             </Link>

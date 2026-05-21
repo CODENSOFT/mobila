@@ -3,7 +3,8 @@
     "home": "Acasă",
     "products": "Produse",
     "about": "Despre",
-    "contact": "Contact"
+    "contact": "Contact",
+    "tagline": "Mobilier Premium"
   },
   "hero": {
     "badge": "LABIRINT",
@@ -109,6 +110,28 @@
         "oras": "Timișoara"
       }
     ]
+  },
+  "aboutSnippet": {
+    "badge": "Companie",
+    "heading1": "Mobilier făcut corect,",
+    "heading2": "pentru oameni care",
+    "headingAccent": "apreciază calitatea",
+    "description": "LABIRINT este un brand dezvoltat de SRL GASNASGRUP, activ pe piața mobilei din 2007. Cu o experiență de peste 19 ani, am construit sute de proiecte pentru clienți din toată Moldova. Ne-am dezvoltat pas cu pas, prin recomandări și încrederea clienților. Punem accent pe calitate reală, materiale atent selectate, execuție precisă și relații pe termen lung cu clienții.",
+    "tags": [
+      "Calitate reală, nu doar aspect",
+      "Materiale atent selectate",
+      "Execuție precisă",
+      "Relații pe termen lung cu clienții"
+    ]
+  },
+  "produseTop": {
+    "label": "Selecție",
+    "heading": "Produse",
+    "headingItalic": "de top",
+    "description": "O selecție curatoriată din cele mai apreciate piese ale noastre.",
+    "viewAll": "Toată colecția",
+    "furniture": "Mobilier",
+    "viewDetails": "Vezi detalii"
   },
   "featured": {
     "label": "",

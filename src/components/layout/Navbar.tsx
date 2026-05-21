@@ -63,7 +63,7 @@ export default function Navbar() {
                 LABIRINT
               </span>
               <span className="block text-[9px] uppercase tracking-[0.3em] text-(--brand-green) transition-colors duration-300">
-                Mobilier Premium
+                {nav.tagline}
               </span>
             </div>
           </Link>

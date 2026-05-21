@@ -12,6 +12,9 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+import { isValidObjectId } from "mongoose";
+import { connectDB } from "@/src/lib/db";
+import ProductModel from "@/src/models/Product";
 import ProductImageGallery from "@/src/components/product/ProductImageGallery";
 import AddToCartButton from "@/src/components/cart/AddToCartButton";
 import ProduseSimilare from "../../../src/components/sections/ProduseSimilare";
@@ -73,16 +76,15 @@ function parseDescription(description: string): DescriptionBlock[] {
 
 async function getProdusById(id: string): Promise<Product | null> {
   try {
-    const apiBaseUrl = "https://mobila-production.up.railway.app";
-    const response = await fetch(`${apiBaseUrl}/api/produse?id=${encodeURIComponent(id)}`, {
-      cache: "no-store",
-    });
-    if (!response.ok) return null;
-    const produs = (await response.json()) as Product;
+    if (!isValidObjectId(id)) return null;
+    await connectDB();
+    const doc = await ProductModel.findById(id).lean<Record<string, unknown>>();
+    if (!doc) return null;
     return {
-      ...produs,
-      descriere: produs.descriere ?? produs.descriere_ro ?? "",
-    };
+      ...(doc as object),
+      _id: String(doc._id),
+      descriere: (doc.descriere as string | undefined) ?? (doc.descriere_ro as string | undefined) ?? "",
+    } as Product;
   } catch (error) {
     console.error("[produse/[id]] error", { id, error });
     return null;

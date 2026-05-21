@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { isValidObjectId } from "mongoose";
 import { getDictionary, isLocale } from "../../dictionaries";
+import { connectDB } from "@/src/lib/db";
+import ProductModel from "@/src/models/Product";
 import ProductPageClient from "./ProductPageClient";
 
 type Product = {
@@ -21,22 +24,17 @@ type Product = {
   procentReducere?: number;
 };
 
-type RawProduct = Omit<Product, "descriere"> & {
-  descriere?: string;
-};
-
 async function getProdusById(id: string): Promise<Product | null> {
   try {
-    const apiBaseUrl = "https://mobila-production.up.railway.app";
-    const response = await fetch(`${apiBaseUrl}/api/produse?id=${encodeURIComponent(id)}`, {
-      cache: "no-store",
-    });
-    if (!response.ok) return null;
-    const produs = (await response.json()) as RawProduct;
+    if (!isValidObjectId(id)) return null;
+    await connectDB();
+    const doc = await ProductModel.findById(id).lean<Record<string, unknown>>();
+    if (!doc) return null;
     return {
-      ...produs,
-      descriere: produs.descriere ?? produs.descriere_ro ?? "",
-    };
+      ...(doc as object),
+      _id: String(doc._id),
+      descriere: (doc.descriere as string | undefined) ?? (doc.descriere_ro as string | undefined) ?? "",
+    } as Product;
   } catch (error) {
     console.error("[[lang]/produse/[id]] error", { id, error });
     return null;

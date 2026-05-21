@@ -27,7 +27,7 @@ export default async function Home() {
     <main className="bg-[#f7f3ec] text-gray-900">
       <AutoRefresh />
       <FadeInOnScroll>
-        <ProduseTopSection products={topProducts} lang="ro" />
+        <ProduseTopSection products={topProducts} t={dict.produseTop} lang="ro" />
       </FadeInOnScroll>
       <FadeInOnScroll>
         <FeaturedProductsSection products={featuredProducts} t={dict.featured} lang="ro" />

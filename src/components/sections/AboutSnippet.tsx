@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-const TAGURI = [
-  "Calitate reală, nu doar aspect",
-  "Materiale atent selectate",
-  "Execuție precisă",
-  "Relații pe termen lung cu clienții",
-];
-
-/** Două copii identice pentru bucla marquee (translate -50% în CSS). */
-const BANDA = [...TAGURI, ...TAGURI];
+import { useLang } from "@/src/context/LangContext";
 
 function Pill({ text }: { text: string }) {
   return (
@@ -29,8 +20,12 @@ function Pill({ text }: { text: string }) {
 }
 
 export default function AboutSnippet() {
+  const { dict } = useLang();
+  const t = dict.aboutSnippet;
   const headRef = useRef<HTMLDivElement>(null);
   const [show, setShow] = useState(false);
+
+  const banda = [...t.tags, ...t.tags];
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -79,7 +74,7 @@ export default function AboutSnippet() {
           }`}
         >
           <span className="h-1 w-1 rounded-full bg-(--brand-green)" aria-hidden />
-          Companie
+          {t.badge}
         </div>
 
         <h2
@@ -89,12 +84,12 @@ export default function AboutSnippet() {
           }`}
         >
           <span className="block text-[2rem] font-extralight leading-[1.1] tracking-tight text-stone-900 sm:text-4xl md:text-5xl lg:text-[2.75rem]">
-            Mobilier făcut corect,
+            {t.heading1}
           </span>
           <span className="mt-2 block font-serif text-[1.65rem] italic leading-snug text-stone-700 sm:mt-3 sm:text-3xl md:text-[2.25rem] lg:text-[2.5rem]">
-            pentru oameni care{" "}
+            {t.heading2}{" "}
             <span className="bg-linear-to-r from-(--brand-green-dark) to-(--brand-green) bg-clip-text font-medium not-italic text-transparent">
-              apreciază calitatea
+              {t.headingAccent}
             </span>
           </span>
         </h2>
@@ -111,12 +106,7 @@ export default function AboutSnippet() {
             show ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
           }`}
         >
-          <strong className="font-semibold text-stone-900">LABIRINT</strong> este un brand dezvoltat
-          de <strong className="font-semibold text-stone-900">SRL GASNASGRUP</strong>, activ pe piața
-          mobilei din 2007. Cu o experiență de peste 19 ani, am construit sute de proiecte pentru clienți
-          din toată Moldova. Ne-am dezvoltat pas cu pas, prin recomandări și încrederea clienților.
-          Fiecare proiect realizat este o carte de vizită pentru noi. Punem accent pe calitate reală,
-          materiale atent selectate, execuție precisă și relații pe termen lung cu clienții.
+          {t.description}
         </p>
       </div>
 
@@ -131,7 +121,7 @@ export default function AboutSnippet() {
         />
 
         <div className="about-snippet-marquee-track flex items-center gap-3 md:gap-5">
-          {BANDA.map((text, i) => (
+          {banda.map((text, i) => (
             <Pill key={`${text}-${i}`} text={text} />
           ))}
         </div>

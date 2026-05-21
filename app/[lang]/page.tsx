@@ -26,7 +26,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
     <main className="bg-[#f7f3ec] text-gray-900">
       <AutoRefresh />
       <FadeInOnScroll>
-        <ProduseTopSection products={topProducts} lang={lang} />
+        <ProduseTopSection products={topProducts} t={dict.produseTop} lang={lang} />
       </FadeInOnScroll>
       <FadeInOnScroll>
         <FeaturedProductsSection products={featuredProducts} t={dict.featured} lang={lang} />

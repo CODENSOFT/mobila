@@ -284,6 +284,146 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     return list;
   }, [activeCategory, priceFrom, priceTo, produse, query, sortBy]);
 
+  const hasActiveFilter = activeCategory !== "All" || priceFrom !== "" || priceTo !== "";
+
+  const activeCategoryLabel =
+    activeCategory === "All"
+      ? null
+      : activeCategory === "Reduceri"
+      ? tReduceri.label
+      : (categoryLabel.get(activeCategory as ProductCategory) ?? activeCategory);
+
+  const filterContent = (
+    <div className="space-y-8">
+      {/* Categories */}
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917]/40 mb-4">
+          {t.categories}
+        </h3>
+        <div className="space-y-0.5 mb-5">
+          <button
+            onClick={() => { setSelectedCategory("All"); setIsFilterOpen(false); }}
+            className={`w-full flex items-center justify-between py-3 text-sm transition-colors ${
+              activeCategory === "All"
+                ? "text-[#1c1917] font-medium"
+                : "text-[#78716c] hover:text-[#1c1917]"
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              {activeCategory === "All" && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#1c1917]" />
+              )}
+              <span className={activeCategory === "All" ? "ml-0" : "ml-4.5"}>{t.all}</span>
+            </span>
+            <span className="text-xs text-[#a8a29e]">{produse.length}</span>
+          </button>
+          {discountedProducts.length > 0 && (
+            <button
+              onClick={() => { setSelectedCategory("Reduceri"); setIsFilterOpen(false); }}
+              className={`w-full flex items-center justify-between py-3 text-sm transition-colors ${
+                activeCategory === "Reduceri"
+                  ? "text-red-700 font-medium"
+                  : "text-red-700/80 hover:text-red-700"
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                {activeCategory === "Reduceri" && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                )}
+                <span className={activeCategory === "Reduceri" ? "ml-0" : "ml-4.5"}>
+                  {tReduceri.label}
+                </span>
+              </span>
+              <span className="text-xs text-red-500/70">{discountedProducts.length}</span>
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          {t.categoryGroups.map((group) => (
+            <div key={group.title}>
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a8a29e]">
+                {group.title}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive = activeCategory === item.key;
+                  const count = produse.filter((p) => p.categorie === item.key).length;
+                  return (
+                    <button
+                      key={`${group.title}-${item.key}`}
+                      onClick={() => { setSelectedCategory(item.key as ProductCategory); setIsFilterOpen(false); }}
+                      className={`w-full flex items-center justify-between py-2.5 text-sm transition-colors ${
+                        isActive
+                          ? "text-[#1c1917] font-medium"
+                          : "text-[#78716c] hover:text-[#1c1917]"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        {isActive && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#1c1917]" />
+                        )}
+                        <span className={isActive ? "ml-0" : "ml-4.5"}>
+                          {item.label}
+                        </span>
+                      </span>
+                      <span className="text-xs text-[#a8a29e]">{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Price Range Filter */}
+      <div className="pt-6 border-t border-[#e7e5e4]">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917]/40 mb-4">
+          {t.price}
+        </h3>
+        <div className="space-y-3">
+          <label className="block">
+            <span className="mb-1 block text-xs text-[#78716c]">{t.from}</span>
+            <input
+              type="number"
+              min={0}
+              value={priceFrom}
+              onChange={(e) => setPriceFrom(e.target.value)}
+              placeholder={`${formatNumber(minAvailablePrice)}`}
+              className="w-full rounded-lg border border-[#e7e5e4] bg-white px-3 py-2.5 text-sm text-[#1c1917] placeholder:text-[#a8a29e] focus:border-[#1c1917] focus:outline-none transition-colors"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs text-[#78716c]">{t.to}</span>
+            <input
+              type="number"
+              min={0}
+              value={priceTo}
+              onChange={(e) => setPriceTo(e.target.value)}
+              placeholder={`${formatNumber(maxAvailablePrice)}`}
+              className="w-full rounded-lg border border-[#e7e5e4] bg-white px-3 py-2.5 text-sm text-[#1c1917] placeholder:text-[#a8a29e] focus:border-[#1c1917] focus:outline-none transition-colors"
+            />
+          </label>
+          <p className="pt-1 text-xs text-[#a8a29e]">
+            {t.priceRange}: {formatNumber(minAvailablePrice)} - {formatNumber(maxAvailablePrice)} MDL
+          </p>
+        </div>
+      </div>
+
+      {/* Contact CTA - desktop only */}
+      <div className="hidden lg:block pt-6 border-t border-[#e7e5e4]">
+        <p className="text-sm text-[#78716c] mb-3">{t.contactCta}</p>
+        <Link
+          href={`/${lang}/contact`}
+          className="text-sm font-medium text-[#1c1917] underline underline-offset-4 hover:text-[#78716c] transition-colors"
+        >
+          {t.contactLink}
+        </Link>
+      </div>
+    </div>
+  );
+
   return (
     <main className="min-h-screen bg-[#fafaf9]">
       {/* Header */}
@@ -321,18 +461,104 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
             </div>
           </div>
 
-          {/* Mobile Filter Toggle */}
+          {/* Mobile toolbar */}
           <div className="lg:hidden mt-6 flex items-center gap-3">
             <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 px-4 py-2.5 border border-[#e7e5e4] rounded-lg text-sm font-medium"
+              onClick={() => setIsFilterOpen(true)}
+              className="relative flex items-center gap-2 px-4 py-2.5 border border-[#e7e5e4] rounded-lg text-sm font-medium bg-white"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
               {t.filters}
+              {hasActiveFilter && (
+                <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-[#1c1917] text-white text-[9px] flex items-center justify-center font-bold">
+                  1
+                </span>
+              )}
             </button>
-            <span className="text-sm text-[#78716c]">{filteredProducts.length} {t.productsCount}</span>
+
+            {/* Active filter chip */}
+            {activeCategoryLabel && (
+              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1c1917] text-white text-xs rounded-full font-medium">
+                {activeCategoryLabel}
+                <button
+                  onClick={() => setSelectedCategory("All")}
+                  className="ml-0.5 opacity-70 hover:opacity-100"
+                  aria-label="Clear filter"
+                >
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            )}
+
+            <span className="ml-auto text-sm text-[#78716c]">{filteredProducts.length} {t.productsCount}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Filter Drawer */}
+      <div
+        className={`lg:hidden fixed inset-0 z-50 transition-opacity duration-300 ${
+          isFilterOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={() => setIsFilterOpen(false)}
+        />
+        {/* Drawer */}
+        <div
+          className={`absolute inset-y-0 left-0 w-[85vw] max-w-sm bg-white flex flex-col shadow-2xl transform transition-transform duration-300 ease-out ${
+            isFilterOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          {/* Drawer header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#e7e5e4] shrink-0">
+            <div>
+              <h2 className="text-base font-semibold text-[#1c1917]">{t.filters}</h2>
+              {activeCategoryLabel && (
+                <p className="text-xs text-[#78716c] mt-0.5">{activeCategoryLabel}</p>
+              )}
+            </div>
+            <button
+              onClick={() => setIsFilterOpen(false)}
+              className="p-2 -mr-1 rounded-full text-[#78716c] hover:text-[#1c1917] hover:bg-[#f5f5f4] transition-colors"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Scrollable filter content */}
+          <div className="flex-1 overflow-y-auto px-5 py-6">
+            {filterContent}
+
+            {/* Contact CTA inside mobile drawer */}
+            <div className="mt-8 pt-6 border-t border-[#e7e5e4]">
+              <p className="text-sm text-[#78716c] mb-3">{t.contactCta}</p>
+              <Link
+                href={`/${lang}/contact`}
+                onClick={() => setIsFilterOpen(false)}
+                className="text-sm font-medium text-[#1c1917] underline underline-offset-4"
+              >
+                {t.contactLink}
+              </Link>
+            </div>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="shrink-0 px-5 pb-6 pt-4 border-t border-[#e7e5e4]">
+            <button
+              onClick={() => setIsFilterOpen(false)}
+              className="w-full bg-[#1c1917] text-white py-4 text-sm font-medium tracking-[0.08em] uppercase rounded-sm"
+            >
+              {t.showing} {filteredProducts.length} {t.productsCount}
+            </button>
           </div>
         </div>
       </div>
@@ -340,137 +566,11 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
       {/* Content Grid */}
       <div className="mx-auto max-w-[1600px] px-6 lg:px-12 py-8 lg:py-12">
         <div className="flex gap-12 lg:gap-16">
-          
-          {/* Sidebar - Categories */}
-          <aside className={`${isFilterOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0`}>
-            <div className="lg:sticky lg:top-8 space-y-8">
-              
-              {/* Categories */}
-              <div>
-                <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917]/40 mb-4">
-                  {t.categories}
-                </h3>
-                <div className="space-y-1 mb-5">
-                  <button
-                    onClick={() => setSelectedCategory("All")}
-                    className={`w-full flex items-center justify-between py-2.5 text-sm transition-colors ${
-                      activeCategory === "All"
-                        ? "text-[#1c1917] font-medium"
-                        : "text-[#78716c] hover:text-[#1c1917]"
-                    }`}
-                  >
-                    <span className="flex items-center gap-3">
-                      {activeCategory === "All" && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#1c1917]" />
-                      )}
-                      <span className={activeCategory === "All" ? "ml-0" : "ml-4.5"}>{t.all}</span>
-                    </span>
-                    <span className="text-xs text-[#a8a29e]">{produse.length}</span>
-                  </button>
-                  {discountedProducts.length > 0 && (
-                    <button
-                      onClick={() => setSelectedCategory("Reduceri")}
-                      className={`w-full flex items-center justify-between py-2.5 text-sm transition-colors ${
-                        activeCategory === "Reduceri"
-                          ? "text-red-700 font-medium"
-                          : "text-red-700/80 hover:text-red-700"
-                      }`}
-                    >
-                      <span className="flex items-center gap-3">
-                        {activeCategory === "Reduceri" && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                        )}
-                        <span className={activeCategory === "Reduceri" ? "ml-0" : "ml-4.5"}>
-                          {tReduceri.label}
-                        </span>
-                      </span>
-                      <span className="text-xs text-red-500/70">{discountedProducts.length}</span>
-                    </button>
-                  )}
-                </div>
 
-                <div className="space-y-4">
-                  {t.categoryGroups.map((group) => (
-                    <div key={group.title}>
-                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a8a29e]">
-                        {group.title}
-                      </p>
-                      <div className="space-y-1">
-                        {group.items.map((item) => {
-                          const isActive = activeCategory === item.key;
-                          const count = produse.filter((p) => p.categorie === item.key).length;
-                          return (
-                            <button
-                              key={`${group.title}-${item.key}`}
-                              onClick={() => setSelectedCategory(item.key as ProductCategory)}
-                              className={`w-full flex items-center justify-between py-2 text-sm transition-colors ${
-                                isActive
-                                  ? "text-[#1c1917] font-medium"
-                                  : "text-[#78716c] hover:text-[#1c1917]"
-                              }`}
-                            >
-                              <span className="flex items-center gap-3">
-                                {isActive && (
-                                  <span className="h-1.5 w-1.5 rounded-full bg-[#1c1917]" />
-                                )}
-                                <span className={isActive ? "ml-0" : "ml-4.5"}>
-                                  {item.label}
-                                </span>
-                              </span>
-                              <span className="text-xs text-[#a8a29e]">{count}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Range Filter */}
-              <div className="pt-6 border-t border-[#e7e5e4]">
-                <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917]/40 mb-4">
-                  {t.price}
-                </h3>
-                <div className="space-y-3">
-                  <label className="block">
-                    <span className="mb-1 block text-xs text-[#78716c]">{t.from}</span>
-                    <input
-                      type="number"
-                      min={0}
-                      value={priceFrom}
-                      onChange={(e) => setPriceFrom(e.target.value)}
-                      placeholder={`${formatNumber(minAvailablePrice)}`}
-                      className="w-full rounded-lg border border-[#e7e5e4] bg-white px-3 py-2 text-sm text-[#1c1917] placeholder:text-[#a8a29e] focus:border-[#1c1917] focus:outline-none transition-colors"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1 block text-xs text-[#78716c]">{t.to}</span>
-                    <input
-                      type="number"
-                      min={0}
-                      value={priceTo}
-                      onChange={(e) => setPriceTo(e.target.value)}
-                      placeholder={`${formatNumber(maxAvailablePrice)}`}
-                      className="w-full rounded-lg border border-[#e7e5e4] bg-white px-3 py-2 text-sm text-[#1c1917] placeholder:text-[#a8a29e] focus:border-[#1c1917] focus:outline-none transition-colors"
-                    />
-                  </label>
-                  <p className="pt-1 text-xs text-[#a8a29e]">
-                    {t.priceRange}: {formatNumber(minAvailablePrice)} - {formatNumber(maxAvailablePrice)} MDL
-                  </p>
-                </div>
-              </div>
-
-              {/* Contact CTA */}
-              <div className="pt-6 border-t border-[#e7e5e4]">
-                <p className="text-sm text-[#78716c] mb-3">{t.contactCta}</p>
-                <Link
-                  href={`/${lang}/contact`}
-                  className="text-sm font-medium text-[#1c1917] underline underline-offset-4 hover:text-[#78716c] transition-colors"
-                >
-                  {t.contactLink}
-                </Link>
-              </div>
+          {/* Sidebar - Desktop only */}
+          <aside className="hidden lg:block w-64 shrink-0">
+            <div className="lg:sticky lg:top-8">
+              {filterContent}
             </div>
           </aside>
 
