@@ -36,7 +36,7 @@ export default function Navbar() {
 
   const switchLang = useCallback((targetLang: string) => {
     const newPath = restPath ? `/${targetLang}/${restPath}` : `/${targetLang}`;
-    router.push(newPath);
+    router.replace(newPath);
   }, [restPath, router]);
 
   const isLight = true;
