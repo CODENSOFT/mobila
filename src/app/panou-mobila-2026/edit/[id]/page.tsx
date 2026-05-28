@@ -54,27 +54,47 @@ export default function PanouEditProductPage() {
     areReducere: boolean;
     pretReducere?: number;
     procentReducere?: number;
+    imaginiFiles?: File[];
+    imaginiUrls?: string[];
   }) => {
-    const putBody = {
-      nume: payload.nume,
-      nume_ru: payload.nume_ru,
-      descriere: payload.descriere,
-      descriere_ru: payload.descriere_ru,
-      pret: payload.pret,
-      categorie: payload.categorie,
-      imagineUrl: payload.imagineUrl,
-      areReducere: payload.areReducere,
-      pretReducere: payload.pretReducere,
-      procentReducere: payload.procentReducere,
-    };
+    const hasExtraFiles = (payload.imaginiFiles?.length ?? 0) > 0;
 
-    console.log("[handleUpdate] body trimis la PUT:", JSON.stringify(putBody, null, 2));
+    let response: Response;
 
-    const response = await fetch(toApiUrl(`/api/produse/${params.id}`), {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(putBody),
-    });
+    if (hasExtraFiles) {
+      const formData = new FormData();
+      formData.append("nume", payload.nume);
+      if (payload.nume_ru) formData.append("nume_ru", payload.nume_ru);
+      formData.append("descriere", payload.descriere);
+      if (payload.descriere_ru) formData.append("descriere_ru", payload.descriere_ru);
+      formData.append("pret", String(payload.pret));
+      formData.append("categorie", payload.categorie);
+      formData.append("imagineUrl", payload.imagineUrl);
+      formData.append("areReducere", String(payload.areReducere));
+      if (payload.pretReducere) formData.append("pretReducere", String(payload.pretReducere));
+      if (payload.procentReducere) formData.append("procentReducere", String(payload.procentReducere));
+      for (const f of payload.imaginiFiles ?? []) formData.append("imagini", f);
+      for (const u of payload.imaginiUrls ?? []) formData.append("imaginiUrls", u);
+      response = await fetch(toApiUrl(`/api/produse/${params.id}`), { method: "PUT", body: formData });
+    } else {
+      response = await fetch(toApiUrl(`/api/produse/${params.id}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nume: payload.nume,
+          nume_ru: payload.nume_ru,
+          descriere: payload.descriere,
+          descriere_ru: payload.descriere_ru,
+          pret: payload.pret,
+          categorie: payload.categorie,
+          imagineUrl: payload.imagineUrl,
+          areReducere: payload.areReducere,
+          pretReducere: payload.pretReducere,
+          procentReducere: payload.procentReducere,
+          imagini: payload.imaginiUrls ?? [],
+        }),
+      });
+    }
 
     if (!response.ok) {
       const data = (await response.json().catch(() => null)) as
@@ -84,6 +104,7 @@ export default function PanouEditProductPage() {
     }
 
     alert("Produs actualizat cu succes.");
+    try { new BroadcastChannel("home-update").postMessage("reduceri"); } catch {}
     router.push("/panou-mobila-2026");
   };
 

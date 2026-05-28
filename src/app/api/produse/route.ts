@@ -1,4 +1,5 @@
 import { isValidObjectId, Types, type PipelineStage } from "mongoose";
+import { revalidatePath } from "next/cache";
 
 import { uploadImageToCloudinary } from "../../../lib/cloudinary";
 import { corsHeaders } from "../../../lib/cors";
@@ -136,6 +137,7 @@ export async function POST(request: Request) {
     let areReducere = false;
     let pretReducereNumber = NaN;
     let procentReducereNumber = NaN;
+    let imaginiFinale: string[] = [];
 
     if (contentType.includes("application/json")) {
       const body = (await request.json()) as {
@@ -149,6 +151,7 @@ export async function POST(request: Request) {
         areReducere?: boolean;
         pretReducere?: number;
         procentReducere?: number;
+        imagini?: string[];
       };
 
       nume = typeof body.nume === "string" ? body.nume : "";
@@ -165,6 +168,7 @@ export async function POST(request: Request) {
       areReducere = body.areReducere === true;
       pretReducereNumber = typeof body.pretReducere === "number" ? body.pretReducere : NaN;
       procentReducereNumber = typeof body.procentReducere === "number" ? body.procentReducere : NaN;
+      imaginiFinale = Array.isArray(body.imagini) ? body.imagini.filter((u) => typeof u === "string" && u.trim()) : [];
     } else {
       const formData = await request.formData();
 
@@ -204,6 +208,16 @@ export async function POST(request: Request) {
       pretReducereNumber = typeof pretReducereValue === "string" && pretReducereValue ? Number(pretReducereValue) : NaN;
       const procentReducereValue = formData.get("procentReducere");
       procentReducereNumber = typeof procentReducereValue === "string" && procentReducereValue ? Number(procentReducereValue) : NaN;
+
+      const imaginiFiles = formData.getAll("imagini") as File[];
+      const imaginiUrls = (formData.getAll("imaginiUrls") as string[]).filter((u) => typeof u === "string" && u.trim());
+      for (const file of imaginiFiles) {
+        if (file instanceof File && file.size > 0 && file.name !== "undefined") {
+          const uploaded = await uploadImageToCloudinary(file);
+          imaginiFinale.push(uploaded);
+        }
+      }
+      imaginiFinale.push(...imaginiUrls);
     }
 
     if (
@@ -238,11 +252,13 @@ export async function POST(request: Request) {
       pret: pretNumber,
       categorie: categorie.trim(),
       imagine: finalImageUrl,
+      ...(imaginiFinale.length > 0 ? { imagini: imaginiFinale } : {}),
       areReducere,
       pretReducere: pretReducereFinal,
       procentReducere: procentReducereFinal,
     });
 
+    revalidatePath("/", "layout");
     return Response.json(produs, { status: 201, headers: corsHeaders });
   } catch (error) {
     console.error("POST /api/produse error:", error);

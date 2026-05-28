@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import CartIcon from "../cart/CartIcon";
 import { useLang } from "@/src/context/LangContext";
 
@@ -24,15 +24,8 @@ export default function Navbar() {
     { href: `/${lang}/contact`, label: nav.contact },
   ];
 
-  const isHomePage = pathname === `/${lang}` || pathname === `/${lang}/`;
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const isLight = true;
 
   const switchLang = useCallback((targetLang: string) => {
     localStorage.setItem("lang", targetLang);
@@ -41,31 +34,24 @@ export default function Navbar() {
     router.replace(newPath);
   }, [restPath, router]);
 
-  const isLight = true;
-
   return (
-    <header
-      className="sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-sm border-b border-gray-100"
-    >
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
-        <nav className="flex h-20 lg:h-24 items-center justify-between">
+        <nav className="flex h-14 lg:h-16 items-center justify-between">
 
           {/* Logo */}
           <Link href={`/${lang}`} className="flex items-center gap-3 group">
             <Image
               src="/images/logo.png"
               alt="LABIRINT Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10 object-contain"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain"
               priority
             />
             <div className="hidden sm:block">
               <span className={`block text-lg font-medium tracking-tight transition-colors duration-300 ${isLight ? "text-gray-900" : "text-white"}`}>
                 LABIRINT
-              </span>
-              <span className="block text-[9px] uppercase tracking-[0.3em] text-(--brand-green) transition-colors duration-300">
-                {nav.tagline}
               </span>
             </div>
           </Link>

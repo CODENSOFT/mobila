@@ -36,7 +36,11 @@ type ProductFormPayload = {
   areReducere: boolean;
   pretReducere?: number;
   procentReducere?: number;
+  imaginiFiles?: File[];
+  imaginiUrls?: string[];
 };
+
+type ExtraImage = { id: string; file: File | null; url: string };
 
 type ProductFormProps = {
   mode: "create" | "edit";
@@ -129,6 +133,9 @@ export default function ProductForm({
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [extraImages, setExtraImages] = useState<ExtraImage[]>(() =>
+    (initialProduct?.imagini ?? []).map((url) => ({ id: Math.random().toString(36).slice(2), file: null, url }))
+  );
   const [errors, setErrors] = useState<
     Partial<Record<keyof ProductFormValues | "descriere" | "descriere_ru", string>>
   >({});
@@ -155,6 +162,9 @@ export default function ProductForm({
     setDescriptionRO(initialDescriptionRO(initialProduct));
     setDescriptionRU(initialDescriptionRU(initialProduct));
     setSelectedCategoryGroup(getGroupForCategory(nextValues.categorie));
+    setExtraImages(
+      (initialProduct?.imagini ?? []).map((url) => ({ id: Math.random().toString(36).slice(2), file: null, url }))
+    );
   }, [initialProduct, mode]);
 
   /** După ~2s fără modificări în RO, completează RU (dacă nu editezi direct câmpurile în rusă). */
@@ -318,6 +328,8 @@ export default function ProductForm({
         areReducere: values.areReducere,
         pretReducere: values.areReducere && values.pretReducere ? Number(values.pretReducere) : undefined,
         procentReducere: values.areReducere && values.procentReducere ? Number(values.procentReducere) : undefined,
+        imaginiFiles: extraImages.filter((img) => img.file !== null).map((img) => img.file!),
+        imaginiUrls: extraImages.filter((img) => !img.file && img.url.trim()).map((img) => img.url.trim()),
       });
 
       if (mode === "create") {
@@ -327,6 +339,7 @@ export default function ProductForm({
         setDescriptionRU("");
         setSelectedCategoryGroup(getGroupForCategory(resetValues.categorie));
         setImageFile(null);
+        setExtraImages([]);
       }
       setMessage({ type: "success", text: "Produs salvat cu succes!" });
     } catch (error) {
@@ -614,7 +627,7 @@ export default function ProductForm({
             {/* Image Upload */}
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
-                Imagine produs
+                Imagine principală
               </h2>
 
               <div className="space-y-4">
@@ -667,6 +680,94 @@ export default function ProductForm({
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Extra Images */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                  Imagini suplimentare
+                </h2>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExtraImages((prev) => [
+                      ...prev,
+                      { id: Math.random().toString(36).slice(2), file: null, url: "" },
+                    ])
+                  }
+                  className="inline-flex items-center gap-1 rounded-md bg-green-50 border border-green-200 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Adaugă imagine
+                </button>
+              </div>
+
+              {extraImages.length === 0 ? (
+                <p className="text-xs text-gray-400">Nicio imagine suplimentară. Apasă „Adaugă imagine" pentru a adăuga.</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {extraImages.map((img, idx) => {
+                    const preview = img.file
+                      ? URL.createObjectURL(img.file)
+                      : img.url.trim() || null;
+                    return (
+                      <div key={img.id} className="relative rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                        <button
+                          type="button"
+                          onClick={() => setExtraImages((prev) => prev.filter((_, i) => i !== idx))}
+                          className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700"
+                          aria-label="Șterge"
+                        >
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+
+                        {preview ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={preview} alt="preview" className="aspect-square w-full object-cover" />
+                        ) : (
+                          <div className="aspect-square flex flex-col items-center justify-center gap-2 p-2">
+                            <label className="flex w-full cursor-pointer flex-col items-center gap-1 rounded border border-dashed border-gray-300 py-2 text-center text-[10px] text-gray-500 hover:border-green-400">
+                              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              Fișier
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f)
+                                    setExtraImages((prev) =>
+                                      prev.map((item, i) => (i === idx ? { ...item, file: f, url: "" } : item))
+                                    );
+                                }}
+                              />
+                            </label>
+                            <p className="text-[9px] text-gray-400">sau URL</p>
+                            <input
+                              type="url"
+                              value={img.url}
+                              onChange={(e) =>
+                                setExtraImages((prev) =>
+                                  prev.map((item, i) => (i === idx ? { ...item, url: e.target.value, file: null } : item))
+                                )
+                              }
+                              placeholder="https://..."
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-[10px] focus:border-green-500 focus:outline-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 

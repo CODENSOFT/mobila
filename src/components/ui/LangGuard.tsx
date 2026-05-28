@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 const LOCALES = ["ro", "ru"];
 
 export default function LangGuard() {
-  const router = useRouter();
   const pathname = usePathname();
+  const didRedirect = useRef(false);
 
   useEffect(() => {
+    if (didRedirect.current) return;
+
     const saved = localStorage.getItem("lang");
     if (!saved || !LOCALES.includes(saved)) return;
 
@@ -18,9 +20,10 @@ export default function LangGuard() {
     );
     if (!urlLang || saved === urlLang) return;
 
+    didRedirect.current = true;
     const rest = pathname.slice(urlLang.length + 1);
-    router.replace(rest ? `/${saved}/${rest}` : `/${saved}`);
-  }, [pathname, router]);
+    window.location.replace(rest ? `/${saved}/${rest}` : `/${saved}`);
+  }, [pathname]);
 
   return null;
 }

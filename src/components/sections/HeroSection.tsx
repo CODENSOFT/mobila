@@ -18,7 +18,7 @@ type Props = {
 
 export default function HeroSection({ t, productsHref, features }: Props) {
   return (
-    <section className="relative flex min-h-[65vh] w-full flex-col overflow-hidden md:min-h-screen">
+    <section className="relative flex min-h-[55vh] w-full flex-col overflow-hidden md:min-h-[70vh]">
       <div className="absolute inset-0">
         <Image
           src={HERO_IMAGE}
@@ -29,8 +29,8 @@ export default function HeroSection({ t, productsHref, features }: Props) {
           sizes="100vw"
         />
       </div>
-      <div className="absolute inset-0 bg-black/55" />
-      <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/45 to-black/20" />
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-linear-to-r from-black/65 via-black/20 to-transparent" />
 
       <div className="relative mx-auto flex w-full max-w-7xl flex-1 items-center px-6 py-20">
         <div className="max-w-3xl">

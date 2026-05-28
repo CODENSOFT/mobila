@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Package2, ReceiptText, Star } from "lucide-react";
+import { FileText, LayoutDashboard, Package2, ReceiptText, Sparkles, Star } from "lucide-react";
 
 type PanouLayoutProps = {
   children: React.ReactNode;
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/panou-mobila-2026/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/panou-mobila-2026", label: "Produse", icon: Package2 },
   { href: "/panou-mobila-2026/produse-top", label: "Produse top", icon: Star },
+  { href: "/panou-mobila-2026/produse-noi", label: "Produse noi", icon: Sparkles },
   { href: "/panou-mobila-2026/comenzi", label: "Comenzi", icon: ReceiptText },
   {
     href: "/panou-mobila-2026/solicitari-oferte",
@@ -24,7 +25,7 @@ export default function PanouMobilaLayout({ children }: PanouLayoutProps) {
   const pathname = usePathname();
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50" style={{ fontFamily: "Inter, system-ui, -apple-system, sans-serif" }}>
       <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
         <header className="mb-4 flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:mb-6 sm:flex-row sm:items-center sm:px-5">
           <div>

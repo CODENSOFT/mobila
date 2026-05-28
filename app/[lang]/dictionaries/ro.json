@@ -8,10 +8,17 @@
   },
   "hero": {
     "badge": "LABIRINT",
-    "heading1": "Mobilier modern pentru",
-    "heading2": "fiecare colț al casei",
+    "heading1": "Mobilier care transformă",
+    "heading2": "casa în ACASĂ",
     "description": "",
-    "cta": "Descoperă Colecția"
+    "cta": "Descoperă Colecția",
+    "phone": "069 727 444",
+    "statYears": "19+",
+    "statYearsLabel": "Ani expertiză",
+    "statProjects": "1000+",
+    "statProjectsLabel": "Proiecte realizate",
+    "statWarranty": "24",
+    "statWarrantyLabel": "Luni garanție"
   },
   "featuresStrip": {
     "items": [
@@ -35,7 +42,9 @@
     ]
   },
   "categories": {
-    "heading": "Descoperă mai mult pentru tine",
+    "heading": "Descoperă mobilier",
+    "headingItalic": "creat pentru tine",
+    "headingLabel": "Colecție",
     "explore": "Explorează colecția",
     "viewAll": "Colecția completă",
     "viewAllSub": "150+ piese de mobilier premium",
@@ -127,8 +136,8 @@
   "produseTop": {
     "label": "Selecție",
     "heading": "Produse",
-    "headingItalic": "de top",
-    "description": "O selecție curatoriată din cele mai apreciate piese ale noastre.",
+    "headingItalic": "populare",
+    "description": "Mobilier ales pentru confort și stil.",
     "viewAll": "Toată colecția",
     "furniture": "Mobilier",
     "viewDetails": "Vezi detalii"
@@ -137,7 +146,7 @@
     "label": "",
     "heading": "Produse",
     "headingItalic": "noi",
-    "description": "Mobilier contemporan pentru interioare premium, construit pe proporții echilibrate și materiale autentice.",
+    "description": "Descoperă cele mai noi colecții.",
     "viewAll": "Toată colecția",
     "empty": "Colecția va fi disponibilă în curând.",
     "labels": ["Nou", "Popular", "Ediție Limitată", "Premium", "Sezon", "Recomandat"],
@@ -148,8 +157,8 @@
   "pretScazut": {
     "label": "Reduceri",
     "heading": "",
-    "headingItalic": "Reducere",
-    "description": "Selecție de piese cu preț redus, disponibile cât timp sunt în stoc.",
+    "headingItalic": "Reduceri",
+    "description": "Prețuri avantajoase la produse.",
     "viewAll": "Toate reducerile",
     "empty": "Momentan nu sunt produse la preț redus.",
     "furniture": "Mobilier",

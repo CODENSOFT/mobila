@@ -7,9 +7,19 @@ export default function AutoRefresh() {
   const router = useRouter();
 
   useEffect(() => {
-    const onFocus = () => router.refresh();
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
+    const refresh = () => router.refresh();
+
+    // Fires when switching back to this browser tab
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [router]);
 
   return null;

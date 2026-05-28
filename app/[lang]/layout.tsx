@@ -7,6 +7,7 @@ import CartDrawer from "@/src/components/cart/CartDrawer";
 import CartToast from "@/src/components/cart/CartToast";
 import Footer from "@/src/components/layout/Footer";
 import Navbar from "@/src/components/layout/Navbar";
+import NavbarSpacer from "@/src/components/layout/NavbarSpacer";
 import { CartProvider } from "@/src/context/CartContext";
 import { LangProvider } from "@/src/context/LangContext";
 import LangGuard from "@/src/components/ui/LangGuard";
@@ -32,6 +33,7 @@ export default async function LangLayout({
         <Navbar />
         <CartDrawer />
         <CartToast />
+        <NavbarSpacer />
         <div className="flex-1">{children}</div>
         <Footer />
         <ChatWidget />

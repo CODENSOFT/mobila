@@ -52,10 +52,13 @@ export default function PanouProdusePage() {
     areReducere: boolean;
     pretReducere?: number;
     procentReducere?: number;
+    imaginiFiles?: File[];
+    imaginiUrls?: string[];
   }) => {
     const hasFile = payload.imagineFile instanceof File;
+    const hasExtraFiles = (payload.imaginiFiles?.length ?? 0) > 0;
 
-    const response = hasFile
+    const response = (hasFile || hasExtraFiles)
       ? await fetch(toApiUrl("/api/produse"), {
           method: "POST",
           body: (() => {
@@ -66,22 +69,23 @@ export default function PanouProdusePage() {
             if (payload.descriere_ru) formData.append("descriere_ru", payload.descriere_ru);
             formData.append("pret", String(payload.pret));
             formData.append("categorie", payload.categorie);
-            if (payload.imagineUrl) {
-              formData.append("imagineUrl", payload.imagineUrl);
-            }
-            if (payload.imagineFile) {
-              formData.append("imagine", payload.imagineFile);
-            }
+            if (payload.imagineUrl) formData.append("imagineUrl", payload.imagineUrl);
+            if (payload.imagineFile) formData.append("imagine", payload.imagineFile);
             formData.append("areReducere", String(payload.areReducere));
             if (payload.pretReducere) formData.append("pretReducere", String(payload.pretReducere));
             if (payload.procentReducere) formData.append("procentReducere", String(payload.procentReducere));
+            for (const f of payload.imaginiFiles ?? []) formData.append("imagini", f);
+            for (const u of payload.imaginiUrls ?? []) formData.append("imaginiUrls", u);
             return formData;
           })(),
         })
       : await fetch(toApiUrl("/api/produse"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            ...payload,
+            imagini: payload.imaginiUrls ?? [],
+          }),
         });
 
     if (!response.ok) {

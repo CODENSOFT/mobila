@@ -3,7 +3,7 @@ import { connectDB } from "@/src/lib/db";
 import SiteSettings from "@/src/models/SiteSettings";
 import { revalidatePath } from "next/cache";
 
-const SETTINGS_KEY = "produse-top";
+const SETTINGS_KEY = "produse-noi";
 
 export async function OPTIONS(request: Request) {
   return new Response(null, { status: 200, headers: buildCorsHeaders(request) });
@@ -12,16 +12,16 @@ export async function OPTIONS(request: Request) {
 export async function GET(request: Request) {
   try {
     await connectDB();
-    const settings = await SiteSettings.findOne({ key: SETTINGS_KEY }).lean<{ topProductIds?: string[] }>();
+    const settings = await SiteSettings.findOne({ key: SETTINGS_KEY }).lean<{ featuredProductIds?: string[] }>();
 
     return Response.json(
-      { ids: Array.isArray(settings?.topProductIds) ? settings.topProductIds : [] },
+      { ids: Array.isArray(settings?.featuredProductIds) ? settings.featuredProductIds : [] },
       { headers: buildCorsHeaders(request) }
     );
   } catch (error) {
-    console.error("GET /api/settings/produse-top error:", error);
+    console.error("GET /api/settings/produse-noi error:", error);
     return Response.json(
-      { message: "Nu s-au putut încărca produsele de top." },
+      { message: "Nu s-au putut încărca produsele noi." },
       { status: 500, headers: buildCorsHeaders(request) }
     );
   }
@@ -44,16 +44,16 @@ export async function PUT(request: Request) {
 
     await SiteSettings.findOneAndUpdate(
       { key: SETTINGS_KEY },
-      { $set: { topProductIds: sanitized } },
+      { $set: { featuredProductIds: sanitized } },
       { new: true, upsert: true, setDefaultsOnInsert: true, strict: false }
     ).lean();
 
     revalidatePath("/", "layout");
     return Response.json({ ids: sanitized }, { headers: buildCorsHeaders(request) });
   } catch (error) {
-    console.error("PUT /api/settings/produse-top error:", error);
+    console.error("PUT /api/settings/produse-noi error:", error);
     return Response.json(
-      { message: "Nu s-au putut salva produsele de top." },
+      { message: "Nu s-au putut salva produsele noi." },
       { status: 500, headers: buildCorsHeaders(request) }
     );
   }

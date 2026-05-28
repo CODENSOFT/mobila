@@ -72,23 +72,17 @@ export default function ProductPageClient({
 
   return (
     <main className="min-h-screen bg-[#fafaf9]">
+      {/* Breadcrumb */}
       <div className="border-b border-[#e7e5e4] bg-white">
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-3.5">
           <nav className="flex items-center gap-2 text-sm text-[#a8a29e]">
-            <Link href={`/${lang}`} className="hover:text-[#1c1917] transition-colors">
-              {t.home}
-            </Link>
+            <Link href={`/${lang}`} className="hover:text-[#1c1917] transition-colors">{t.home}</Link>
             <span>/</span>
-            <Link href={`/${lang}/produse`} className="hover:text-[#1c1917] transition-colors">
-              {t.products}
-            </Link>
+            <Link href={`/${lang}/produse`} className="hover:text-[#1c1917] transition-colors">{t.products}</Link>
             <span>/</span>
             {produs.categorie ? (
               <>
-                <Link
-                  href={`/${lang}/produse?categorie=${produs.categorie}`}
-                  className="hover:text-[#1c1917] transition-colors"
-                >
+                <Link href={`/${lang}/produse?categorie=${produs.categorie}`} className="hover:text-[#1c1917] transition-colors">
                   {produs.categorie}
                 </Link>
                 <span>/</span>
@@ -99,39 +93,47 @@ export default function ProductPageClient({
         </div>
       </div>
 
+      {/* Layout principal: foto stânga, info dreapta */}
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-10 lg:py-14">
-        <div className="grid lg:grid-cols-[1fr_480px] xl:grid-cols-[1fr_520px] gap-10 lg:gap-16 items-start">
+        <div className="grid lg:grid-cols-[1fr_440px] xl:grid-cols-[1fr_480px] gap-10 lg:gap-14 items-start">
+
+          {/* ── STÂNGA: galerie foto ── */}
           <div className="relative">
             <ProductImageGallery imagine={produs.imagine} imagini={produs.imagini} alt={numeDisplay} />
             {produs.areReducere && (
-              <span className="absolute left-4 top-4 z-10 rounded bg-red-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white">
+              <span className="absolute left-3 top-3 z-10 rounded bg-red-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow">
                 {produs.procentReducere ? `-${produs.procentReducere}%` : "REDUCERE"}
               </span>
             )}
           </div>
 
-          <div className="lg:sticky lg:top-8 flex flex-col gap-0">
+          {/* ── DREAPTA: toate informațiile ── */}
+          <div className="lg:sticky lg:top-[88px] flex flex-col">
+
+            {/* Categorie */}
             {produs.categorie ? (
               <Link
                 href={`/${lang}/produse?categorie=${produs.categorie}`}
-                className="self-start mb-4 inline-block text-[10px] font-semibold uppercase tracking-[0.22em] text-[#78716c] border border-[#d6d3d1] rounded-full px-3 py-1 hover:border-[#1c1917] hover:text-[#1c1917] transition-colors"
+                className="self-start mb-3 inline-block text-[10px] font-semibold uppercase tracking-[0.22em] text-[#78716c] border border-[#d6d3d1] rounded-full px-3 py-1 hover:border-[#1c1917] hover:text-[#1c1917] transition-colors"
               >
                 {produs.categorie}
               </Link>
             ) : null}
 
-            <h1 className="text-3xl lg:text-[2.1rem] font-light text-[#1c1917] leading-[1.2] mb-5">
+            {/* Titlu */}
+            <h1 className="text-2xl lg:text-3xl font-light text-[#1c1917] leading-snug mb-5">
               {numeDisplay}
             </h1>
 
-            <div className="flex flex-wrap items-end gap-3 mb-6">
+            {/* Preț */}
+            <div className="flex flex-wrap items-end gap-3 mb-5">
               {produs.areReducere && produs.pretReducere ? (
                 <>
-                  <span className="text-4xl lg:text-5xl font-extralight text-red-600 leading-none tabular-nums">
+                  <span className="text-4xl font-extralight text-red-600 leading-none tabular-nums">
                     {produs.pretReducere.toLocaleString("ro-RO")}
                   </span>
-                  <span className="text-base text-red-400 mb-1">MDL</span>
-                  <span className="text-2xl text-[#a8a29e] line-through leading-none mb-0.5 tabular-nums">
+                  <span className="text-sm text-red-400 mb-1">MDL</span>
+                  <span className="text-xl text-[#a8a29e] line-through leading-none mb-0.5 tabular-nums">
                     {produs.pret.toLocaleString("ro-RO")}
                   </span>
                   {produs.procentReducere && (
@@ -142,73 +144,18 @@ export default function ProductPageClient({
                 </>
               ) : (
                 <>
-                  <span className="text-4xl lg:text-5xl font-extralight text-[#1c1917] leading-none tabular-nums">
+                  <span className="text-4xl font-extralight text-[#1c1917] leading-none tabular-nums">
                     {produs.pret.toLocaleString("ro-RO")}
                   </span>
-                  <span className="text-base text-[#a8a29e] mb-1">MDL</span>
+                  <span className="text-sm text-[#a8a29e] mb-1">MDL</span>
                 </>
               )}
             </div>
 
-            <div className="h-px bg-[#e7e5e4] mb-6" />
+            <div className="h-px bg-[#e7e5e4] mb-5" />
 
-            <div className="mb-6">
-              <p className="text-[10.5px] uppercase tracking-[0.2em] text-[#a8a29e] mb-4">{t.description}</p>
-              <div
-                className={`space-y-4 ${lang === "ru" && descLoading ? "min-h-[120px] opacity-70" : ""}`}
-                aria-busy={lang === "ru" && descLoading}
-              >
-                {descriptionBlocks.map((block, index) => {
-                  if (block.type === "list") {
-                    return (
-                      <ul
-                        key={`list-${index}`}
-                        className="space-y-2 text-[#44403c] text-[14.5px] lg:text-[15px]"
-                      >
-                        {block.items.map((item, itemIndex) => (
-                          <li
-                            key={`item-${index}-${itemIndex}`}
-                            className="flex items-start gap-3 leading-relaxed"
-                          >
-                            <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#a8a29e] shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    );
-                  }
-                  return (
-                    <p
-                      key={`paragraph-${index}`}
-                      className="text-[#57534e] leading-[1.85] text-[14.5px] lg:text-[15.5px]"
-                    >
-                      {block.content}
-                    </p>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="h-px bg-[#e7e5e4] mb-6" />
-
-            <div className="grid grid-cols-2 gap-3 mb-7">
-              {FEATURES.map(({ icon: Icon, label, value }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-3 rounded-lg bg-white border border-[#e7e5e4] px-4 py-3"
-                >
-                  <Icon className="w-4 h-4 text-[#a8a29e] shrink-0" aria-hidden />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[#a8a29e] leading-none mb-0.5">
-                      {label}
-                    </p>
-                    <p className="text-[13px] font-medium text-[#1c1917]">{value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-3">
+            {/* Butoane acțiune */}
+            <div className="space-y-3 mb-5">
               <AddToCartButton
                 produs={{
                   id: produs._id,
@@ -238,21 +185,58 @@ export default function ProductPageClient({
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-[#a8a29e]">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" aria-hidden />
-                {t.trustWarranty}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Truck className="w-3.5 h-3.5" aria-hidden />
-                {t.trustDelivery}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Wrench className="w-3.5 h-3.5" aria-hidden />
-                {t.trustAssembly}
-              </span>
+            <div className="h-px bg-[#e7e5e4] mb-5" />
+
+            {/* Caracteristici livrare */}
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              {FEATURES.map(({ icon: Icon, label, value }) => (
+                <div key={label} className="flex items-center gap-3 rounded-lg bg-white border border-[#e7e5e4] px-3 py-2.5">
+                  <Icon className="w-4 h-4 text-[#a8a29e] shrink-0" aria-hidden />
+                  <div>
+                    <p className="text-[9.5px] uppercase tracking-[0.15em] text-[#a8a29e] leading-none mb-0.5">{label}</p>
+                    <p className="text-[12.5px] font-medium text-[#1c1917]">{value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-px bg-[#e7e5e4] mb-5" />
+
+            {/* Descriere */}
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#a8a29e] mb-3">{t.description}</p>
+            <div
+              className={`space-y-3 ${lang === "ru" && descLoading ? "opacity-70" : ""}`}
+              aria-busy={lang === "ru" && descLoading}
+            >
+              {descriptionBlocks.map((block, index) => {
+                if (block.type === "list") {
+                  return (
+                    <ul key={`list-${index}`} className="space-y-1.5 text-[#44403c] text-sm">
+                      {block.items.map((item, itemIndex) => (
+                        <li key={`item-${index}-${itemIndex}`} className="flex items-start gap-2.5 leading-relaxed">
+                          <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#a8a29e] shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+                return (
+                  <p key={`paragraph-${index}`} className="text-[#57534e] leading-relaxed text-sm">
+                    {block.content}
+                  </p>
+                );
+              })}
+            </div>
+
+            {/* Trust badges */}
+            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10.5px] text-[#a8a29e]">
+              <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" aria-hidden />{t.trustWarranty}</span>
+              <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5" aria-hidden />{t.trustDelivery}</span>
+              <span className="flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5" aria-hidden />{t.trustAssembly}</span>
             </div>
           </div>
+
         </div>
       </div>
 
