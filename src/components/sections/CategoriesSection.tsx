@@ -48,7 +48,7 @@ export default function CategoriesSection({
   const href = (cat: string) => `${productsBasePath}?categorie=${encodeURIComponent(cat)}`;
 
   return (
-    <section className="bg-[#fafaf9] py-10 lg:py-14">
+    <section className="bg-[#fafaf9] pt-1 pb-10 lg:pt-2 lg:pb-14">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-12">
 
         {/* Heading */}
