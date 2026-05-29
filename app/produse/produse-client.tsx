@@ -145,13 +145,7 @@ function ProductGridCard({
 
         <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
 
-        <div className="absolute inset-x-4 bottom-4 opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
-          <div className="block w-full bg-white text-center py-3 text-[11px] font-medium uppercase tracking-wider text-[#1c1917]">
-            {viewDetails}
-          </div>
-        </div>
-
-        {categoryTag ? (
+{categoryTag ? (
           <span className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
             {categoryTag}
           </span>
