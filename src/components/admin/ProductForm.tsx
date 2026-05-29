@@ -7,6 +7,7 @@ import {
   type ProductCategory,
 } from "../../constants/categories";
 import { formatPriceInteger } from "@/src/lib/formatPrice";
+import { uploadToCloudinary } from "@/src/lib/cloudinary-client";
 import type { Product } from "../../types/product";
 
 export const ADMIN_CATEGORIES = PRODUCT_CATEGORIES;
@@ -316,6 +317,25 @@ export default function ProductForm({
     setIsSubmitting(true);
 
     try {
+      // Upload files directly to Cloudinary from browser (bypasses server size limits)
+      let finalImageUrl = values.imagineUrl.trim();
+      if (imageFile) {
+        setMessage({ type: "success", text: "Se încarcă imaginea principală..." });
+        finalImageUrl = await uploadToCloudinary(imageFile);
+      }
+
+      const finalImaginiUrls: string[] = [];
+      for (const img of extraImages) {
+        if (img.file) {
+          setMessage({ type: "success", text: "Se încarcă imagini suplimentare..." });
+          finalImaginiUrls.push(await uploadToCloudinary(img.file));
+        } else if (img.url.trim()) {
+          finalImaginiUrls.push(img.url.trim());
+        }
+      }
+
+      setMessage(null);
+
       await onSubmit({
         nume: values.nume.trim(),
         nume_ru: values.numeRu.trim(),
@@ -323,13 +343,13 @@ export default function ProductForm({
         descriere_ru: descriptionRU.trim(),
         pret: pretNumber,
         categorie: values.categorie,
-        imagineUrl: values.imagineUrl.trim(),
-        imagineFile: imageFile,
+        imagineUrl: finalImageUrl,
+        imagineFile: null,
         areReducere: values.areReducere,
         pretReducere: values.areReducere && values.pretReducere ? Number(values.pretReducere) : undefined,
         procentReducere: values.areReducere && values.procentReducere ? Number(values.procentReducere) : undefined,
-        imaginiFiles: extraImages.filter((img) => img.file !== null).map((img) => img.file!),
-        imaginiUrls: extraImages.filter((img) => !img.file && img.url.trim()).map((img) => img.url.trim()),
+        imaginiFiles: [],
+        imaginiUrls: finalImaginiUrls,
       });
 
       if (mode === "create") {
