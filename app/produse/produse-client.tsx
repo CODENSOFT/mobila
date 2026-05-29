@@ -133,7 +133,7 @@ function ProductGridCard({
 }) {
   const { text: numeDisplay } = useLiveRuText(produs.nume, lang);
   return (
-    <article className="group relative bg-white rounded-sm overflow-hidden">
+    <Link href={`/${lang}/produse/${produs._id}`} className="group relative block bg-white rounded-sm overflow-hidden">
       <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
         <Image
           src={getSafeImageSrc(produs.imagine)}
@@ -146,12 +146,9 @@ function ProductGridCard({
         <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
 
         <div className="absolute inset-x-4 bottom-4 opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
-          <Link
-            href={`/${lang}/produse/${produs._id}`}
-            className="block w-full bg-white text-center py-3 text-[11px] font-medium uppercase tracking-wider text-[#1c1917] hover:bg-[#1c1917] hover:text-white transition-colors"
-          >
+          <div className="block w-full bg-white text-center py-3 text-[11px] font-medium uppercase tracking-wider text-[#1c1917]">
             {viewDetails}
-          </Link>
+          </div>
         </div>
 
         {categoryTag ? (
@@ -185,7 +182,7 @@ function ProductGridCard({
           </p>
         )}
       </div>
-    </article>
+    </Link>
   );
 }
 
