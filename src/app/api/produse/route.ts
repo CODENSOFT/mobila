@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 
 import { uploadImageToCloudinary } from "../../../lib/cloudinary";
 import { corsHeaders } from "../../../lib/cors";
+
+export const maxDuration = 60;
 import { connectDB } from "../../../lib/db";
 import Product from "../../../models/Product";
 
