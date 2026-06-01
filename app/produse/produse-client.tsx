@@ -15,7 +15,7 @@ import {
   getCategoriesForDormitorGroup,
 } from "../../src/constants/categories";
 
-type Category = "All" | "Reduceri" | ProductCategory;
+type Category = "All" | "Reduceri" | "Seturi" | ProductCategory;
 
 const categories: Category[] = [
   "All",
@@ -35,6 +35,7 @@ const normalizeCategory = (value?: string | null): Category => {
   if (!value) return "All";
   const trimmed = value.trim();
   if (trimmed === "Reduceri") return "Reduceri";
+  if (trimmed === "Seturi") return "Seturi";
   const resolved = CATEGORY_QUERY_ALIASES[trimmed] ?? trimmed;
   return isKnownCategory(resolved) ? resolved : "All";
 };
@@ -43,6 +44,52 @@ const DORMITOR_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForDormitorG
 const BUCATARIE_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForBucatarieGroup());
 
 type SortKey = "featured" | "price-asc" | "price-desc";
+
+function CategoryPill({
+  label,
+  isActive,
+  onClick,
+  variant = "default",
+  size = "md",
+}: {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  variant?: "default" | "reduceri";
+  size?: "sm" | "md";
+}) {
+  const isReduceri = variant === "reduceri";
+  const padding = size === "sm" ? "py-2 px-3" : "py-2.5 px-3";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group/pill relative w-full text-left ${padding} text-sm rounded-lg transition-all duration-200 ${
+        isActive
+          ? isReduceri
+            ? "bg-red-50 text-red-700 font-medium"
+            : "bg-[#1c1917] text-white font-medium"
+          : isReduceri
+          ? "text-red-700/85 hover:bg-red-50/60 hover:text-red-700"
+          : "text-[#57534e] hover:bg-[#f5f5f4] hover:text-[#1c1917]"
+      }`}
+    >
+      <span className="flex items-center gap-2.5">
+        <span
+          className={`h-3.5 w-0.5 rounded-full transition-colors ${
+            isActive
+              ? isReduceri
+                ? "bg-red-600"
+                : "bg-white"
+              : "bg-transparent group-hover/pill:bg-[#d6d3d1]"
+          }`}
+        />
+        <span className="truncate">{label}</span>
+      </span>
+    </button>
+  );
+}
 
 function SortDropdown({
   sortBy,
@@ -180,6 +227,159 @@ function ProductGridCard({
   );
 }
 
+function SetGridCard({
+  name,
+  products,
+  lang,
+}: {
+  name: string;
+  products: Product[];
+  lang: string;
+}) {
+  const href = `/${lang}/produse/${products[0]._id}`;
+
+  return (
+    <Link href={href} className="group relative block bg-white rounded-sm overflow-hidden">
+      <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
+        <Image
+          src={getSafeImageSrc(products[0].imagine)}
+          alt={name}
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+        />
+
+        <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
+
+        <span className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
+          Set · {products.length} produse
+        </span>
+      </div>
+
+      <div className="p-5">
+        <h2 className="text-base font-medium text-[#1c1917] mb-1 group-hover:text-[#78716c] transition-colors">
+          Set {name}
+        </h2>
+        <p className="text-sm text-[#a8a29e]">{products.length} produse în colecție</p>
+      </div>
+    </Link>
+  );
+}
+
+function ProductsDisplay({
+  filteredProducts,
+  lang,
+  categoryLabel,
+  t,
+  formatNumber,
+  activeCategory,
+}: {
+  filteredProducts: Product[];
+  lang: string;
+  categoryLabel: Map<string, string>;
+  t: { showing: string; productsCount: string; viewDetails: string };
+  formatNumber: (n: number) => string;
+  activeCategory: Category;
+}) {
+  const showSetCardsInGrid = activeCategory === "Seturi";
+  const showSeturiSectionBelow = activeCategory === "All";
+
+  const gridItems = useMemo(() => {
+    if (!showSetCardsInGrid) {
+      return filteredProducts.map((p) => ({ type: "product" as const, product: p }));
+    }
+
+    const map = new Map<string, Product[]>();
+    const noSet: Product[] = [];
+    for (const p of filteredProducts) {
+      const key = p.set?.trim();
+      if (key) {
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(p);
+      } else {
+        noSet.push(p);
+      }
+    }
+
+    const result: ({ type: "set"; name: string; products: Product[] } | { type: "product"; product: Product })[] = [];
+
+    for (const [name, products] of map.entries()) {
+      if (products.length > 1) {
+        result.push({ type: "set", name, products });
+      } else {
+        noSet.push(...products);
+      }
+    }
+
+    for (const p of noSet) {
+      result.push({ type: "product", product: p });
+    }
+
+    return result;
+  }, [filteredProducts, showSetCardsInGrid]);
+
+  const allSetGroups = useMemo(() => {
+    if (!showSeturiSectionBelow) return [];
+    const map = new Map<string, Product[]>();
+    for (const p of filteredProducts) {
+      const key = p.set?.trim();
+      if (key) {
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(p);
+      }
+    }
+    return Array.from(map.entries())
+      .filter(([, prods]) => prods.length > 1)
+      .map(([name, products]) => ({ name, products }));
+  }, [filteredProducts, showSeturiSectionBelow]);
+
+  return (
+    <>
+      <div className="mb-6 flex items-center justify-between">
+        <p className="text-sm text-[#78716c]">
+          {t.showing} <span className="font-medium text-[#1c1917]">{filteredProducts.length}</span> {t.productsCount}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        {gridItems.map((item) =>
+          item.type === "set" ? (
+            <SetGridCard key={`set-${item.name}`} name={item.name} products={item.products} lang={lang} />
+          ) : (
+            <ProductGridCard
+              key={item.product._id}
+              produs={item.product}
+              lang={lang}
+              categoryTag={
+                item.product.categorie
+                  ? categoryLabel.get(item.product.categorie) ?? item.product.categorie
+                  : undefined
+              }
+              viewDetails={t.viewDetails}
+              formatPrice={formatNumber}
+            />
+          )
+        )}
+      </div>
+
+      {allSetGroups.length > 0 && (
+        <div className="mt-14">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-px flex-1 bg-[#e7e5e4]" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a8a29e]">Seturi</span>
+            <div className="h-px flex-1 bg-[#e7e5e4]" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {allSetGroups.map((group) => (
+              <SetGridCard key={`set-all-${group.name}`} name={group.name} products={group.products} lang={lang} />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function ProduseClient({ produse }: { produse: Product[] }) {
   const { lang, dict } = useLang();
   const t = dict.products;
@@ -199,6 +399,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
   );
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -216,6 +417,20 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     return map;
   }, [t.categoryGroups]);
 
+  // Compute effective group for each product. Products with an explicit `grup` use it;
+  // legacy products without grup get an inferred group based on the first
+  // PRODUCT_CATEGORY_GROUPS containing their `categorie`.
+  const effectiveGroupOf = (p: Product): string | undefined => {
+    if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
+    if (typeof p.categorie === "string") {
+      const found = PRODUCT_CATEGORY_GROUPS.find((g) =>
+        (g.items as readonly string[]).includes(p.categorie!)
+      );
+      return found?.title;
+    }
+    return undefined;
+  };
+
   const filteredProducts = useMemo(() => {
     let list = produse;
 
@@ -223,18 +438,21 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
       list = list.filter(
         (produs) => produs.areReducere && typeof produs.pretReducere === "number"
       );
+    } else if (activeCategory === "Seturi") {
+      list = list.filter((produs) => typeof produs.set === "string" && produs.set.trim() !== "");
     } else if (activeCategory !== "All") {
-      if (activeCategory === "Dormitoare") {
+      if (activeCategory === "Dormitoare" && selectedGroup === "PENTRU DORMITOR") {
+        // Group aggregator: show ALL products tagged for "PENTRU DORMITOR" group
+        list = list.filter((produs) => effectiveGroupOf(produs) === "PENTRU DORMITOR");
+      } else if (activeCategory === "Bucătării" && selectedGroup === "PENTRU BUCĂTĂRIE") {
+        // Group aggregator: show ALL products tagged for "PENTRU BUCĂTĂRIE" group
+        list = list.filter((produs) => effectiveGroupOf(produs) === "PENTRU BUCĂTĂRIE");
+      } else if (selectedGroup) {
+        // Strict sub-category filter: match BOTH categorie and effective group
         list = list.filter(
           (produs) =>
-            typeof produs.categorie === "string" &&
-            DORMITOR_CATEGORY_SET.has(produs.categorie as ProductCategory)
-        );
-      } else if (activeCategory === "Bucătării") {
-        list = list.filter(
-          (produs) =>
-            typeof produs.categorie === "string" &&
-            BUCATARIE_CATEGORY_SET.has(produs.categorie as ProductCategory)
+            produs.categorie === activeCategory &&
+            effectiveGroupOf(produs) === selectedGroup
         );
       } else {
         list = list.filter((produs) => produs.categorie === activeCategory);
@@ -273,93 +491,82 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     }
 
     return list;
-  }, [activeCategory, priceFrom, priceTo, produse, query, sortBy]);
+  }, [activeCategory, selectedGroup, priceFrom, priceTo, produse, query, sortBy]);
 
   const hasActiveFilter = activeCategory !== "All" || priceFrom !== "" || priceTo !== "";
+
+  const seturiCount = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of produse) {
+      const key = p.set?.trim();
+      if (key) map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    return Array.from(map.values()).filter((c) => c > 1).length;
+  }, [produse]);
 
   const activeCategoryLabel =
     activeCategory === "All"
       ? null
       : activeCategory === "Reduceri"
       ? tReduceri.label
+      : activeCategory === "Seturi"
+      ? "Seturi"
       : (categoryLabel.get(activeCategory as ProductCategory) ?? activeCategory);
 
   const filterContent = (
     <div className="space-y-8">
       {/* Categories */}
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1c1917]/40 mb-4">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#1c1917]/45 mb-4">
           {t.categories}
         </h3>
-        <div className="space-y-0.5 mb-5">
-          <button
-            onClick={() => { setSelectedCategory("All"); setIsFilterOpen(false); }}
-            className={`w-full flex items-center justify-between py-3 text-sm transition-colors ${
-              activeCategory === "All"
-                ? "text-[#1c1917] font-medium"
-                : "text-[#78716c] hover:text-[#1c1917]"
-            }`}
-          >
-            <span className="flex items-center gap-3">
-              {activeCategory === "All" && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#1c1917]" />
-              )}
-              <span className={activeCategory === "All" ? "ml-0" : "ml-4.5"}>{t.all}</span>
-            </span>
-            <span className="text-xs text-[#a8a29e]">{produse.length}</span>
-          </button>
+        <div className="space-y-1 mb-6">
+          <CategoryPill
+            label={t.all}
+            isActive={activeCategory === "All"}
+            onClick={() => { setSelectedCategory("All"); setSelectedGroup(null); setIsFilterOpen(false); }}
+          />
+          {seturiCount > 0 && (
+            <CategoryPill
+              label="Seturi"
+              isActive={activeCategory === "Seturi"}
+              onClick={() => { setSelectedCategory("Seturi"); setSelectedGroup(null); setIsFilterOpen(false); }}
+            />
+          )}
           {discountedProducts.length > 0 && (
-            <button
-              onClick={() => { setSelectedCategory("Reduceri"); setIsFilterOpen(false); }}
-              className={`w-full flex items-center justify-between py-3 text-sm transition-colors ${
-                activeCategory === "Reduceri"
-                  ? "text-red-700 font-medium"
-                  : "text-red-700/80 hover:text-red-700"
-              }`}
-            >
-              <span className="flex items-center gap-3">
-                {activeCategory === "Reduceri" && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                )}
-                <span className={activeCategory === "Reduceri" ? "ml-0" : "ml-4.5"}>
-                  {tReduceri.label}
-                </span>
-              </span>
-              <span className="text-xs text-red-500/70">{discountedProducts.length}</span>
-            </button>
+            <CategoryPill
+              label={tReduceri.label}
+              isActive={activeCategory === "Reduceri"}
+              variant="reduceri"
+              onClick={() => { setSelectedCategory("Reduceri"); setSelectedGroup(null); setIsFilterOpen(false); }}
+            />
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {t.categoryGroups.map((group) => (
             <div key={group.title}>
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a8a29e]">
-                {group.title}
-              </p>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-px w-3 bg-[#d6d3d1]" />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a8a29e]">
+                  {group.title}
+                </p>
+              </div>
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const isActive = activeCategory === item.key;
-                  const count = produse.filter((p) => p.categorie === item.key).length;
+                  const isActive = activeCategory === item.key && selectedGroup === group.title;
                   return (
-                    <button
+                    <CategoryPill
                       key={`${group.title}-${item.key}`}
-                      onClick={() => { setSelectedCategory(item.key as ProductCategory); setIsFilterOpen(false); }}
-                      className={`w-full flex items-center justify-between py-2.5 text-sm transition-colors ${
-                        isActive
-                          ? "text-[#1c1917] font-medium"
-                          : "text-[#78716c] hover:text-[#1c1917]"
-                      }`}
-                    >
-                      <span className="flex items-center gap-3">
-                        {isActive && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#1c1917]" />
-                        )}
-                        <span className={isActive ? "ml-0" : "ml-4.5"}>
-                          {item.label}
-                        </span>
-                      </span>
-                      <span className="text-xs text-[#a8a29e]">{count}</span>
-                    </button>
+                      label={item.label}
+                      isActive={isActive}
+                      onClick={() => {
+                        setSelectedCategory(item.key as ProductCategory);
+                        setSelectedGroup(group.title);
+                        setIsFilterOpen(false);
+                      }}
+                      size="sm"
+                    />
                   );
                 })}
               </div>
@@ -558,9 +765,9 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
       <div className="mx-auto max-w-[1600px] px-6 lg:px-12 py-8 lg:py-12">
         <div className="flex gap-12 lg:gap-16">
 
-          {/* Sidebar - Desktop only */}
+          {/* Sidebar - Desktop only, independently scrollable */}
           <aside className="hidden lg:block w-64 shrink-0">
-            <div className="lg:sticky lg:top-8">
+            <div className="sticky top-20 h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain pr-3 -mr-3 [scrollbar-width:thin] [scrollbar-color:#d6d3d1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#d6d3d1] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
               {filterContent}
             </div>
           </aside>
@@ -588,30 +795,14 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                 </button>
               </div>
             ) : (
-              <>
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="text-sm text-[#78716c]">
-                    {t.showing} <span className="font-medium text-[#1c1917]">{filteredProducts.length}</span> {t.productsCount}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredProducts.map((produs) => (
-                    <ProductGridCard
-                      key={produs._id}
-                      produs={produs}
-                      lang={lang}
-                      categoryTag={
-                        produs.categorie
-                          ? categoryLabel.get(produs.categorie) ?? produs.categorie
-                          : undefined
-                      }
-                      viewDetails={t.viewDetails}
-                      formatPrice={formatNumber}
-                    />
-                  ))}
-                </div>
-              </>
+              <ProductsDisplay
+                filteredProducts={filteredProducts}
+                lang={lang}
+                categoryLabel={categoryLabel}
+                t={t}
+                formatNumber={formatNumber}
+                activeCategory={activeCategory}
+              />
             )}
           </div>
         </div>

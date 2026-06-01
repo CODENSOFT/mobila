@@ -14,6 +14,7 @@ import { useMemo } from "react";
 import ProductImageGallery from "@/src/components/product/ProductImageGallery";
 import AddToCartButton from "@/src/components/cart/AddToCartButton";
 import ProduseSimilare from "@/src/components/sections/ProduseSimilare";
+import SetProduse from "@/src/components/sections/SetProduse";
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
 import { parseProductDescription } from "@/src/lib/parseProductDescription";
 
@@ -28,6 +29,16 @@ export type ProductPageProdus = {
   areReducere?: boolean;
   pretReducere?: number;
   procentReducere?: number;
+  set?: string;
+};
+
+type SetProduct = {
+  _id: string;
+  nume: string;
+  pret: number;
+  imagine: string;
+  areReducere?: boolean;
+  pretReducere?: number;
 };
 
 export type ProductPageDictProduct = {
@@ -53,10 +64,12 @@ export default function ProductPageClient({
   produs,
   lang,
   t,
+  setProduse = [],
 }: {
   produs: ProductPageProdus;
   lang: string;
   t: ProductPageDictProduct;
+  setProduse?: SetProduct[];
 }) {
   const { text: numeDisplay } = useLiveRuText(produs.nume, lang);
   const { text: descDisplay, loading: descLoading } = useLiveRuText(produs.descriere, lang);
@@ -239,6 +252,10 @@ export default function ProductPageClient({
 
         </div>
       </div>
+
+      {produs.set && setProduse.length > 0 && (
+        <SetProduse produse={setProduse} setNume={produs.set} lang={lang} />
+      )}
 
       <ProduseSimilare produsId={produs._id} categorie={produs.categorie ?? ""} />
     </main>

@@ -22,6 +22,16 @@ type Product = {
   areReducere?: boolean;
   pretReducere?: number;
   procentReducere?: number;
+  set?: string;
+};
+
+type SetProduct = {
+  _id: string;
+  nume: string;
+  pret: number;
+  imagine: string;
+  areReducere?: boolean;
+  pretReducere?: number;
 };
 
 async function getProdusById(id: string): Promise<Product | null> {
@@ -41,6 +51,31 @@ async function getProdusById(id: string): Promise<Product | null> {
   }
 }
 
+async function getSetProduse(setNume: string, excludeId: string): Promise<SetProduct[]> {
+  try {
+    await connectDB();
+    const trimmed = setNume.trim();
+    if (!trimmed) return [];
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const docs = await ProductModel.find({
+      set: { $regex: `^${escaped}$`, $options: "i" },
+    }).lean<Record<string, unknown>[]>();
+    return docs
+      .filter((d) => String(d._id) !== excludeId)
+      .map((d) => ({
+        _id: String(d._id),
+        nume: String(d.nume ?? ""),
+        pret: Number(d.pret ?? 0),
+        imagine: String(d.imagine ?? ""),
+        areReducere: Boolean(d.areReducere),
+        pretReducere: d.pretReducere != null ? Number(d.pretReducere) : undefined,
+      }));
+  } catch (error) {
+    console.error("[getSetProduse] error", { setNume, error });
+    return [];
+  }
+}
+
 export async function generateStaticParams() {
   return [{ lang: "ro" }, { lang: "ru" }];
 }
@@ -50,6 +85,10 @@ export default async function ProdusPage({ params }: PageProps<"/[lang]/produse/
   if (!isLocale(lang)) notFound();
 
   const [produs, dict] = await Promise.all([getProdusById(id), getDictionary(lang)]);
+
+  const setProduse = produs?.set
+    ? await getSetProduse(produs.set, id)
+    : [];
 
   const t = dict.product;
 
@@ -83,5 +122,5 @@ export default async function ProdusPage({ params }: PageProps<"/[lang]/produse/
     );
   }
 
-  return <ProductPageClient produs={produs} lang={lang} t={t} />;
+  return <ProductPageClient produs={produs} lang={lang} t={t} setProduse={setProduse} />;
 }

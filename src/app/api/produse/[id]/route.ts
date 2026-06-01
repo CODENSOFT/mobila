@@ -41,6 +41,8 @@ export async function PUT(request: Request, context: RouteContext) {
     let pretReducere: number | null = null;
     let procentReducere: number | null = null;
     let imagini: string[] = [];
+    let setNume = "";
+    let grupNume = "";
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await request.formData();
@@ -55,6 +57,8 @@ export async function PUT(request: Request, context: RouteContext) {
       areReducere = get("areReducere") === "true";
       const pr = get("pretReducere"); if (pr) pretReducere = areReducere ? Number(pr) : null;
       const pcr = get("procentReducere"); if (pcr) procentReducere = areReducere ? Number(pcr) : null;
+      setNume = get("set").trim();
+      grupNume = get("grup").trim();
 
       const imaginiFiles = formData.getAll("imagini") as File[];
       const imaginiUrls = (formData.getAll("imaginiUrls") as string[]).filter((u) => u.trim());
@@ -69,7 +73,7 @@ export async function PUT(request: Request, context: RouteContext) {
         nume?: string; nume_ru?: string; descriere?: string; descriere_ru?: string;
         pret?: number; categorie?: string; imagineUrl?: string;
         areReducere?: boolean; pretReducere?: number; procentReducere?: number;
-        imagini?: string[];
+        imagini?: string[]; set?: string; grup?: string;
       };
 
       if (
@@ -93,9 +97,11 @@ export async function PUT(request: Request, context: RouteContext) {
       pretReducere = areReducere && typeof body.pretReducere === "number" ? body.pretReducere : null;
       procentReducere = areReducere && typeof body.procentReducere === "number" ? body.procentReducere : null;
       imagini = Array.isArray(body.imagini) ? body.imagini.filter((u) => typeof u === "string" && u.trim()) : [];
+      setNume = typeof body.set === "string" ? body.set.trim() : "";
+      grupNume = typeof body.grup === "string" ? body.grup.trim() : "";
     }
 
-    console.info("[PUT /api/produse]", { id, areReducere, pretReducere, procentReducere, imaginiCount: imagini.length });
+    console.info("[PUT /api/produse]", { id, areReducere, pretReducere, procentReducere, setNume, imaginiCount: imagini.length });
 
     const updated = await Product.findByIdAndUpdate(
       id,
@@ -124,8 +130,25 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
+    // CRITICAL: persist `set` and `grup` via raw MongoDB collection to bypass
+    // any stale Mongoose schema cache. Empty string means clear the field.
+    const { Types } = await import("mongoose");
+    const _id = new Types.ObjectId(id);
+    const setOps: Record<string, unknown> = { updatedAt: new Date() };
+    const unsetOps: Record<string, "" > = {};
+    if (setNume) setOps.set = setNume;
+    else unsetOps.set = "";
+    if (grupNume) setOps.grup = grupNume;
+    else unsetOps.grup = "";
+
+    const update: Record<string, unknown> = { $set: setOps };
+    if (Object.keys(unsetOps).length > 0) update.$unset = unsetOps;
+    await Product.collection.updateOne({ _id }, update);
+
+    const finalDoc = await Product.collection.findOne({ _id });
+
     revalidatePath("/", "layout");
-    return Response.json(updated, { status: 200, headers: corsHeaders });
+    return Response.json(finalDoc ?? updated, { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("PUT /api/produse/[id] error:", error);
     return Response.json(

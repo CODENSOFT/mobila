@@ -54,6 +54,8 @@ export default function PanouProdusePage() {
     procentReducere?: number;
     imaginiFiles?: File[];
     imaginiUrls?: string[];
+    set?: string;
+    grup?: string;
   }) => {
     const hasFile = payload.imagineFile instanceof File;
     const hasExtraFiles = (payload.imaginiFiles?.length ?? 0) > 0;
@@ -74,6 +76,8 @@ export default function PanouProdusePage() {
             formData.append("areReducere", String(payload.areReducere));
             if (payload.pretReducere) formData.append("pretReducere", String(payload.pretReducere));
             if (payload.procentReducere) formData.append("procentReducere", String(payload.procentReducere));
+            if (payload.set) formData.append("set", payload.set);
+            if (payload.grup) formData.append("grup", payload.grup);
             for (const f of payload.imaginiFiles ?? []) formData.append("imagini", f);
             for (const u of payload.imaginiUrls ?? []) formData.append("imaginiUrls", u);
             return formData;
@@ -83,8 +87,19 @@ export default function PanouProdusePage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...payload,
+            nume: payload.nume,
+            nume_ru: payload.nume_ru,
+            descriere: payload.descriere,
+            descriere_ru: payload.descriere_ru,
+            pret: payload.pret,
+            categorie: payload.categorie,
+            imagineUrl: payload.imagineUrl,
+            areReducere: payload.areReducere,
+            pretReducere: payload.pretReducere,
+            procentReducere: payload.procentReducere,
             imagini: payload.imaginiUrls ?? [],
+            set: payload.set,
+            grup: payload.grup,
           }),
         });
 

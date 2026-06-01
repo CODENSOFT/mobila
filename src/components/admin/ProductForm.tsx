@@ -23,6 +23,7 @@ type ProductFormValues = {
   areReducere: boolean;
   pretReducere: string;
   procentReducere: string;
+  set: string;
 };
 
 type ProductFormPayload = {
@@ -39,6 +40,8 @@ type ProductFormPayload = {
   procentReducere?: number;
   imaginiFiles?: File[];
   imaginiUrls?: string[];
+  set?: string;
+  grup?: string;
 };
 
 type ExtraImage = { id: string; file: File | null; url: string };
@@ -60,6 +63,7 @@ function toInitialValues(product?: Product): ProductFormValues {
     areReducere: product?.areReducere ?? false,
     pretReducere: product?.pretReducere ? String(product.pretReducere) : "",
     procentReducere: product?.procentReducere ? String(product.procentReducere) : "",
+    set: product?.set ?? "",
   };
 }
 
@@ -83,6 +87,111 @@ function getGroupForCategory(category: AdminCategory): AdminCategoryGroupTitle {
     (group.items as readonly AdminCategory[]).includes(category)
   );
   return foundGroup?.title ?? PRODUCT_CATEGORY_GROUPS[0].title;
+}
+
+function SetSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [existingSets, setExistingSets] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const fetchSets = useCallback(() => {
+    setLoading(true);
+    return fetch(`/api/produse?_t=${Date.now()}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) return;
+        const seen = new Set<string>();
+        for (const p of data as { set?: unknown }[]) {
+          if (typeof p.set === "string" && p.set.trim()) {
+            seen.add(p.set.trim());
+          }
+        }
+        const sets = [...seen].sort();
+        setExistingSets(sets);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchSets().then(() => {
+      if (document.activeElement === inputRef.current) {
+        setOpen(true);
+      }
+    });
+  }, [fetchSets]);
+
+  useEffect(() => {
+    function onDown(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  const handleFocus = () => {
+    setOpen(true);
+    void fetchSets();
+  };
+
+  const typed = value.trim().toLowerCase();
+  const suggestions = typed === ""
+    ? existingSets
+    : existingSets.filter((s) => s.toLowerCase().includes(typed));
+
+  return (
+    <div ref={containerRef} className="relative">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Set <span className="text-xs font-normal text-gray-400">— opțional</span>
+      </label>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={handleFocus}
+        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+        placeholder={loading && existingSets.length === 0 ? "Se încarcă seturi..." : "ex: Amigo"}
+        autoComplete="off"
+      />
+      {open && (
+        <ul className="absolute z-30 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+          {loading && existingSets.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-gray-400">Se încarcă...</li>
+          ) : existingSets.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-gray-400 italic">
+              {value.trim() ? `Set nou: „${value}"` : "Scrie denumirea unui set nou..."}
+            </li>
+          ) : suggestions.length > 0 ? (
+            <>
+              {suggestions.map((s) => (
+                <li key={s}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); onChange(s); setOpen(false); }}
+                    className={`w-full px-3 py-2 text-left text-sm hover:bg-green-50 hover:text-green-700 transition-colors ${value === s ? "bg-green-50 font-medium text-green-700" : "text-gray-700"}`}
+                  >
+                    {s}
+                  </button>
+                </li>
+              ))}
+              {typed !== "" && !existingSets.some((s) => s.toLowerCase() === typed) && (
+                <li className="border-t border-gray-100 px-3 py-2 text-sm text-gray-400 italic">
+                  Set nou: „{value}"
+                </li>
+              )}
+            </>
+          ) : (
+            <li className="px-3 py-2 text-sm text-gray-400 italic">Set nou: „{value}"</li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 type TranslateRowResult =
@@ -162,7 +271,11 @@ export default function ProductForm({
     setValues(nextValues);
     setDescriptionRO(initialDescriptionRO(initialProduct));
     setDescriptionRU(initialDescriptionRU(initialProduct));
-    setSelectedCategoryGroup(getGroupForCategory(nextValues.categorie));
+    const savedGrup = initialProduct?.grup;
+    const isValidGrup = PRODUCT_CATEGORY_GROUPS.some((g) => g.title === savedGrup);
+    setSelectedCategoryGroup(
+      isValidGrup ? (savedGrup as AdminCategoryGroupTitle) : getGroupForCategory(nextValues.categorie)
+    );
     setExtraImages(
       (initialProduct?.imagini ?? []).map((url) => ({ id: Math.random().toString(36).slice(2), file: null, url }))
     );
@@ -350,6 +463,8 @@ export default function ProductForm({
         procentReducere: values.areReducere && values.procentReducere ? Number(values.procentReducere) : undefined,
         imaginiFiles: [],
         imaginiUrls: finalImaginiUrls,
+        set: values.set.trim() || undefined,
+        grup: selectedCategoryGroup,
       });
 
       if (mode === "create") {
@@ -520,6 +635,11 @@ export default function ProductForm({
                       ))}
                     </select>
                   </div>
+
+                <SetSelector
+                  value={values.set}
+                  onChange={(v) => setValues((p) => ({ ...p, set: v }))}
+                />
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

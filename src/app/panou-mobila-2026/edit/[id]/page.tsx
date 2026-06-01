@@ -56,6 +56,8 @@ export default function PanouEditProductPage() {
     procentReducere?: number;
     imaginiFiles?: File[];
     imaginiUrls?: string[];
+    set?: string;
+    grup?: string;
   }) => {
     const hasExtraFiles = (payload.imaginiFiles?.length ?? 0) > 0;
 
@@ -73,6 +75,8 @@ export default function PanouEditProductPage() {
       formData.append("areReducere", String(payload.areReducere));
       if (payload.pretReducere) formData.append("pretReducere", String(payload.pretReducere));
       if (payload.procentReducere) formData.append("procentReducere", String(payload.procentReducere));
+      if (payload.set) formData.append("set", payload.set);
+      if (payload.grup) formData.append("grup", payload.grup);
       for (const f of payload.imaginiFiles ?? []) formData.append("imagini", f);
       for (const u of payload.imaginiUrls ?? []) formData.append("imaginiUrls", u);
       response = await fetch(toApiUrl(`/api/produse/${params.id}`), { method: "PUT", body: formData });
@@ -92,6 +96,8 @@ export default function PanouEditProductPage() {
           pretReducere: payload.pretReducere,
           procentReducere: payload.procentReducere,
           imagini: payload.imaginiUrls ?? [],
+          set: payload.set,
+          grup: payload.grup,
         }),
       });
     }

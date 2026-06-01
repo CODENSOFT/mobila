@@ -14,11 +14,20 @@ const productSchema = new Schema(
     areReducere: { type: Boolean, default: false },
     pretReducere: { type: Number },
     procentReducere: { type: Number },
+    set: { type: String, trim: true, index: true },
+    grup: { type: String, trim: true, index: true },
   },
   { timestamps: true }
 );
 
 export type ProductDocument = InferSchemaType<typeof productSchema>;
+
+if (
+  models.Product &&
+  (!models.Product.schema.path("set") || !models.Product.schema.path("grup"))
+) {
+  delete (models as Record<string, unknown>).Product;
+}
 
 const Product =
   (models.Product as Model<ProductDocument> | undefined) ??

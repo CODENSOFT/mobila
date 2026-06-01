@@ -16,4 +16,6 @@ export type Product = {
   areReducere?: boolean;
   pretReducere?: number;
   procentReducere?: number;
+  set?: string;
+  grup?: string;
 };

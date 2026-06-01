@@ -49,6 +49,24 @@ export async function GET(request: Request) {
       return Response.json(produs, { status: 200, headers: corsHeaders });
     }
 
+    if (searchParams.has("distinctSets")) {
+      try {
+        const docs = await Product.find({ set: { $exists: true } })
+          .select("set")
+          .lean<{ set?: unknown }[]>();
+        const sets = [
+          ...new Set(
+            docs
+              .map((d) => (typeof d.set === "string" ? d.set.trim() : ""))
+              .filter((s) => s !== "")
+          ),
+        ].sort();
+        return Response.json(sets, { status: 200, headers: corsHeaders });
+      } catch {
+        return Response.json([], { status: 200, headers: corsHeaders });
+      }
+    }
+
     const categorieParam = searchParams.get("categorie");
     const limitParam = searchParams.get("limit");
     const excludeParam = searchParams.get("exclude");
@@ -140,6 +158,8 @@ export async function POST(request: Request) {
     let pretReducereNumber = NaN;
     let procentReducereNumber = NaN;
     let imaginiFinale: string[] = [];
+    let setNume = "";
+    let grupNume = "";
 
     if (contentType.includes("application/json")) {
       const body = (await request.json()) as {
@@ -154,6 +174,8 @@ export async function POST(request: Request) {
         pretReducere?: number;
         procentReducere?: number;
         imagini?: string[];
+        set?: string;
+        grup?: string;
       };
 
       nume = typeof body.nume === "string" ? body.nume : "";
@@ -171,6 +193,8 @@ export async function POST(request: Request) {
       pretReducereNumber = typeof body.pretReducere === "number" ? body.pretReducere : NaN;
       procentReducereNumber = typeof body.procentReducere === "number" ? body.procentReducere : NaN;
       imaginiFinale = Array.isArray(body.imagini) ? body.imagini.filter((u) => typeof u === "string" && u.trim()) : [];
+      setNume = typeof body.set === "string" ? body.set.trim() : "";
+      grupNume = typeof body.grup === "string" ? body.grup.trim() : "";
     } else {
       const formData = await request.formData();
 
@@ -211,6 +235,11 @@ export async function POST(request: Request) {
       const procentReducereValue = formData.get("procentReducere");
       procentReducereNumber = typeof procentReducereValue === "string" && procentReducereValue ? Number(procentReducereValue) : NaN;
 
+      const setValue = formData.get("set");
+      setNume = typeof setValue === "string" ? setValue.trim() : "";
+      const grupValue = formData.get("grup");
+      grupNume = typeof grupValue === "string" ? grupValue.trim() : "";
+
       const imaginiFiles = formData.getAll("imagini") as File[];
       const imaginiUrls = (formData.getAll("imaginiUrls") as string[]).filter((u) => typeof u === "string" && u.trim());
       for (const file of imaginiFiles) {
@@ -244,9 +273,9 @@ export async function POST(request: Request) {
     const pretReducereFinal = areReducere && Number.isFinite(pretReducereNumber) ? pretReducereNumber : null;
     const procentReducereFinal = areReducere && Number.isFinite(procentReducereNumber) ? procentReducereNumber : null;
 
-    console.info("[POST /api/produse]", { areReducere, pretReducereFinal, procentReducereFinal });
+    console.info("[POST /api/produse] creating", { setNume, areReducere });
 
-    const produs = await Product.create({
+    const created = await Product.create({
       nume: nume.trim(),
       ...(numeRuFinala ? { nume_ru: numeRuFinala } : {}),
       descriere: descriere.trim(),
@@ -260,8 +289,25 @@ export async function POST(request: Request) {
       procentReducere: procentReducereFinal,
     });
 
+    // CRITICAL: Set the `set` and `grup` fields via raw MongoDB collection,
+    // bypassing Mongoose entirely. This guarantees the fields are saved
+    // even if the cached schema is stale or strict mode interferes.
+    const extraFields: Record<string, unknown> = {};
+    if (setNume) extraFields.set = setNume;
+    if (grupNume) extraFields.grup = grupNume;
+    if (Object.keys(extraFields).length > 0) {
+      await Product.collection.updateOne(
+        { _id: created._id },
+        { $set: { ...extraFields, updatedAt: new Date() } }
+      );
+      console.info("[POST /api/produse] extra fields saved via raw collection", { id: String(created._id), extraFields });
+    }
+
+    // Read back via raw collection too, to confirm the persisted state
+    const finalDoc = await Product.collection.findOne({ _id: created._id });
+
     revalidatePath("/", "layout");
-    return Response.json(produs, { status: 201, headers: corsHeaders });
+    return Response.json(finalDoc ?? created, { status: 201, headers: corsHeaders });
   } catch (error) {
     console.error("POST /api/produse error:", error);
 
