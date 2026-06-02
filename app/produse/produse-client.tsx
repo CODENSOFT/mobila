@@ -15,7 +15,7 @@ import {
   getCategoriesForDormitorGroup,
 } from "../../src/constants/categories";
 
-type Category = "All" | "Reduceri" | "Seturi" | ProductCategory;
+type Category = "All" | "Reduceri" | ProductCategory;
 
 const categories: Category[] = [
   "All",
@@ -35,7 +35,6 @@ const normalizeCategory = (value?: string | null): Category => {
   if (!value) return "All";
   const trimmed = value.trim();
   if (trimmed === "Reduceri") return "Reduceri";
-  if (trimmed === "Seturi") return "Seturi";
   const resolved = CATEGORY_QUERY_ALIASES[trimmed] ?? trimmed;
   return isKnownCategory(resolved) ? resolved : "All";
 };
@@ -273,6 +272,7 @@ function ProductsDisplay({
   t,
   formatNumber,
   activeCategory,
+  selectedGroup,
 }: {
   filteredProducts: Product[];
   lang: string;
@@ -280,100 +280,93 @@ function ProductsDisplay({
   t: { showing: string; productsCount: string; viewDetails: string };
   formatNumber: (n: number) => string;
   activeCategory: Category;
+  selectedGroup: string | null;
 }) {
-  const showSetCardsInGrid = activeCategory === "Seturi";
-  const showSeturiSectionBelow = activeCategory === "All";
+  // Two display modes:
+  // - "sets-only": aggregator views (Dormitoare, Bucătării, Livinguri, Antreuri, Toate saltelele)
+  //   show ONLY set cards, no individual products
+  // - "individual-only": everything else (Toate, Reduceri, specific sub-categories)
+  //   shows all products individually, no set grouping
+  const displayMode: "sets-only" | "individual-only" = useMemo(() => {
+    if (selectedGroup) {
+      const grp = PRODUCT_CATEGORY_GROUPS.find((g) => g.title === selectedGroup);
+      if (grp && grp.items[0] === activeCategory) return "sets-only";
+    }
+    return "individual-only";
+  }, [activeCategory, selectedGroup]);
 
   const gridItems = useMemo(() => {
-    if (!showSetCardsInGrid) {
+    if (displayMode === "individual-only") {
       return filteredProducts.map((p) => ({ type: "product" as const, product: p }));
     }
 
+    // sets-only mode: only show sets (with >= 2 products), exclude individuals and singletons
     const map = new Map<string, Product[]>();
-    const noSet: Product[] = [];
     for (const p of filteredProducts) {
       const key = p.set?.trim();
       if (key) {
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(p);
-      } else {
-        noSet.push(p);
       }
     }
 
     const result: ({ type: "set"; name: string; products: Product[] } | { type: "product"; product: Product })[] = [];
-
     for (const [name, products] of map.entries()) {
       if (products.length > 1) {
         result.push({ type: "set", name, products });
-      } else {
-        noSet.push(...products);
       }
-    }
-
-    for (const p of noSet) {
-      result.push({ type: "product", product: p });
     }
 
     return result;
-  }, [filteredProducts, showSetCardsInGrid]);
+  }, [filteredProducts, displayMode]);
 
-  const allSetGroups = useMemo(() => {
-    if (!showSeturiSectionBelow) return [];
-    const map = new Map<string, Product[]>();
-    for (const p of filteredProducts) {
-      const key = p.set?.trim();
-      if (key) {
-        if (!map.has(key)) map.set(key, []);
-        map.get(key)!.push(p);
-      }
-    }
-    return Array.from(map.entries())
-      .filter(([, prods]) => prods.length > 1)
-      .map(([name, products]) => ({ name, products }));
-  }, [filteredProducts, showSeturiSectionBelow]);
+  const setsCount = gridItems.filter((i) => i.type === "set").length;
 
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-[#78716c]">
-          {t.showing} <span className="font-medium text-[#1c1917]">{filteredProducts.length}</span> {t.productsCount}
+          {displayMode === "sets-only" ? (
+            <>
+              {t.showing} <span className="font-medium text-[#1c1917]">{setsCount}</span> {setsCount === 1 ? "set" : "seturi"}
+            </>
+          ) : (
+            <>
+              {t.showing} <span className="font-medium text-[#1c1917]">{filteredProducts.length}</span> {t.productsCount}
+            </>
+          )}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {gridItems.map((item) =>
-          item.type === "set" ? (
-            <SetGridCard key={`set-${item.name}`} name={item.name} products={item.products} lang={lang} />
-          ) : (
-            <ProductGridCard
-              key={item.product._id}
-              produs={item.product}
-              lang={lang}
-              categoryTag={
-                item.product.categorie
-                  ? categoryLabel.get(item.product.categorie) ?? item.product.categorie
-                  : undefined
-              }
-              viewDetails={t.viewDetails}
-              formatPrice={formatNumber}
-            />
-          )
-        )}
-      </div>
-
-      {allSetGroups.length > 0 && (
-        <div className="mt-14">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="h-px flex-1 bg-[#e7e5e4]" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a8a29e]">Seturi</span>
-            <div className="h-px flex-1 bg-[#e7e5e4]" />
+      {displayMode === "sets-only" && gridItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 rounded-full bg-[#f5f5f4] flex items-center justify-center mb-4">
+            <svg className="h-6 w-6 text-[#a8a29e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            {allSetGroups.map((group) => (
-              <SetGridCard key={`set-all-${group.name}`} name={group.name} products={group.products} lang={lang} />
-            ))}
-          </div>
+          <p className="text-[#78716c]">Niciun set disponibil în această secțiune.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {gridItems.map((item) =>
+            item.type === "set" ? (
+              <SetGridCard key={`set-${item.name}`} name={item.name} products={item.products} lang={lang} />
+            ) : (
+              <ProductGridCard
+                key={item.product._id}
+                produs={item.product}
+                lang={lang}
+                categoryTag={
+                  item.product.categorie
+                    ? categoryLabel.get(item.product.categorie) ?? item.product.categorie
+                    : undefined
+                }
+                viewDetails={t.viewDetails}
+                formatPrice={formatNumber}
+              />
+            )
+          )}
         </div>
       )}
     </>
@@ -438,8 +431,6 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
       list = list.filter(
         (produs) => produs.areReducere && typeof produs.pretReducere === "number"
       );
-    } else if (activeCategory === "Seturi") {
-      list = list.filter((produs) => typeof produs.set === "string" && produs.set.trim() !== "");
     } else if (activeCategory !== "All") {
       if (activeCategory === "Dormitoare" && selectedGroup === "PENTRU DORMITOR") {
         // Group aggregator: show ALL products tagged for "PENTRU DORMITOR" group
@@ -495,22 +486,11 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
 
   const hasActiveFilter = activeCategory !== "All" || priceFrom !== "" || priceTo !== "";
 
-  const seturiCount = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const p of produse) {
-      const key = p.set?.trim();
-      if (key) map.set(key, (map.get(key) ?? 0) + 1);
-    }
-    return Array.from(map.values()).filter((c) => c > 1).length;
-  }, [produse]);
-
   const activeCategoryLabel =
     activeCategory === "All"
       ? null
       : activeCategory === "Reduceri"
       ? tReduceri.label
-      : activeCategory === "Seturi"
-      ? "Seturi"
       : (categoryLabel.get(activeCategory as ProductCategory) ?? activeCategory);
 
   const filterContent = (
@@ -526,13 +506,6 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
             isActive={activeCategory === "All"}
             onClick={() => { setSelectedCategory("All"); setSelectedGroup(null); setIsFilterOpen(false); }}
           />
-          {seturiCount > 0 && (
-            <CategoryPill
-              label="Seturi"
-              isActive={activeCategory === "Seturi"}
-              onClick={() => { setSelectedCategory("Seturi"); setSelectedGroup(null); setIsFilterOpen(false); }}
-            />
-          )}
           {discountedProducts.length > 0 && (
             <CategoryPill
               label={tReduceri.label}
@@ -802,6 +775,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                 t={t}
                 formatNumber={formatNumber}
                 activeCategory={activeCategory}
+                selectedGroup={selectedGroup}
               />
             )}
           </div>

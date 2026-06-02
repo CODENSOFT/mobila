@@ -296,6 +296,7 @@
       {
         "title": "PENTRU HOL",
         "items": [
+          { "key": "Hol", "label": "Hol" },
           { "key": "Antreuri", "label": "Antreuri" },
           { "key": "Dulapuri", "label": "Dulapuri" },
           { "key": "Comode", "label": "Comode" },

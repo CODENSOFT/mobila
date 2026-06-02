@@ -28,7 +28,7 @@ export const PRODUCT_CATEGORY_GROUPS = [
   },
   {
     title: "PENTRU HOL",
-    items: ["Antreuri", "Dulapuri", "Comode", "Anexe", "Oglinzi", "Pantofare", "Cuiere"],
+    items: ["Hol", "Antreuri", "Dulapuri", "Comode", "Anexe", "Oglinzi", "Pantofare", "Cuiere"],
   },
 ] as const;
 
@@ -53,6 +53,7 @@ export const PRODUCT_CATEGORIES = [
   "Livinguri",
   "Polițe",
   "Mese de cafea",
+  "Hol",
   "Antreuri",
   "Pantofare",
   "Cuiere",

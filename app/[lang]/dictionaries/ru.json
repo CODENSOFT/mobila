@@ -296,6 +296,7 @@
       {
         "title": "ДЛЯ ПРИХОЖЕЙ",
         "items": [
+          { "key": "Hol", "label": "Прихожая" },
           { "key": "Antreuri", "label": "Прихожие" },
           { "key": "Dulapuri", "label": "Шкафы" },
           { "key": "Comode", "label": "Комоды" },
