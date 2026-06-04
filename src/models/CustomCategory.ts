@@ -6,6 +6,7 @@ const customCategorySchema = new Schema(
     label: { type: String, required: true, trim: true },
     grup: { type: String, required: true, trim: true, index: true },
     hidden: { type: Boolean, default: false, index: true },
+    ordine: { type: Number, default: 0, index: true },
   },
   { timestamps: true }
 );
@@ -22,6 +23,7 @@ try {
   const cached = models.CustomCategory;
   if (cached?.schema) {
     const hasHidden = Boolean(cached.schema.path("hidden"));
+    const hasOrdine = Boolean(cached.schema.path("ordine"));
     let hasCompound = false;
     try {
       const idxs = cached.schema.indexes();
@@ -35,7 +37,7 @@ try {
     } catch {
       hasCompound = false;
     }
-    if (!hasHidden || !hasCompound) {
+    if (!hasHidden || !hasCompound || !hasOrdine) {
       try {
         mongoose.deleteModel("CustomCategory");
       } catch {

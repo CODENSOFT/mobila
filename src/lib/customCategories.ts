@@ -4,6 +4,7 @@ export type CustomCategory = {
   label: string;
   grup: string;
   hidden?: boolean;
+  ordine?: number;
 };
 
 export async function fetchCustomCategories(): Promise<CustomCategory[]> {
@@ -19,7 +20,14 @@ export async function fetchCustomCategories(): Promise<CustomCategory[]> {
         typeof (c as CustomCategory).key === "string" &&
         typeof (c as CustomCategory).label === "string" &&
         typeof (c as CustomCategory).grup === "string"
-    ).map((c) => ({ ...c, hidden: Boolean((c as { hidden?: unknown }).hidden) }));
+    ).map((c) => {
+      const raw = c as { hidden?: unknown; ordine?: unknown };
+      return {
+        ...c,
+        hidden: Boolean(raw.hidden),
+        ordine: typeof raw.ordine === "number" ? raw.ordine : 0,
+      };
+    });
   } catch {
     return [];
   }

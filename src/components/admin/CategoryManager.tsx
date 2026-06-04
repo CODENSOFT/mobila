@@ -20,11 +20,15 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
   const [editLabel, setEditLabel] = useState("");
   const [editGrup, setEditGrup] = useState<string>(GROUP_TITLES[0]);
 
+  // Drag and drop state
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
   const refresh = useCallback(async () => {
     setIsLoading(true);
     const data = await fetchCustomCategories();
-    // Show all (including hidden) so admin can restore them
-    setItems(data);
+    // After hard delete, hidden records shouldn't exist, but filter as safety
+    setItems(data.filter((c) => !c.hidden));
     setIsLoading(false);
   }, []);
 
@@ -34,20 +38,20 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
 
   const grouped = GROUP_TITLES.map((title) => ({
     title,
-    items: items.filter((i) => i.grup === title),
+    items: items
+      .filter((i) => i.grup === title)
+      .sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0)),
   }));
 
-  // Single unified API call: every admin action uses POST /api/categorii with { action, ... }
+  // Single unified API call
   const callApi = async (payload: Record<string, unknown>): Promise<{ ok: boolean; message?: string }> => {
     try {
-      console.info("[CategoryManager] →", payload);
       const res = await fetch("/api/categorii", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const text = await res.text();
-      console.info("[CategoryManager] ←", res.status, text);
       let data: { message?: string } | null = null;
       try {
         data = JSON.parse(text) as { message?: string };
@@ -120,27 +124,91 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
   const handleDelete = async (item: CustomCategory) => {
     setDeletingId(item._id);
     setError(null);
+    // Optimistic remove
+    setItems((prev) => prev.filter((it) => it._id !== item._id));
     const result = await callApi({ action: "delete", id: item._id });
     setDeletingId(null);
     if (!result.ok) {
       setError(result.message ?? "Nu s-a putut șterge.");
+      await refresh(); // rollback
       return;
     }
-    await refresh();
     onChange?.();
   };
 
-  const handleRestore = async (item: CustomCategory) => {
-    setDeletingId(item._id);
-    setError(null);
-    const result = await callApi({ action: "restore", id: item._id });
-    setDeletingId(null);
-    if (!result.ok) {
-      setError(result.message ?? "Nu s-a putut restaura.");
+  // ===== Drag & Drop =====
+  const handleDragStart = (e: React.DragEvent, item: CustomCategory) => {
+    setDraggedId(item._id);
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", item._id); } catch {}
+  };
+
+  const handleDragOver = (e: React.DragEvent, item: CustomCategory) => {
+    if (!draggedId || draggedId === item._id) return;
+    // Only allow drop within same group
+    const draggedItem = items.find((i) => i._id === draggedId);
+    if (!draggedItem || draggedItem.grup !== item.grup) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverId(item._id);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverId(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetItem: CustomCategory) => {
+    e.preventDefault();
+    setDragOverId(null);
+    if (!draggedId || draggedId === targetItem._id) {
+      setDraggedId(null);
       return;
     }
-    await refresh();
+    const draggedItem = items.find((i) => i._id === draggedId);
+    if (!draggedItem || draggedItem.grup !== targetItem.grup) {
+      setDraggedId(null);
+      return;
+    }
+
+    // Build the new order for this group
+    const inGroup = items
+      .filter((i) => i.grup === targetItem.grup)
+      .sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0));
+    const fromIdx = inGroup.findIndex((i) => i._id === draggedId);
+    const toIdx = inGroup.findIndex((i) => i._id === targetItem._id);
+    if (fromIdx < 0 || toIdx < 0) {
+      setDraggedId(null);
+      return;
+    }
+    const reordered = [...inGroup];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+
+    // Optimistic UI
+    const newOrdineById = new Map(reordered.map((it, idx) => [it._id, idx]));
+    setItems((prev) =>
+      prev.map((it) =>
+        newOrdineById.has(it._id) ? { ...it, ordine: newOrdineById.get(it._id) } : it
+      )
+    );
+    setDraggedId(null);
+
+    // Persist
+    const result = await callApi({
+      action: "reorder",
+      orderedIds: reordered.map((it) => it._id),
+    });
+    if (!result.ok) {
+      setError(result.message ?? "Nu s-a putut salva ordinea.");
+      await refresh();
+      return;
+    }
     onChange?.();
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDragOverId(null);
   };
 
   return (
@@ -148,7 +216,7 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
       <header>
         <h2 className="text-lg font-semibold text-gray-900">Categorii</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Toate categoriile sunt stocate în baza de date și editabile. Modificările apar imediat în selectorul de produs și în filtrul de pe pagina /produse.
+          Trage cu mausul de o categorie pentru a-i schimba poziția. Modificările apar imediat pe site.
         </p>
       </header>
 
@@ -191,8 +259,6 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
       <div className="space-y-4">
         {isLoading ? (
           <p className="text-sm text-gray-400">Se încarcă...</p>
-        ) : items.length === 0 ? (
-          <p className="text-sm text-gray-400">Nicio categorie. Adaugă prima de mai sus.</p>
         ) : (
           grouped.map((g) =>
             g.items.length > 0 ? (
@@ -201,10 +267,24 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
                 <ul className="space-y-1.5">
                   {g.items.map((item) => {
                     const isEditing = editingId === item._id;
+                    const isDragged = draggedId === item._id;
+                    const isDragOver = dragOverId === item._id;
                     return (
                       <li
                         key={item._id}
-                        className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                        draggable={!isEditing}
+                        onDragStart={(e) => handleDragStart(e, item)}
+                        onDragOver={(e) => handleDragOver(e, item)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, item)}
+                        onDragEnd={handleDragEnd}
+                        className={`flex flex-col gap-2 rounded-lg border bg-gray-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between transition-colors ${
+                          isDragged
+                            ? "opacity-40 border-gray-200"
+                            : isDragOver
+                            ? "border-green-400 bg-green-50"
+                            : "border-gray-200"
+                        } ${isEditing ? "cursor-default" : "cursor-move"}`}
                       >
                         {isEditing ? (
                           <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
@@ -244,44 +324,25 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
                         ) : (
                           <>
                             <div className="flex items-center gap-2">
-                              <span className={`text-sm ${item.hidden ? "text-gray-400 line-through" : "text-gray-800"}`}>
-                                {item.label}
-                              </span>
-                              {item.hidden && (
-                                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-rose-700">
-                                  ascunsă
-                                </span>
-                              )}
+                              <span className="text-gray-400 select-none" aria-hidden>⋮⋮</span>
+                              <span className="text-sm text-gray-800">{item.label}</span>
                             </div>
                             <div className="flex gap-1.5">
-                              {item.hidden ? (
-                                <button
-                                  type="button"
-                                  onClick={() => handleRestore(item)}
-                                  disabled={deletingId === item._id}
-                                  className="rounded-md border border-emerald-200 bg-white px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
-                                >
-                                  {deletingId === item._id ? "..." : "Restaurează"}
-                                </button>
-                              ) : (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => startEdit(item)}
-                                    className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
-                                  >
-                                    Editează
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDelete(item)}
-                                    disabled={deletingId === item._id}
-                                    className="rounded-md border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
-                                  >
-                                    {deletingId === item._id ? "..." : "Șterge"}
-                                  </button>
-                                </>
-                              )}
+                              <button
+                                type="button"
+                                onClick={() => startEdit(item)}
+                                className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+                              >
+                                Editează
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(item)}
+                                disabled={deletingId === item._id}
+                                className="rounded-md border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                              >
+                                {deletingId === item._id ? "..." : "Șterge"}
+                              </button>
                             </div>
                           </>
                         )}

@@ -418,9 +418,14 @@ export default function ProductForm({
   }, []);
 
   // Categories come strictly from the DB (auto-seeded with hardcoded list on first run).
-  // Hidden ones are filtered by the API GET endpoint already.
+  // Filter hidden + sort by `ordine` so the dropdown reflects admin ordering.
   const categoriesForSelectedGroup: string[] = customCategories
     .filter((c) => !c.hidden && c.grup === selectedCategoryGroup)
+    .sort((a, b) => {
+      const oa = typeof a.ordine === "number" ? a.ordine : 0;
+      const ob = typeof b.ordine === "number" ? b.ordine : 0;
+      return oa - ob;
+    })
     .map((c) => c.key);
 
   const validate = useCallback(() => {

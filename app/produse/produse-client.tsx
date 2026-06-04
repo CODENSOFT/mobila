@@ -551,8 +551,16 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     };
     // Preserve canonical group order from dictionary
     for (const dictGroup of t.categoryGroups) ensureGroup(dictGroup.title);
-    for (const c of customCategories) {
-      if (c.hidden) continue;
+    // Sort by ordine, then label as fallback
+    const sorted = [...customCategories]
+      .filter((c) => !c.hidden)
+      .sort((a, b) => {
+        const oa = typeof a.ordine === "number" ? a.ordine : 0;
+        const ob = typeof b.ordine === "number" ? b.ordine : 0;
+        if (oa !== ob) return oa - ob;
+        return a.label.localeCompare(b.label);
+      });
+    for (const c of sorted) {
       ensureGroup(c.grup).items.push({ key: c.key, label: c.label });
     }
     return groups.filter((g) => g.items.length > 0);

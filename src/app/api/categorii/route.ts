@@ -25,10 +25,11 @@ async function ensureSeeded() {
     console.warn("[ensureSeeded] syncIndexes warning", e);
   }
 
-  const docs: { key: string; label: string; grup: string; hidden: boolean }[] = [];
+  const docs: { key: string; label: string; grup: string; hidden: boolean; ordine: number }[] = [];
+  let counter = 0;
   for (const group of PRODUCT_CATEGORY_GROUPS) {
     for (const key of group.items) {
-      docs.push({ key, label: key, grup: group.title, hidden: false });
+      docs.push({ key, label: key, grup: group.title, hidden: false, ordine: counter++ });
     }
   }
   if (docs.length === 0) return;
@@ -52,13 +53,14 @@ export async function GET() {
     await ensureSeeded();
     // Return ALL records (including hidden). Sidebar/form filters hidden on their side;
     // admin CategoryManager needs to see hidden ones to offer restore.
-    const docs = await CustomCategory.find().sort({ grup: 1, label: 1 }).lean();
+    const docs = await CustomCategory.find().sort({ grup: 1, ordine: 1, label: 1 }).lean();
     const items = docs.map((d) => ({
       _id: String(d._id),
       key: d.key,
       label: d.label,
       grup: d.grup,
       hidden: Boolean(d.hidden),
+      ordine: typeof d.ordine === "number" ? d.ordine : 0,
     }));
     return Response.json(items, { status: 200, headers: corsHeaders });
   } catch (error) {
@@ -83,6 +85,7 @@ export async function POST(request: Request) {
       label?: unknown;
       grup?: unknown;
       hidden?: unknown;
+      orderedIds?: unknown;
     };
 
     const action = typeof body.action === "string" ? body.action : "create";
@@ -124,51 +127,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // ===== DELETE (soft delete — mark hidden, record remains so it can be restored) =====
+    // ===== REORDER (update `ordine` for a batch of categories) =====
+    // Body: { action: "reorder", orderedIds: ["id1", "id2", ...] }
+    // Assigns ordine = 0, 1, 2, ... based on the order of the IDs.
+    if (action === "reorder") {
+      const orderedIds = Array.isArray(body.orderedIds)
+        ? body.orderedIds.filter((x): x is string => typeof x === "string" && isValidObjectId(x))
+        : [];
+      if (orderedIds.length === 0) {
+        return Response.json(
+          { message: "orderedIds invalid sau gol." },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+      await Promise.all(
+        orderedIds.map((oid, idx) =>
+          CustomCategory.updateOne({ _id: oid }, { $set: { ordine: idx } })
+        )
+      );
+      return Response.json({ ok: true, updated: orderedIds.length }, { status: 200, headers: corsHeaders });
+    }
+
+    // ===== DELETE (hard delete — remove from DB completely) =====
     if (action === "delete") {
       if (id) {
         if (!isValidObjectId(id)) {
           return Response.json({ message: "ID invalid." }, { status: 400, headers: corsHeaders });
         }
-        const updated = await CustomCategory.findByIdAndUpdate(
-          id,
-          { $set: { hidden: true } },
-          { new: true }
-        ).lean();
-        if (!updated) {
-          return Response.json(
-            { message: "Categoria nu a fost găsită." },
-            { status: 404, headers: corsHeaders }
-          );
-        }
-        return Response.json(
-          {
-            _id: String(updated._id),
-            key: updated.key,
-            label: updated.label,
-            grup: updated.grup,
-            hidden: true,
-          },
-          { status: 200, headers: corsHeaders }
-        );
+        await CustomCategory.deleteOne({ _id: id });
+        return Response.json({ ok: true, deleted: id }, { status: 200, headers: corsHeaders });
       }
       if (keyParam) {
-        const upserted = await CustomCategory.findOneAndUpdate(
-          { key: keyParam },
-          {
-            $set: { hidden: true },
-            $setOnInsert: { key: keyParam, label: keyParam, grup: "PENTRU DORMITOR" },
-          },
-          { new: true, upsert: true, setDefaultsOnInsert: true }
-        ).lean();
+        const filter: Record<string, unknown> = { key: keyParam };
+        if (grupParam) filter.grup = grupParam;
+        const result = await CustomCategory.deleteMany(filter);
         return Response.json(
-          {
-            _id: String(upserted._id),
-            key: upserted.key,
-            label: upserted.label,
-            grup: upserted.grup,
-            hidden: true,
-          },
+          { ok: true, deletedCount: result.deletedCount ?? 0 },
           { status: 200, headers: corsHeaders }
         );
       }
@@ -342,13 +336,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // STEP 4: insert new. If a duplicate-key error still slips through, treat as success.
+    // STEP 4: insert new (append to end of group based on max ordine).
+    const lastInGroup = await CustomCategory.find({ grup: finalGrup })
+      .sort({ ordine: -1 })
+      .limit(1)
+      .lean();
+    const nextOrdine = lastInGroup.length > 0 && typeof lastInGroup[0].ordine === "number"
+      ? lastInGroup[0].ordine + 1
+      : 0;
     try {
       const created = await CustomCategory.create({
         key: finalKey,
         label: finalLabel,
         grup: finalGrup,
         hidden: false,
+        ordine: nextOrdine,
       });
       return Response.json(
         {
