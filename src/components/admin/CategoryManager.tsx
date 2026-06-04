@@ -143,38 +143,13 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
     onChange?.();
   };
 
-  const handleResetAll = async () => {
-    if (!confirm("Sigur vrei să resetezi TOATE categoriile la valorile implicite? Toate modificările (adăugări, ștergeri, redenumiri) vor fi pierdute.")) return;
-    setBusy(true);
-    setError(null);
-    const result = await callApi({ action: "reset-all" });
-    setBusy(false);
-    if (!result.ok) {
-      setError(result.message ?? "Resetul a eșuat.");
-      return;
-    }
-    await refresh();
-    onChange?.();
-  };
-
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 space-y-5">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">Categorii</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Toate categoriile sunt stocate în baza de date și editabile. Modificările apar imediat în selectorul de produs și în filtrul de pe pagina /produse.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleResetAll}
-          disabled={busy}
-          className="self-start rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50"
-          title="Șterge tot și revine la categoriile implicite"
-        >
-          ↻ Resetează la implicite
-        </button>
+      <header>
+        <h2 className="text-lg font-semibold text-gray-900">Categorii</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Toate categoriile sunt stocate în baza de date și editabile. Modificările apar imediat în selectorul de produs și în filtrul de pe pagina /produse.
+        </p>
       </header>
 
       <form onSubmit={handleCreate} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] items-end">

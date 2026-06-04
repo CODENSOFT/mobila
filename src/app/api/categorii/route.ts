@@ -281,45 +281,106 @@ export async function POST(request: Request) {
     }
 
     // ===== CREATE (default, idempotent — never returns 4xx) =====
-    // Smart defaults: fill missing fields so the call always succeeds.
     const finalKey = keyParam || labelParam;
     const finalLabel = labelParam || keyParam;
     const finalGrup = grupParam || PRODUCT_CATEGORY_GROUPS[0].title;
 
     if (!finalKey) {
-      // No identifier at all — only true error case
       return Response.json(
         { message: "Trimite cel puțin o denumire." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Drop the legacy key_1 unique index eagerly in case it's still around
-    // (it blocks inserting the same key in different groups).
+    // STEP 1: aggressively clean up any leftover unique indexes that don't include `grup`.
+    // These block the new (key, grup) compound uniqueness model.
     try {
-      await CustomCategory.collection.dropIndex("key_1");
-    } catch {
-      // doesn't exist — fine
+      const indexes = await CustomCategory.collection.indexes();
+      for (const idx of indexes) {
+        if (idx.name === "_id_") continue;
+        const keys = Object.keys(idx.key ?? {});
+        // Drop any unique index that's NOT the compound (key, grup) we want
+        const isCompoundKeyGrup =
+          keys.length === 2 && keys.includes("key") && keys.includes("grup");
+        if (idx.unique && !isCompoundKeyGrup) {
+          try {
+            await CustomCategory.collection.dropIndex(idx.name as string);
+            console.info("[CREATE] dropped legacy unique index", idx.name);
+          } catch (e) {
+            console.warn("[CREATE] failed dropping index", idx.name, e);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[CREATE] could not list indexes", e);
     }
 
-    const upserted = await CustomCategory.findOneAndUpdate(
-      { key: finalKey, grup: finalGrup },
-      {
-        $set: { label: finalLabel, hidden: false },
-        $setOnInsert: { key: finalKey, grup: finalGrup },
-      },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    ).lean();
-    return Response.json(
-      {
-        _id: String(upserted._id),
-        key: upserted.key,
-        label: upserted.label,
-        grup: upserted.grup,
-        hidden: Boolean(upserted.hidden),
-      },
-      { status: 200, headers: corsHeaders }
-    );
+    // STEP 2: ensure the compound index exists
+    try {
+      await CustomCategory.collection.createIndex({ key: 1, grup: 1 }, { unique: true });
+    } catch (e) {
+      console.warn("[CREATE] createIndex warning", e);
+    }
+
+    // STEP 3: find existing by (key, grup) — explicit check, no race with index
+    const existing = await CustomCategory.findOne({ key: finalKey, grup: finalGrup }).lean();
+    if (existing) {
+      const updated = await CustomCategory.findByIdAndUpdate(
+        existing._id,
+        { $set: { label: finalLabel, hidden: false } },
+        { new: true }
+      ).lean();
+      return Response.json(
+        {
+          _id: String(updated!._id),
+          key: updated!.key,
+          label: updated!.label,
+          grup: updated!.grup,
+          hidden: Boolean(updated!.hidden),
+        },
+        { status: 200, headers: corsHeaders }
+      );
+    }
+
+    // STEP 4: insert new. If a duplicate-key error still slips through, treat as success.
+    try {
+      const created = await CustomCategory.create({
+        key: finalKey,
+        label: finalLabel,
+        grup: finalGrup,
+        hidden: false,
+      });
+      return Response.json(
+        {
+          _id: String(created._id),
+          key: created.key,
+          label: created.label,
+          grup: created.grup,
+          hidden: false,
+        },
+        { status: 201, headers: corsHeaders }
+      );
+    } catch (e) {
+      const isDup =
+        (e as { code?: number })?.code === 11000 ||
+        (e instanceof Error && /E11000|duplicate key/i.test(e.message));
+      if (isDup) {
+        const after = await CustomCategory.findOne({ key: finalKey, grup: finalGrup }).lean();
+        if (after) {
+          return Response.json(
+            {
+              _id: String(after._id),
+              key: after.key,
+              label: after.label,
+              grup: after.grup,
+              hidden: Boolean(after.hidden),
+            },
+            { status: 200, headers: corsHeaders }
+          );
+        }
+      }
+      throw e;
+    }
   } catch (error) {
     console.error("POST /api/categorii error:", error);
     const message = error instanceof Error ? error.message : "Operațiunea a eșuat.";

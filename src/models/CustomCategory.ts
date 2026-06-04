@@ -16,11 +16,30 @@ customCategorySchema.index({ key: 1, grup: 1 }, { unique: true });
 
 export type CustomCategoryDocument = InferSchemaType<typeof customCategorySchema>;
 
-// Always recreate the cached model on import — schema changed (compound unique
-// instead of single-key unique). Mongoose's syncIndexes() in the API will reconcile
-// the actual MongoDB indexes.
-if (models.CustomCategory) {
-  delete (models as Record<string, unknown>).CustomCategory;
+// Bust cache only when the schema actually differs (avoid breaking active queries).
+try {
+  const cached = models.CustomCategory;
+  if (cached?.schema) {
+    const hasHidden = Boolean(cached.schema.path("hidden"));
+    let hasCompound = false;
+    try {
+      const idxs = cached.schema.indexes();
+      hasCompound = idxs.some((entry: unknown) => {
+        if (!Array.isArray(entry) || entry.length === 0) return false;
+        const def = entry[0];
+        if (def == null || typeof def !== "object") return false;
+        const keys = Object.keys(def as Record<string, unknown>);
+        return keys.length === 2 && keys.includes("key") && keys.includes("grup");
+      });
+    } catch {
+      hasCompound = false;
+    }
+    if (!hasHidden || !hasCompound) {
+      delete (models as Record<string, unknown>).CustomCategory;
+    }
+  }
+} catch {
+  // ignore — if introspection fails, leave cache as-is
 }
 
 const CustomCategory =
