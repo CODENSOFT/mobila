@@ -179,39 +179,39 @@ function ProductGridCard({
           alt={numeDisplay}
           fill
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1280px) 50vw, 33vw"
         />
 
         <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
 
-{categoryTag ? (
-          <span className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
+        {categoryTag ? (
+          <span className="absolute top-2 left-2 sm:top-4 sm:left-4 px-2 py-0.5 sm:px-3 sm:py-1.5 bg-white/90 backdrop-blur-sm text-[8px] sm:text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
             {categoryTag}
           </span>
         ) : null}
         {produs.areReducere && (
-          <span className="absolute right-4 top-4 rounded bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+          <span className="absolute right-2 top-2 sm:right-4 sm:top-4 rounded bg-red-600 px-1.5 py-0.5 sm:px-2 sm:py-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-white">
             {produs.procentReducere ? `-${produs.procentReducere}%` : discountBadgeText(lang)}
           </span>
         )}
       </div>
 
-      <div className="p-5">
-        <h2 className="text-base font-medium text-[#1c1917] mb-1 group-hover:text-[#78716c] transition-colors">
+      <div className="p-2.5 sm:p-5">
+        <h2 className="text-[13px] sm:text-base font-medium text-[#1c1917] mb-1 leading-tight line-clamp-2 min-h-[2.4em] sm:min-h-0 group-hover:text-[#78716c] transition-colors">
           {numeDisplay}
         </h2>
         {produs.areReducere && produs.pretReducere ? (
           <div>
-            <p className="text-lg font-light text-red-600">
-              {formatPrice(produs.pretReducere)} <span className="text-sm text-red-400">MDL</span>
+            <p className="text-sm sm:text-lg font-light text-red-600 leading-tight">
+              {formatPrice(produs.pretReducere)} <span className="text-[10px] sm:text-sm text-red-400">MDL</span>
             </p>
-            <p className="text-sm text-[#a8a29e] line-through">
+            <p className="text-[11px] sm:text-sm text-[#a8a29e] line-through leading-tight">
               {formatPrice(produs.pret)} MDL
             </p>
           </div>
         ) : (
-          <p className="text-lg font-light text-[#1c1917]">
-            {formatPrice(produs.pret)} <span className="text-sm text-[#a8a29e]">MDL</span>
+          <p className="text-sm sm:text-lg font-light text-[#1c1917] leading-tight">
+            {formatPrice(produs.pret)} <span className="text-[10px] sm:text-sm text-[#a8a29e]">MDL</span>
           </p>
         )}
       </div>
@@ -240,21 +240,21 @@ function SetGridCard({
           alt={name}
           fill
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1280px) 50vw, 33vw"
         />
 
         <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
 
-        <span className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
-          Set · {products.length} produse
+        <span className="absolute top-2 left-2 sm:top-4 sm:left-4 px-2 py-0.5 sm:px-3 sm:py-1.5 bg-white/90 backdrop-blur-sm text-[8px] sm:text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
+          Set · {products.length}
         </span>
       </div>
 
-      <div className="p-5">
-        <h2 className="text-base font-medium text-[#1c1917] mb-1 group-hover:text-[#78716c] transition-colors">
+      <div className="p-2.5 sm:p-5">
+        <h2 className="text-[13px] sm:text-base font-medium text-[#1c1917] mb-0.5 sm:mb-1 leading-tight line-clamp-2 group-hover:text-[#78716c] transition-colors">
           Set {name}
         </h2>
-        <p className="text-sm text-[#a8a29e]">{products.length} produse în colecție</p>
+        <p className="text-[11px] sm:text-sm text-[#a8a29e]">{products.length} produse</p>
       </div>
     </button>
   );
@@ -285,7 +285,7 @@ function SectionCards({
   onSelect: (groupTitle: string, firstItemKey: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6">
       {PRODUCT_CATEGORY_GROUPS.map((group) => {
         // Try to find a representative product image from this group first
         const sample = produse.find((p) => {
@@ -313,20 +313,20 @@ function SectionCards({
             onClick={() => onSelect(group.title, firstItem)}
             className="group relative block w-full text-left bg-white rounded-lg overflow-hidden border border-[#e7e5e4] transition-all duration-300 hover:border-[#1c1917]/40 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
           >
-            <div className="relative aspect-[4/3] bg-[#f5f5f4] overflow-hidden">
+            <div className="relative aspect-square sm:aspect-[4/3] bg-[#f5f5f4] overflow-hidden">
               <Image
                 src={imageSrc}
                 alt={friendly}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-              <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-3">
-                <h3 className="text-lg font-medium text-white drop-shadow">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+              <div className="absolute bottom-2 left-2.5 right-2.5 sm:bottom-3 sm:left-4 sm:right-4 flex items-end justify-between gap-2">
+                <h3 className="text-sm sm:text-lg font-medium text-white drop-shadow leading-tight">
                   {friendly}
                 </h3>
-                <span className="rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
+                <span className="hidden sm:inline-flex rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
                   Vezi
                 </span>
               </div>
@@ -447,7 +447,7 @@ function ProductsDisplay({
           <p className="text-[#78716c]">Niciun set disponibil în această secțiune.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
           {gridItems.map((item) =>
             item.type === "set" ? (
               <SetGridCard key={`set-${item.name}`} name={item.name} products={item.products} onSelect={onSelectSet} />
