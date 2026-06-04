@@ -8,6 +8,7 @@ import {
 } from "../../constants/categories";
 import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { uploadToCloudinary } from "@/src/lib/cloudinary-client";
+import { fetchCustomCategories, type CustomCategory } from "@/src/lib/customCategories";
 import type { Product } from "../../types/product";
 
 export const ADMIN_CATEGORIES = PRODUCT_CATEGORIES;
@@ -404,8 +405,23 @@ export default function ProductForm({
 
   const submitLabel = submittingLabel ?? (mode === "create" ? "Creează produs" : "Salvează modificările");
   const isEdit = mode === "edit";
-  const currentGroup = PRODUCT_CATEGORY_GROUPS.find((group) => group.title === selectedCategoryGroup);
-  const categoriesForSelectedGroup = currentGroup?.items ?? [];
+
+  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetchCustomCategories().then((data) => {
+      if (!cancelled) setCustomCategories(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Categories come strictly from the DB (auto-seeded with hardcoded list on first run).
+  // Hidden ones are filtered by the API GET endpoint already.
+  const categoriesForSelectedGroup: string[] = customCategories
+    .filter((c) => !c.hidden && c.grup === selectedCategoryGroup)
+    .map((c) => c.key);
 
   const validate = useCallback(() => {
     const newErrors: typeof errors = {};

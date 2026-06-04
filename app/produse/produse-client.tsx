@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLang } from "@/src/context/LangContext";
 import { useLiveRuText } from "@/src/hooks/useLiveRuText";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { discountBadgeText } from "../../src/lib/discount";
 import { getSafeImageSrc } from "../../src/lib/image";
+import { fetchCustomCategories, type CustomCategory } from "../../src/lib/customCategories";
 import type { Product, ProductCategory } from "../../src/types/product";
 import {
   PRODUCT_CATEGORY_GROUPS,
@@ -15,18 +16,10 @@ import {
   getCategoriesForDormitorGroup,
 } from "../../src/constants/categories";
 
-type Category = "All" | "Reduceri" | ProductCategory;
-
-const categories: Category[] = [
-  "All",
-  ...PRODUCT_CATEGORY_GROUPS.flatMap((group) => group.items),
-] as Category[];
-
-const isKnownCategory = (value: string): value is ProductCategory =>
-  categories.includes(value as Category) && value !== "All";
+type Category = "All" | "Reduceri" | ProductCategory | string;
 
 /** Query values from home/footer cards vs keys stored on products / sidebar. */
-const CATEGORY_QUERY_ALIASES: Record<string, ProductCategory> = {
+const CATEGORY_QUERY_ALIASES: Record<string, string> = {
   Dormitor: "Dormitoare",
   Bucatarii: "Bucătării",
 };
@@ -34,9 +27,9 @@ const CATEGORY_QUERY_ALIASES: Record<string, ProductCategory> = {
 const normalizeCategory = (value?: string | null): Category => {
   if (!value) return "All";
   const trimmed = value.trim();
+  if (!trimmed) return "All";
   if (trimmed === "Reduceri") return "Reduceri";
-  const resolved = CATEGORY_QUERY_ALIASES[trimmed] ?? trimmed;
-  return isKnownCategory(resolved) ? resolved : "All";
+  return (CATEGORY_QUERY_ALIASES[trimmed] ?? trimmed) as Category;
 };
 
 const DORMITOR_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForDormitorGroup());
@@ -229,16 +222,18 @@ function ProductGridCard({
 function SetGridCard({
   name,
   products,
-  lang,
+  onSelect,
 }: {
   name: string;
   products: Product[];
-  lang: string;
+  onSelect: (setName: string) => void;
 }) {
-  const href = `/${lang}/produse/${products[0]._id}`;
-
   return (
-    <Link href={href} className="group relative block bg-white rounded-sm overflow-hidden">
+    <button
+      type="button"
+      onClick={() => onSelect(name)}
+      className="group relative block w-full text-left bg-white rounded-sm overflow-hidden cursor-pointer"
+    >
       <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
         <Image
           src={getSafeImageSrc(products[0].imagine)}
@@ -261,7 +256,85 @@ function SetGridCard({
         </h2>
         <p className="text-sm text-[#a8a29e]">{products.length} produse în colecție</p>
       </div>
-    </Link>
+    </button>
+  );
+}
+
+const SECTION_FRIENDLY_NAMES: Record<string, string> = {
+  "PENTRU DORMITOR": "Dormitor",
+  "SALTELE ȘI TOPPERE": "Saltele",
+  "PENTRU BUCĂTĂRIE": "Bucătărie",
+  "PENTRU LIVING": "Living",
+  "PENTRU HOL": "Hol",
+};
+
+// Static fallback images per section, used when no product image is available.
+const SECTION_FALLBACK_IMAGES: Record<string, string> = {
+  "PENTRU DORMITOR": "/images/categories/dormitor.png",
+  "SALTELE ȘI TOPPERE": "/images/categories/dormitor.png",
+  "PENTRU BUCĂTĂRIE": "/images/categories/bucatarii.png",
+  "PENTRU LIVING": "/images/categories/mese.png",
+  "PENTRU HOL": "/images/categories/dulapuri.png",
+};
+
+function SectionCards({
+  produse,
+  onSelect,
+}: {
+  produse: Product[];
+  onSelect: (groupTitle: string, firstItemKey: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+      {PRODUCT_CATEGORY_GROUPS.map((group) => {
+        // Try to find a representative product image from this group first
+        const sample = produse.find((p) => {
+          const grup = (typeof p.grup === "string" && p.grup.trim()) || (() => {
+            if (typeof p.categorie !== "string") return undefined;
+            const found = PRODUCT_CATEGORY_GROUPS.find((g) =>
+              (g.items as readonly string[]).includes(p.categorie!)
+            );
+            return found?.title;
+          })();
+          return grup === group.title;
+        });
+
+        const fallback = SECTION_FALLBACK_IMAGES[group.title];
+        const imageSrc = sample
+          ? getSafeImageSrc(sample.imagine)
+          : fallback ?? getSafeImageSrc(produse[0]?.imagine ?? "");
+        const friendly = SECTION_FRIENDLY_NAMES[group.title] ?? group.title;
+        const firstItem = group.items[0];
+
+        return (
+          <button
+            key={group.title}
+            type="button"
+            onClick={() => onSelect(group.title, firstItem)}
+            className="group relative block w-full text-left bg-white rounded-lg overflow-hidden border border-[#e7e5e4] transition-all duration-300 hover:border-[#1c1917]/40 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
+          >
+            <div className="relative aspect-[4/3] bg-[#f5f5f4] overflow-hidden">
+              <Image
+                src={imageSrc}
+                alt={friendly}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-3">
+                <h3 className="text-lg font-medium text-white drop-shadow">
+                  {friendly}
+                </h3>
+                <span className="rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
+                  Vezi
+                </span>
+              </div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -273,6 +346,9 @@ function ProductsDisplay({
   formatNumber,
   activeCategory,
   selectedGroup,
+  selectedSet,
+  onSelectSet,
+  onClearSet,
 }: {
   filteredProducts: Product[];
   lang: string;
@@ -281,19 +357,24 @@ function ProductsDisplay({
   formatNumber: (n: number) => string;
   activeCategory: Category;
   selectedGroup: string | null;
+  selectedSet: string | null;
+  onSelectSet: (setName: string) => void;
+  onClearSet: () => void;
 }) {
-  // Two display modes:
-  // - "sets-only": aggregator views (Dormitoare, Bucătării, Livinguri, Antreuri, Toate saltelele)
+  // Display modes:
+  // - When a set is drilled into (selectedSet is set) → show products of that set individually
+  // - "sets-only": aggregator views (Dormitoare, Bucătării, Livinguri, Antreuri, Hol, Toate saltelele)
   //   show ONLY set cards, no individual products
   // - "individual-only": everything else (Toate, Reduceri, specific sub-categories)
-  //   shows all products individually, no set grouping
+  //   shows all products individually
   const displayMode: "sets-only" | "individual-only" = useMemo(() => {
+    if (selectedSet) return "individual-only";
     if (selectedGroup) {
       const grp = PRODUCT_CATEGORY_GROUPS.find((g) => g.title === selectedGroup);
       if (grp && grp.items[0] === activeCategory) return "sets-only";
     }
     return "individual-only";
-  }, [activeCategory, selectedGroup]);
+  }, [activeCategory, selectedGroup, selectedSet]);
 
   const gridItems = useMemo(() => {
     if (displayMode === "individual-only") {
@@ -324,6 +405,24 @@ function ProductsDisplay({
 
   return (
     <>
+      {/* Set breadcrumb / back button — shown when drilled into a set */}
+      {selectedSet && (
+        <div className="mb-5 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onClearSet}
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#e7e5e4] bg-white px-3 py-1.5 text-xs font-medium text-[#78716c] hover:border-[#1c1917]/30 hover:text-[#1c1917] transition-colors"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Înapoi la seturi
+          </button>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#a8a29e]">Set</span>
+          <span className="text-sm font-medium text-[#1c1917]">{selectedSet}</span>
+        </div>
+      )}
+
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-[#78716c]">
           {displayMode === "sets-only" ? (
@@ -351,7 +450,7 @@ function ProductsDisplay({
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {gridItems.map((item) =>
             item.type === "set" ? (
-              <SetGridCard key={`set-${item.name}`} name={item.name} products={item.products} lang={lang} />
+              <SetGridCard key={`set-${item.name}`} name={item.name} products={item.products} onSelect={onSelectSet} />
             ) : (
               <ProductGridCard
                 key={item.product._id}
@@ -378,8 +477,16 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
   const t = dict.products;
   const tReduceri = dict.pretScazut;
   const formatNumber = (value: number) => value.toLocaleString("ro-RO");
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const categoryFromUrlValid = normalizeCategory(searchParams.get("categorie"));
+
+  // Source of truth: URL search params. This way browser back from a product page
+  // returns to the same filtered view we left from.
+  const activeCategory: Category = normalizeCategory(searchParams.get("categorie"));
+  const selectedGroup = searchParams.get("grup");
+  const selectedSet = searchParams.get("set");
+
   const minAvailablePrice = produse.length > 0 ? Math.min(...produse.map((p) => p.pret)) : 0;
   const maxAvailablePrice = produse.length > 0 ? Math.max(...produse.map((p) => p.pret)) : 0;
 
@@ -391,24 +498,75 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     [produse]
   );
 
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const updateFilters = useCallback(
+    (updates: { categorie?: Category | null; grup?: string | null; set?: string | null }) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if ("categorie" in updates) {
+        if (updates.categorie && updates.categorie !== "All") params.set("categorie", updates.categorie);
+        else params.delete("categorie");
+      }
+      if ("grup" in updates) {
+        if (updates.grup) params.set("grup", updates.grup);
+        else params.delete("grup");
+      }
+      if ("set" in updates) {
+        if (updates.set) params.set("set", updates.set);
+        else params.delete("set");
+      }
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [router, pathname, searchParams]
+  );
+
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
-  const activeCategory: Category = selectedCategory ?? categoryFromUrlValid;
+
+  // Live custom categories from DB, merged into sidebar groups
+  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetchCustomCategories().then((data) => {
+      if (!cancelled) setCustomCategories(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const sidebarGroups = useMemo(() => {
+    // Source of truth: customCategories from DB (seeded with all defaults on first run).
+    // We filter `hidden` here so soft-deleted categories don't show on the public site.
+    const groups: { title: string; items: { key: string; label: string }[] }[] = [];
+    const ensureGroup = (title: string) => {
+      let g = groups.find((g) => g.title === title);
+      if (!g) {
+        g = { title, items: [] };
+        groups.push(g);
+      }
+      return g;
+    };
+    // Preserve canonical group order from dictionary
+    for (const dictGroup of t.categoryGroups) ensureGroup(dictGroup.title);
+    for (const c of customCategories) {
+      if (c.hidden) continue;
+      ensureGroup(c.grup).items.push({ key: c.key, label: c.label });
+    }
+    return groups.filter((g) => g.items.length > 0);
+  }, [t.categoryGroups, customCategories]);
 
   const categoryLabel = useMemo(() => {
     const map = new Map<string, string>();
-    for (const group of t.categoryGroups) {
+    for (const group of sidebarGroups) {
       for (const item of group.items) {
         map.set(item.key, item.label);
       }
     }
     return map;
-  }, [t.categoryGroups]);
+  }, [sidebarGroups]);
 
   // Compute effective group for each product. Products with an explicit `grup` use it;
   // legacy products without grup get an inferred group based on the first
@@ -450,6 +608,11 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
       }
     }
 
+    // If a specific set is selected (after clicking a set card), narrow further
+    if (selectedSet) {
+      list = list.filter((produs) => produs.set?.trim() === selectedSet);
+    }
+
     const q = query.trim().toLowerCase();
     if (q) {
       list = list.filter(
@@ -482,7 +645,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     }
 
     return list;
-  }, [activeCategory, selectedGroup, priceFrom, priceTo, produse, query, sortBy]);
+  }, [activeCategory, selectedGroup, selectedSet, priceFrom, priceTo, produse, query, sortBy]);
 
   const hasActiveFilter = activeCategory !== "All" || priceFrom !== "" || priceTo !== "";
 
@@ -500,24 +663,19 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#1c1917]/45 mb-4">
           {t.categories}
         </h3>
-        <div className="space-y-1 mb-6">
-          <CategoryPill
-            label={t.all}
-            isActive={activeCategory === "All"}
-            onClick={() => { setSelectedCategory("All"); setSelectedGroup(null); setIsFilterOpen(false); }}
-          />
-          {discountedProducts.length > 0 && (
+        {discountedProducts.length > 0 && (
+          <div className="space-y-1 mb-6">
             <CategoryPill
               label={tReduceri.label}
               isActive={activeCategory === "Reduceri"}
               variant="reduceri"
-              onClick={() => { setSelectedCategory("Reduceri"); setSelectedGroup(null); setIsFilterOpen(false); }}
+              onClick={() => { updateFilters({ categorie: "Reduceri", grup: null, set: null }); setIsFilterOpen(false); }}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="space-y-5">
-          {t.categoryGroups.map((group) => (
+          {sidebarGroups.map((group) => (
             <div key={group.title}>
               <div className="flex items-center gap-2 mb-2">
                 <div className="h-px w-3 bg-[#d6d3d1]" />
@@ -534,8 +692,11 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                       label={item.label}
                       isActive={isActive}
                       onClick={() => {
-                        setSelectedCategory(item.key as ProductCategory);
-                        setSelectedGroup(group.title);
+                        updateFilters({
+                          categorie: item.key as ProductCategory,
+                          grup: group.title,
+                          set: null,
+                        });
                         setIsFilterOpen(false);
                       }}
                       size="sm"
@@ -654,7 +815,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
               <span className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1c1917] text-white text-xs rounded-full font-medium">
                 {activeCategoryLabel}
                 <button
-                  onClick={() => setSelectedCategory("All")}
+                  onClick={() => updateFilters({ categorie: null, grup: null, set: null })}
                   className="ml-0.5 opacity-70 hover:opacity-100"
                   aria-label="Clear filter"
                 >
@@ -747,7 +908,14 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
 
           {/* Products Grid */}
           <div className="flex-1 min-w-0">
-            {filteredProducts.length === 0 ? (
+            {activeCategory === "All" && !selectedGroup && !selectedSet && !query && !priceFrom && !priceTo ? (
+              <SectionCards
+                produse={produse}
+                onSelect={(groupTitle, firstItemKey) =>
+                  updateFilters({ categorie: firstItemKey as Category, grup: groupTitle, set: null })
+                }
+              />
+            ) : filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-[#f5f5f4] flex items-center justify-center mb-4">
                   <svg className="h-6 w-6 text-[#a8a29e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -757,7 +925,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                 <p className="text-[#78716c]">{t.noResults}</p>
                 <button
                   onClick={() => {
-                    setSelectedCategory("All");
+                    updateFilters({ categorie: null, grup: null, set: null });
                     setQuery("");
                     setPriceFrom("");
                     setPriceTo("");
@@ -776,6 +944,9 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                 formatNumber={formatNumber}
                 activeCategory={activeCategory}
                 selectedGroup={selectedGroup}
+                selectedSet={selectedSet}
+                onSelectSet={(name) => updateFilters({ set: name })}
+                onClearSet={() => updateFilters({ set: null })}
               />
             )}
           </div>

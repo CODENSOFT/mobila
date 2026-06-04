@@ -45,7 +45,17 @@ export default function CategoriesSection({
     subtitle: t.subtitles[c.key],
   }));
 
-  const href = (cat: string) => `${productsBasePath}?categorie=${encodeURIComponent(cat)}`;
+  // Category cards routing:
+  // - Group cards (Dormitor, Bucătării) go to the section's aggregator (sets view)
+  // - Individual cards (Dulapuri, Scaune, Mese) show ALL products with that category across all groups
+  const HREF_MAP: Record<string, string> = {
+    Dormitor: `${productsBasePath}?categorie=Dormitoare&grup=${encodeURIComponent("PENTRU DORMITOR")}`,
+    Bucatarii: `${productsBasePath}?categorie=${encodeURIComponent("Bucătării")}&grup=${encodeURIComponent("PENTRU BUCĂTĂRIE")}`,
+    Dulapuri: `${productsBasePath}?categorie=Dulapuri`,
+    Scaune: `${productsBasePath}?categorie=Scaune`,
+    Mese: `${productsBasePath}?categorie=Mese`,
+  };
+  const href = (cat: string) => HREF_MAP[cat] ?? `${productsBasePath}?categorie=${encodeURIComponent(cat)}`;
 
   return (
     <section className="bg-[#fafaf9] pt-1 pb-10 lg:pt-2 lg:pb-14">
