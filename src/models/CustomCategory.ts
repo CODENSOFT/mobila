@@ -1,4 +1,4 @@
-import { model, models, Schema, type InferSchemaType, type Model } from "mongoose";
+import mongoose, { model, models, Schema, type InferSchemaType, type Model } from "mongoose";
 
 const customCategorySchema = new Schema(
   {
@@ -16,7 +16,8 @@ customCategorySchema.index({ key: 1, grup: 1 }, { unique: true });
 
 export type CustomCategoryDocument = InferSchemaType<typeof customCategorySchema>;
 
-// Bust cache only when the schema actually differs (avoid breaking active queries).
+// Bust cache only when the schema actually differs. Use mongoose.deleteModel
+// (instead of `delete models[name]`) so the schema's compiled state resets too.
 try {
   const cached = models.CustomCategory;
   if (cached?.schema) {
@@ -35,7 +36,11 @@ try {
       hasCompound = false;
     }
     if (!hasHidden || !hasCompound) {
-      delete (models as Record<string, unknown>).CustomCategory;
+      try {
+        mongoose.deleteModel("CustomCategory");
+      } catch {
+        // already deleted or doesn't exist — ignore
+      }
     }
   }
 } catch {
