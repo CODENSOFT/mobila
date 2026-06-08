@@ -423,8 +423,23 @@ function ProductsDisplay({
       }
     }
 
+    // DEBUG: log to console so user can copy and share
+    console.info("[sets-only debug]", {
+      activeCategory,
+      selectedGroup,
+      allProductsCount: allProducts.length,
+      customCategoriesCount: customCategories.length,
+      groupItemKeys: Array.from(groupItemKeys),
+      setsFound: Array.from(setsMap.keys()),
+      setsMatching: result.map((r) => r.type === "set" ? r.name : null).filter(Boolean),
+      sampleProducts: allProducts
+        .filter((p) => p.set)
+        .slice(0, 5)
+        .map((p) => ({ nume: p.nume, set: p.set, grup: p.grup, categorie: p.categorie })),
+    });
+
     return result;
-  }, [allProducts, customCategories, displayMode, selectedGroup]);
+  }, [allProducts, customCategories, displayMode, selectedGroup, activeCategory]);
 
   const setsCount = gridItems.filter((i) => i.type === "set").length;
 
