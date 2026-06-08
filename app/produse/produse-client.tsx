@@ -385,8 +385,24 @@ function ProductsDisplay({
       return filteredProducts.map((p) => ({ type: "product" as const, product: p }));
     }
 
-    // sets-only mode: detect sets strictly by their products' EFFECTIVE group
-    // (explicit grup, or inferred from categorie via custom + hardcoded lists).
+    // sets-only mode: lenient detection — a set belongs to this group if ANY of
+    // its products is "kitchen-related" either by `grup` field OR by `categorie`
+    // membership in the group's items (hardcoded + custom).
+    const hardcodedGrp = selectedGroup
+      ? PRODUCT_CATEGORY_GROUPS.find((g) => g.title === selectedGroup)
+      : undefined;
+    const hardcodedItems = (hardcodedGrp?.items ?? []) as readonly string[];
+    const customItemsInGroup = customCategories
+      .filter((c) => !c.hidden && c.grup === selectedGroup)
+      .map((c) => c.key);
+    const groupItemKeys = new Set<string>([...hardcodedItems, ...customItemsInGroup]);
+
+    const productBelongsLenient = (p: Product): boolean => {
+      const byGrup = typeof p.grup === "string" && p.grup.trim() === selectedGroup;
+      const byCat = typeof p.categorie === "string" && groupItemKeys.has(p.categorie);
+      return byGrup || byCat;
+    };
+
     const setsMap = new Map<string, Product[]>();
     for (const p of allProducts) {
       const key = p.set?.trim();
@@ -395,29 +411,14 @@ function ProductsDisplay({
       setsMap.get(key)!.push(p);
     }
 
-    // Resolve effective group inline (mirrors getEffectiveGroup from parent scope)
-    const effectiveGroupOfProd = (p: Product): string | undefined => {
-      if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
-      if (typeof p.categorie !== "string") return undefined;
-      const cust = customCategories.find((c) => !c.hidden && c.key === p.categorie);
-      if (cust) return cust.grup;
-      const grp = PRODUCT_CATEGORY_GROUPS.find((g) =>
-        (g.items as readonly string[]).includes(p.categorie!)
-      );
-      return grp?.title;
-    };
-
     const result: ({ type: "set"; name: string; products: Product[] } | { type: "product"; product: Product })[] = [];
     for (const [name, products] of setsMap.entries()) {
-      // Show set if at least one of its products has effective group === selectedGroup
-      const belongsToGroup = products.some(
-        (p) => effectiveGroupOfProd(p) === selectedGroup
-      );
+      // Set qualifies if at least one product is related to this group
+      const belongsToGroup = products.some(productBelongsLenient);
       if (belongsToGroup) {
-        // Show only the products from this set whose effective group matches
-        const productsInGroup = products.filter(
-          (p) => effectiveGroupOfProd(p) === selectedGroup
-        );
+        // Show all products of the set that are related (could include products
+        // tagged in a different group but with kitchen-category, etc.)
+        const productsInGroup = products.filter(productBelongsLenient);
         result.push({ type: "set", name, products: productsInGroup });
       }
     }
