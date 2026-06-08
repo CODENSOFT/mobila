@@ -340,6 +340,8 @@ function SectionCards({
 
 function ProductsDisplay({
   filteredProducts,
+  allProducts,
+  customCategories,
   lang,
   categoryLabel,
   t,
@@ -351,6 +353,8 @@ function ProductsDisplay({
   onClearSet,
 }: {
   filteredProducts: Product[];
+  allProducts: Product[];
+  customCategories: CustomCategory[];
   lang: string;
   categoryLabel: Map<string, string>;
   t: { showing: string; productsCount: string; viewDetails: string };
@@ -381,25 +385,45 @@ function ProductsDisplay({
       return filteredProducts.map((p) => ({ type: "product" as const, product: p }));
     }
 
-    // sets-only mode: only show sets (with >= 2 products), exclude individuals and singletons
-    const map = new Map<string, Product[]>();
-    for (const p of filteredProducts) {
+    // sets-only mode: detect sets strictly by their products' EFFECTIVE group
+    // (explicit grup, or inferred from categorie via custom + hardcoded lists).
+    const setsMap = new Map<string, Product[]>();
+    for (const p of allProducts) {
       const key = p.set?.trim();
-      if (key) {
-        if (!map.has(key)) map.set(key, []);
-        map.get(key)!.push(p);
-      }
+      if (!key) continue;
+      if (!setsMap.has(key)) setsMap.set(key, []);
+      setsMap.get(key)!.push(p);
     }
 
+    // Resolve effective group inline (mirrors getEffectiveGroup from parent scope)
+    const effectiveGroupOfProd = (p: Product): string | undefined => {
+      if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
+      if (typeof p.categorie !== "string") return undefined;
+      const cust = customCategories.find((c) => !c.hidden && c.key === p.categorie);
+      if (cust) return cust.grup;
+      const grp = PRODUCT_CATEGORY_GROUPS.find((g) =>
+        (g.items as readonly string[]).includes(p.categorie!)
+      );
+      return grp?.title;
+    };
+
     const result: ({ type: "set"; name: string; products: Product[] } | { type: "product"; product: Product })[] = [];
-    for (const [name, products] of map.entries()) {
-      if (products.length > 1) {
-        result.push({ type: "set", name, products });
+    for (const [name, products] of setsMap.entries()) {
+      // Show set if at least one of its products has effective group === selectedGroup
+      const belongsToGroup = products.some(
+        (p) => effectiveGroupOfProd(p) === selectedGroup
+      );
+      if (belongsToGroup) {
+        // Show only the products from this set whose effective group matches
+        const productsInGroup = products.filter(
+          (p) => effectiveGroupOfProd(p) === selectedGroup
+        );
+        result.push({ type: "set", name, products: productsInGroup });
       }
     }
 
     return result;
-  }, [filteredProducts, displayMode]);
+  }, [allProducts, customCategories, displayMode, selectedGroup]);
 
   const setsCount = gridItems.filter((i) => i.type === "set").length;
 
@@ -538,20 +562,27 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
   }, []);
 
   const sidebarGroups = useMemo(() => {
-    // Source of truth: customCategories from DB (seeded with all defaults on first run).
-    // We filter `hidden` here so soft-deleted categories don't show on the public site.
-    const groups: { title: string; items: { key: string; label: string }[] }[] = [];
-    const ensureGroup = (title: string) => {
-      let g = groups.find((g) => g.title === title);
+    // Each sidebar group has:
+    // - storageKey: the canonical group identifier used in DB / URL filtering (e.g. "PENTRU BUCĂTĂRIE")
+    // - title: the translated label shown to the user (e.g. "ДЛЯ КУХНИ" in Russian)
+    // This decouples display from filtering so non-Romanian languages work.
+    const groups: { storageKey: string; title: string; items: { key: string; label: string }[] }[] = [];
+    const ensureGroup = (storageKey: string, title: string) => {
+      let g = groups.find((g) => g.storageKey === storageKey);
       if (!g) {
-        g = { title, items: [] };
+        g = { storageKey, title, items: [] };
         groups.push(g);
       }
       return g;
     };
-    // Preserve canonical group order from dictionary
-    for (const dictGroup of t.categoryGroups) ensureGroup(dictGroup.title);
-    // Sort by ordine, then label as fallback
+    // Use PRODUCT_CATEGORY_GROUPS for canonical order + storage keys, pair with
+    // translated titles from the dictionary by index (dict order matches constants).
+    PRODUCT_CATEGORY_GROUPS.forEach((hard, idx) => {
+      const dictGroup = t.categoryGroups[idx];
+      const displayTitle = dictGroup?.title ?? hard.title;
+      ensureGroup(hard.title, displayTitle);
+    });
+
     const sorted = [...customCategories]
       .filter((c) => !c.hidden)
       .sort((a, b) => {
@@ -561,7 +592,8 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
         return a.label.localeCompare(b.label);
       });
     for (const c of sorted) {
-      ensureGroup(c.grup).items.push({ key: c.key, label: c.label });
+      // Custom category's grup is already a storage key from admin
+      ensureGroup(c.grup, c.grup).items.push({ key: c.key, label: c.label });
     }
     return groups.filter((g) => g.items.length > 0);
   }, [t.categoryGroups, customCategories]);
@@ -576,18 +608,31 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     return map;
   }, [sidebarGroups]);
 
-  // Compute effective group for each product. Products with an explicit `grup` use it;
-  // legacy products without grup get an inferred group based on the first
-  // PRODUCT_CATEGORY_GROUPS containing their `categorie`.
-  const effectiveGroupOf = (p: Product): string | undefined => {
+  // Compute the effective group of a product:
+  // - explicit `grup` field if set
+  // - otherwise infer from the first matching group containing its `categorie`
+  //   (checking custom categories from DB first, then hardcoded list)
+  const getEffectiveGroup = (p: Product): string | undefined => {
     if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
-    if (typeof p.categorie === "string") {
-      const found = PRODUCT_CATEGORY_GROUPS.find((g) =>
-        (g.items as readonly string[]).includes(p.categorie!)
-      );
-      return found?.title;
-    }
-    return undefined;
+    if (typeof p.categorie !== "string") return undefined;
+    // Custom categories take precedence
+    const cust = customCategories.find((c) => !c.hidden && c.key === p.categorie);
+    if (cust) return cust.grup;
+    const grp = PRODUCT_CATEGORY_GROUPS.find((g) =>
+      (g.items as readonly string[]).includes(p.categorie!)
+    );
+    return grp?.title;
+  };
+
+  // Strict matching: product belongs to a group only via its EFFECTIVE group.
+  const matchesGroup = (p: Product, group: string): boolean =>
+    getEffectiveGroup(p) === group;
+
+  // Detect aggregator (first item of a group, e.g. "Bucătării", "Livinguri", "Hol").
+  const isAggregator = (cat: Category, group: string | null): boolean => {
+    if (!group) return false;
+    const grp = PRODUCT_CATEGORY_GROUPS.find((g) => g.title === group);
+    return Boolean(grp && grp.items[0] === cat);
   };
 
   const filteredProducts = useMemo(() => {
@@ -598,20 +643,17 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
         (produs) => produs.areReducere && typeof produs.pretReducere === "number"
       );
     } else if (activeCategory !== "All") {
-      if (activeCategory === "Dormitoare" && selectedGroup === "PENTRU DORMITOR") {
-        // Group aggregator: show ALL products tagged for "PENTRU DORMITOR" group
-        list = list.filter((produs) => effectiveGroupOf(produs) === "PENTRU DORMITOR");
-      } else if (activeCategory === "Bucătării" && selectedGroup === "PENTRU BUCĂTĂRIE") {
-        // Group aggregator: show ALL products tagged for "PENTRU BUCĂTĂRIE" group
-        list = list.filter((produs) => effectiveGroupOf(produs) === "PENTRU BUCĂTĂRIE");
+      if (selectedGroup && isAggregator(activeCategory, selectedGroup)) {
+        // Aggregator: ALL products belonging to this group (by grup or by categorie membership)
+        list = list.filter((produs) => matchesGroup(produs, selectedGroup));
       } else if (selectedGroup) {
-        // Strict sub-category filter: match BOTH categorie and effective group
+        // Sub-category in a specific group
         list = list.filter(
           (produs) =>
-            produs.categorie === activeCategory &&
-            effectiveGroupOf(produs) === selectedGroup
+            produs.categorie === activeCategory && matchesGroup(produs, selectedGroup)
         );
       } else {
+        // No group context — just filter by categorie
         list = list.filter((produs) => produs.categorie === activeCategory);
       }
     }
@@ -684,7 +726,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
 
         <div className="space-y-5">
           {sidebarGroups.map((group) => (
-            <div key={group.title}>
+            <div key={group.storageKey}>
               <div className="flex items-center gap-2 mb-2">
                 <div className="h-px w-3 bg-[#d6d3d1]" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a8a29e]">
@@ -693,16 +735,16 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
               </div>
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const isActive = activeCategory === item.key && selectedGroup === group.title;
+                  const isActive = activeCategory === item.key && selectedGroup === group.storageKey;
                   return (
                     <CategoryPill
-                      key={`${group.title}-${item.key}`}
+                      key={`${group.storageKey}-${item.key}`}
                       label={item.label}
                       isActive={isActive}
                       onClick={() => {
                         updateFilters({
                           categorie: item.key as ProductCategory,
-                          grup: group.title,
+                          grup: group.storageKey,
                           set: null,
                         });
                         setIsFilterOpen(false);
@@ -946,6 +988,8 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
             ) : (
               <ProductsDisplay
                 filteredProducts={filteredProducts}
+                allProducts={produse}
+                customCategories={customCategories}
                 lang={lang}
                 categoryLabel={categoryLabel}
                 t={t}
