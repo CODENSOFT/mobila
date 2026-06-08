@@ -37,18 +37,26 @@ const BUCATARIE_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForBucatari
 
 type SortKey = "featured" | "price-asc" | "price-desc";
 
+/** Translates a Romanian label to Russian when needed; falls back to source for RO. */
+function TranslatedText({ text, lang }: { text: string; lang: string }) {
+  const { text: translated } = useLiveRuText(text, lang);
+  return <>{translated}</>;
+}
+
 function CategoryPill({
   label,
   isActive,
   onClick,
   variant = "default",
   size = "md",
+  lang = "ro",
 }: {
   label: string;
   isActive: boolean;
   onClick: () => void;
   variant?: "default" | "reduceri";
   size?: "sm" | "md";
+  lang?: string;
 }) {
   const isReduceri = variant === "reduceri";
   const padding = size === "sm" ? "py-2 px-3" : "py-2.5 px-3";
@@ -77,7 +85,7 @@ function CategoryPill({
               : "bg-transparent group-hover/pill:bg-[#d6d3d1]"
           }`}
         />
-        <span className="truncate">{label}</span>
+        <span className="truncate"><TranslatedText text={label} lang={lang} /></span>
       </span>
     </button>
   );
@@ -186,7 +194,7 @@ function ProductGridCard({
 
         {categoryTag ? (
           <span className="absolute top-2 left-2 sm:top-4 sm:left-4 px-2 py-0.5 sm:px-3 sm:py-1.5 bg-white/90 backdrop-blur-sm text-[8px] sm:text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
-            {categoryTag}
+            <TranslatedText text={categoryTag} lang={lang} />
           </span>
         ) : null}
         {produs.areReducere && (
@@ -737,6 +745,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
               label={tReduceri.label}
               isActive={activeCategory === "Reduceri"}
               variant="reduceri"
+              lang={lang}
               onClick={() => { updateFilters({ categorie: "Reduceri", grup: null, set: null }); setIsFilterOpen(false); }}
             />
           </div>
@@ -748,7 +757,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
               <div className="flex items-center gap-2 mb-2">
                 <div className="h-px w-3 bg-[#d6d3d1]" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a8a29e]">
-                  {group.title}
+                  <TranslatedText text={group.title} lang={lang} />
                 </p>
               </div>
               <div className="space-y-0.5">
@@ -759,6 +768,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                       key={`${group.storageKey}-${item.key}`}
                       label={item.label}
                       isActive={isActive}
+                      lang={lang}
                       onClick={() => {
                         updateFilters({
                           categorie: item.key as ProductCategory,
