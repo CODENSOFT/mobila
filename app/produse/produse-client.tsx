@@ -223,10 +223,16 @@ function SetGridCard({
   name,
   products,
   onSelect,
+  setLabel,
+  productsCountLabel,
+  collectionLabel,
 }: {
   name: string;
   products: Product[];
   onSelect: (setName: string) => void;
+  setLabel: string;
+  productsCountLabel: string;
+  collectionLabel: string;
 }) {
   return (
     <button
@@ -246,27 +252,19 @@ function SetGridCard({
         <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
 
         <span className="absolute top-2 left-2 sm:top-4 sm:left-4 px-2 py-0.5 sm:px-3 sm:py-1.5 bg-white/90 backdrop-blur-sm text-[8px] sm:text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
-          Set · {products.length}
+          {setLabel} · {products.length}
         </span>
       </div>
 
       <div className="p-2.5 sm:p-5">
         <h2 className="text-[13px] sm:text-base font-medium text-[#1c1917] mb-0.5 sm:mb-1 leading-tight line-clamp-2 group-hover:text-[#78716c] transition-colors">
-          Set {name}
+          {setLabel} {name}
         </h2>
-        <p className="text-[11px] sm:text-sm text-[#a8a29e]">{products.length} produse</p>
+        <p className="text-[11px] sm:text-sm text-[#a8a29e]">{products.length} {collectionLabel || productsCountLabel}</p>
       </div>
     </button>
   );
 }
-
-const SECTION_FRIENDLY_NAMES: Record<string, string> = {
-  "PENTRU DORMITOR": "Dormitor",
-  "SALTELE ȘI TOPPERE": "Saltele",
-  "PENTRU BUCĂTĂRIE": "Bucătărie",
-  "PENTRU LIVING": "Living",
-  "PENTRU HOL": "Hol",
-};
 
 // Static fallback images per section, used when no product image is available.
 const SECTION_FALLBACK_IMAGES: Record<string, string> = {
@@ -280,9 +278,13 @@ const SECTION_FALLBACK_IMAGES: Record<string, string> = {
 function SectionCards({
   produse,
   onSelect,
+  sectionLabels,
+  seeLabel,
 }: {
   produse: Product[];
   onSelect: (groupTitle: string, firstItemKey: string) => void;
+  sectionLabels: Record<string, string>;
+  seeLabel: string;
 }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6">
@@ -303,7 +305,7 @@ function SectionCards({
         const imageSrc = sample
           ? getSafeImageSrc(sample.imagine)
           : fallback ?? getSafeImageSrc(produse[0]?.imagine ?? "");
-        const friendly = SECTION_FRIENDLY_NAMES[group.title] ?? group.title;
+        const friendly = sectionLabels[group.title] ?? group.title;
         const firstItem = group.items[0];
 
         return (
@@ -327,7 +329,7 @@ function SectionCards({
                   {friendly}
                 </h3>
                 <span className="hidden sm:inline-flex rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
-                  Vezi
+                  {seeLabel}
                 </span>
               </div>
             </div>
@@ -357,7 +359,17 @@ function ProductsDisplay({
   customCategories: CustomCategory[];
   lang: string;
   categoryLabel: Map<string, string>;
-  t: { showing: string; productsCount: string; viewDetails: string };
+  t: {
+    showing: string;
+    productsCount: string;
+    viewDetails: string;
+    set: string;
+    setsCountSingular: string;
+    setsCountPlural: string;
+    setProductsInCollection: string;
+    backToSets: string;
+    noSetsInSection: string;
+  };
   formatNumber: (n: number) => string;
   activeCategory: Category;
   selectedGroup: string | null;
@@ -438,9 +450,9 @@ function ProductsDisplay({
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            Înapoi la seturi
+            {t.backToSets}
           </button>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#a8a29e]">Set</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#a8a29e]">{t.set}</span>
           <span className="text-sm font-medium text-[#1c1917]">{selectedSet}</span>
         </div>
       )}
@@ -449,7 +461,7 @@ function ProductsDisplay({
         <p className="text-sm text-[#78716c]">
           {displayMode === "sets-only" ? (
             <>
-              {t.showing} <span className="font-medium text-[#1c1917]">{setsCount}</span> {setsCount === 1 ? "set" : "seturi"}
+              {t.showing} <span className="font-medium text-[#1c1917]">{setsCount}</span> {setsCount === 1 ? t.setsCountSingular : t.setsCountPlural}
             </>
           ) : (
             <>
@@ -466,13 +478,21 @@ function ProductsDisplay({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
           </div>
-          <p className="text-[#78716c]">Niciun set disponibil în această secțiune.</p>
+          <p className="text-[#78716c]">{t.noSetsInSection}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
           {gridItems.map((item) =>
             item.type === "set" ? (
-              <SetGridCard key={`set-${item.name}`} name={item.name} products={item.products} onSelect={onSelectSet} />
+              <SetGridCard
+                key={`set-${item.name}`}
+                name={item.name}
+                products={item.products}
+                onSelect={onSelectSet}
+                setLabel={t.set}
+                productsCountLabel={t.productsCount}
+                collectionLabel={t.setProductsInCollection}
+              />
             ) : (
               <ProductGridCard
                 key={item.product._id}
@@ -962,6 +982,8 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                 onSelect={(groupTitle, firstItemKey) =>
                   updateFilters({ categorie: firstItemKey as Category, grup: groupTitle, set: null })
                 }
+                sectionLabels={(t as unknown as { sectionLabels?: Record<string, string> }).sectionLabels ?? {}}
+                seeLabel={(t as unknown as { see?: string }).see ?? "Vezi"}
               />
             ) : filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">

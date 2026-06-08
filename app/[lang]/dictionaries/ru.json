@@ -248,6 +248,20 @@
     "productsCount": "товаров",
     "viewDetails": "Подробнее",
     "loading": "Загрузка товаров...",
+    "see": "Смотреть",
+    "set": "Набор",
+    "setsCountSingular": "набор",
+    "setsCountPlural": "наборов",
+    "setProductsInCollection": "товаров в коллекции",
+    "backToSets": "Назад к наборам",
+    "noSetsInSection": "В этой секции пока нет наборов.",
+    "sectionLabels": {
+      "PENTRU DORMITOR": "Спальня",
+      "SALTELE ȘI TOPPERE": "Матрасы",
+      "PENTRU BUCĂTĂRIE": "Кухня",
+      "PENTRU LIVING": "Гостиная",
+      "PENTRU HOL": "Прихожая"
+    },
     "categoryGroups": [
       {
         "title": "ДЛЯ СПАЛЬНИ",

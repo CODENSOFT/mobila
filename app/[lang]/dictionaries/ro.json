@@ -248,6 +248,20 @@
     "productsCount": "produse",
     "viewDetails": "Vezi Detalii",
     "loading": "Se încarcă produsele...",
+    "see": "Vezi",
+    "set": "Set",
+    "setsCountSingular": "set",
+    "setsCountPlural": "seturi",
+    "setProductsInCollection": "produse în colecție",
+    "backToSets": "Înapoi la seturi",
+    "noSetsInSection": "Niciun set disponibil în această secțiune.",
+    "sectionLabels": {
+      "PENTRU DORMITOR": "Dormitor",
+      "SALTELE ȘI TOPPERE": "Saltele",
+      "PENTRU BUCĂTĂRIE": "Bucătărie",
+      "PENTRU LIVING": "Living",
+      "PENTRU HOL": "Hol"
+    },
     "categoryGroups": [
       {
         "title": "PENTRU DORMITOR",
