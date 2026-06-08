@@ -385,22 +385,20 @@ function ProductsDisplay({
       return filteredProducts.map((p) => ({ type: "product" as const, product: p }));
     }
 
-    // sets-only mode: lenient detection — a set belongs to this group if ANY of
-    // its products is "kitchen-related" either by `grup` field OR by `categorie`
-    // membership in the group's items (hardcoded + custom).
-    const hardcodedGrp = selectedGroup
-      ? PRODUCT_CATEGORY_GROUPS.find((g) => g.title === selectedGroup)
-      : undefined;
-    const hardcodedItems = (hardcodedGrp?.items ?? []) as readonly string[];
-    const customItemsInGroup = customCategories
-      .filter((c) => !c.hidden && c.grup === selectedGroup)
-      .map((c) => c.key);
-    const groupItemKeys = new Set<string>([...hardcodedItems, ...customItemsInGroup]);
-
-    const productBelongsLenient = (p: Product): boolean => {
-      const byGrup = typeof p.grup === "string" && p.grup.trim() === selectedGroup;
-      const byCat = typeof p.categorie === "string" && groupItemKeys.has(p.categorie);
-      return byGrup || byCat;
+    // sets-only mode: strict detection by effective group of each product.
+    // A set appears under a group ONLY if it has at least one product whose
+    // effective group matches that group. Effective group =
+    // explicit `grup` field (admin-set) OR inferred from `categorie` via
+    // custom categories (DB) then hardcoded items.
+    const effectiveGroupOfProd = (p: Product): string | undefined => {
+      if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
+      if (typeof p.categorie !== "string") return undefined;
+      const cust = customCategories.find((c) => !c.hidden && c.key === p.categorie);
+      if (cust) return cust.grup;
+      const grp = PRODUCT_CATEGORY_GROUPS.find((g) =>
+        (g.items as readonly string[]).includes(p.categorie!)
+      );
+      return grp?.title;
     };
 
     const setsMap = new Map<string, Product[]>();
@@ -413,33 +411,17 @@ function ProductsDisplay({
 
     const result: ({ type: "set"; name: string; products: Product[] } | { type: "product"; product: Product })[] = [];
     for (const [name, products] of setsMap.entries()) {
-      // Set qualifies if at least one product is related to this group
-      const belongsToGroup = products.some(productBelongsLenient);
-      if (belongsToGroup) {
-        // Show all products of the set that are related (could include products
-        // tagged in a different group but with kitchen-category, etc.)
-        const productsInGroup = products.filter(productBelongsLenient);
+      // Set qualifies only if at least one product has effective group === selectedGroup
+      const productsInGroup = products.filter(
+        (p) => effectiveGroupOfProd(p) === selectedGroup
+      );
+      if (productsInGroup.length > 0) {
         result.push({ type: "set", name, products: productsInGroup });
       }
     }
 
-    // DEBUG: log to console so user can copy and share
-    console.info("[sets-only debug]", {
-      activeCategory,
-      selectedGroup,
-      allProductsCount: allProducts.length,
-      customCategoriesCount: customCategories.length,
-      groupItemKeys: Array.from(groupItemKeys),
-      setsFound: Array.from(setsMap.keys()),
-      setsMatching: result.map((r) => r.type === "set" ? r.name : null).filter(Boolean),
-      sampleProducts: allProducts
-        .filter((p) => p.set)
-        .slice(0, 5)
-        .map((p) => ({ nume: p.nume, set: p.set, grup: p.grup, categorie: p.categorie })),
-    });
-
     return result;
-  }, [allProducts, customCategories, displayMode, selectedGroup, activeCategory]);
+  }, [allProducts, customCategories, displayMode, selectedGroup]);
 
   const setsCount = gridItems.filter((i) => i.type === "set").length;
 
