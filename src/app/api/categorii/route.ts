@@ -5,10 +5,16 @@ import { corsHeaders } from "../../../lib/cors";
 import { connectDB } from "../../../lib/db";
 import CustomCategory from "../../../models/CustomCategory";
 
+// Cache flag — seeding only needs to run once per server lifecycle since
+// the data is durable. Skip the expensive `listIndexes` + `insertMany` work
+// on every GET to make /api/categorii respond in single-digit ms.
+let seedingDoneInThisInstance = false;
+
 // Ensure every hardcoded default category exists in DB.
 // Same key may appear in multiple groups (e.g. "Dulapuri" in DORMITOR + LIVING + HOL).
 // `insertMany` with `ordered: false` skips duplicates (per compound unique key+grup).
 async function ensureSeeded() {
+  if (seedingDoneInThisInstance) return;
   // Explicitly drop the OLD single-key unique index ("key_1") if it still exists.
   // It blocks inserting the same key in different groups.
   try {
@@ -32,13 +38,17 @@ async function ensureSeeded() {
       docs.push({ key, label: key, grup: group.title, hidden: false, ordine: counter++ });
     }
   }
-  if (docs.length === 0) return;
+  if (docs.length === 0) {
+    seedingDoneInThisInstance = true;
+    return;
+  }
   try {
     await CustomCategory.insertMany(docs, { ordered: false });
     console.info("[ensureSeeded] inserted up to", docs.length, "categories");
   } catch {
     // Duplicate key errors are expected and harmless with ordered:false
   }
+  seedingDoneInThisInstance = true;
 }
 
 export const dynamic = "force-dynamic";

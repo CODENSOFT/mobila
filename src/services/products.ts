@@ -10,7 +10,13 @@ function docToProduct(d: Record<string, unknown>): Product {
 export async function getAllProducts(): Promise<Product[]> {
   try {
     await connectDB();
-    const docs = await ProductModel.find().lean();
+    // Select only fields needed by the products listing page — skips heavy
+    // ones like `descriere_ru`, full image arrays for cards we don't render.
+    const docs = await ProductModel.find()
+      .select(
+        "nume nume_ru pret imagine categorie areReducere pretReducere procentReducere set grup"
+      )
+      .lean();
     return docs.map(docToProduct);
   } catch (err) {
     console.error("[getAllProducts]", err);

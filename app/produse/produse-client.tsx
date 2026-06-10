@@ -519,7 +519,17 @@ function ProductsDisplay({
   );
 }
 
-export default function ProduseClient({ produse }: { produse: Product[] }) {
+type InitialSet = { key: string; nume: string; imagine: string };
+
+export default function ProduseClient({
+  produse,
+  initialCategories,
+  initialSets,
+}: {
+  produse: Product[];
+  initialCategories?: CustomCategory[];
+  initialSets?: InitialSet[];
+}) {
   const { lang, dict } = useLang();
   const t = dict.products;
   const tReduceri = dict.pretScazut;
@@ -577,10 +587,18 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
   const [priceTo, setPriceTo] = useState("");
 
   // Live published sets from admin — only these appear as set cards.
-  // Stores metadata (imagine, nume) so set cards use admin-uploaded image.
+  // Seeded from SSR (initialSets) so first paint already has the data.
   type SetMeta = { imagine: string; nume: string };
-  const [publishedSets, setPublishedSets] = useState<Map<string, SetMeta>>(new Map());
+  const [publishedSets, setPublishedSets] = useState<Map<string, SetMeta>>(() => {
+    const m = new Map<string, SetMeta>();
+    for (const s of initialSets ?? []) {
+      if (s.key) m.set(s.key, { imagine: s.imagine ?? "", nume: s.nume ?? "" });
+    }
+    return m;
+  });
   useEffect(() => {
+    // Only refresh if we don't have initial data (or want to pick up admin changes)
+    if (initialSets && initialSets.length > 0) return;
     let cancelled = false;
     fetch("/api/seturi", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : []))
@@ -601,12 +619,16 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialSets]);
   const publishedSetKeys = useMemo(() => new Set(publishedSets.keys()), [publishedSets]);
 
-  // Live custom categories from DB, merged into sidebar groups
-  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
+  // Live custom categories from DB, seeded from SSR
+  const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
+    () => initialCategories ?? []
+  );
   useEffect(() => {
+    // Skip fetch if SSR seeded us already
+    if (initialCategories && initialCategories.length > 0) return;
     let cancelled = false;
     fetchCustomCategories().then((data) => {
       if (!cancelled) setCustomCategories(data);
@@ -614,7 +636,7 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialCategories]);
 
   const sidebarGroups = useMemo(() => {
     // Each sidebar group has:

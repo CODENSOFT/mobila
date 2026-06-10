@@ -1,4 +1,5 @@
-export const dynamic = "force-dynamic";
+// ISR — regenerated in the background every 60s
+export const revalidate = 60;
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
