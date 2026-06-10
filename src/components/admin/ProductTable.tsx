@@ -20,14 +20,21 @@ export default function ProductTable({
 }: ProductTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [setFilter, setSetFilter] = useState<string>("all");
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.nume.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || product.categorie === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesSet =
+      setFilter === "all" ||
+      (setFilter === "__none__"
+        ? !product.set || !product.set.trim()
+        : (product.set ?? "").trim() === setFilter);
+    return matchesSearch && matchesCategory && matchesSet;
   });
 
   const categories = [...new Set(products.map((p) => p.categorie).filter(Boolean))];
+  const setNames = [...new Set(products.map((p) => p.set?.trim()).filter((s): s is string => Boolean(s)))].sort();
 
   if (products.length === 0) {
     return (
@@ -62,16 +69,31 @@ export default function ProductTable({
           />
         </div>
         
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-        >
-          <option value="all">Toate categoriile</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          >
+            <option value="all">Toate categoriile</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+
+          <select
+            value={setFilter}
+            onChange={(e) => setSetFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            title="Filtrează după set"
+          >
+            <option value="all">Toate seturile</option>
+            <option value="__none__">Fără set</option>
+            {setNames.map((s) => (
+              <option key={s} value={s}>Set: {s}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="space-y-3 md:hidden">
@@ -97,6 +119,11 @@ export default function ProductTable({
                   <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
                     {product.categorie ?? "Fără categorie"}
                   </span>
+                  {product.set?.trim() && (
+                    <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-700">
+                      {product.set}
+                    </span>
+                  )}
                   {product.areReducere && product.pretReducere ? (
                     <span className="flex items-center gap-1.5">
                       <span className="text-sm font-semibold text-red-600">{formatPriceInteger(product.pretReducere)} MDL</span>
@@ -162,8 +189,15 @@ export default function ProductTable({
                           sizes="56px"
                         />
                       </div>
-                      <div>
-                        <h4 className="font-medium text-slate-900">{product.nume}</h4>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-medium text-slate-900 truncate">{product.nume}</h4>
+                          {product.set?.trim() && (
+                            <span className="inline-flex items-center rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700">
+                              Set: {product.set}
+                            </span>
+                          )}
+                        </div>
                         <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">{product.descriere}</p>
                       </div>
                     </div>

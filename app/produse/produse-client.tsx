@@ -230,27 +230,30 @@ function ProductGridCard({
 function SetGridCard({
   name,
   products,
-  onSelect,
+  setImage,
   setLabel,
   productsCountLabel,
   collectionLabel,
+  lang,
 }: {
   name: string;
   products: Product[];
-  onSelect: (setName: string) => void;
+  onSelect?: (setName: string) => void;
+  setImage?: string;
   setLabel: string;
   productsCountLabel: string;
   collectionLabel: string;
+  lang: string;
 }) {
+  const displayImage = setImage && setImage.trim() ? setImage : products[0]?.imagine ?? "";
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(name)}
+    <Link
+      href={`/${lang}/seturi/${encodeURIComponent(name)}`}
       className="group relative block w-full text-left bg-white rounded-sm overflow-hidden cursor-pointer"
     >
       <div className="relative aspect-4/5 overflow-hidden bg-[#f5f5f4]">
         <Image
-          src={getSafeImageSrc(products[0].imagine)}
+          src={getSafeImageSrc(displayImage)}
           alt={name}
           fill
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
@@ -270,7 +273,7 @@ function SetGridCard({
         </h2>
         <p className="text-[11px] sm:text-sm text-[#a8a29e]">{products.length} {collectionLabel || productsCountLabel}</p>
       </div>
-    </button>
+    </Link>
   );
 }
 
@@ -284,7 +287,6 @@ const SECTION_FALLBACK_IMAGES: Record<string, string> = {
 };
 
 function SectionCards({
-  produse,
   onSelect,
   sectionLabels,
   seeLabel,
@@ -297,22 +299,9 @@ function SectionCards({
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6">
       {PRODUCT_CATEGORY_GROUPS.map((group) => {
-        // Try to find a representative product image from this group first
-        const sample = produse.find((p) => {
-          const grup = (typeof p.grup === "string" && p.grup.trim()) || (() => {
-            if (typeof p.categorie !== "string") return undefined;
-            const found = PRODUCT_CATEGORY_GROUPS.find((g) =>
-              (g.items as readonly string[]).includes(p.categorie!)
-            );
-            return found?.title;
-          })();
-          return grup === group.title;
-        });
-
-        const fallback = SECTION_FALLBACK_IMAGES[group.title];
-        const imageSrc = sample
-          ? getSafeImageSrc(sample.imagine)
-          : fallback ?? getSafeImageSrc(produse[0]?.imagine ?? "");
+        // Always use the static section image — never the dynamic product image.
+        // Same images as the home-page "Descoperă mobilier" cards for consistency.
+        const imageSrc = SECTION_FALLBACK_IMAGES[group.title] ?? "/images/categories/dormitor.png";
         const friendly = sectionLabels[group.title] ?? group.title;
         const firstItem = group.items[0];
 
@@ -352,6 +341,8 @@ function ProductsDisplay({
   filteredProducts,
   allProducts,
   customCategories,
+  publishedSetKeys,
+  publishedSetMeta,
   lang,
   categoryLabel,
   t,
@@ -365,6 +356,8 @@ function ProductsDisplay({
   filteredProducts: Product[];
   allProducts: Product[];
   customCategories: CustomCategory[];
+  publishedSetKeys: Set<string>;
+  publishedSetMeta: Map<string, { imagine: string; nume: string }>;
   lang: string;
   categoryLabel: Map<string, string>;
   t: {
@@ -425,6 +418,8 @@ function ProductsDisplay({
     for (const p of allProducts) {
       const key = p.set?.trim();
       if (!key) continue;
+      // Only include sets that have admin-published metadata
+      if (!publishedSetKeys.has(key)) continue;
       if (!setsMap.has(key)) setsMap.set(key, []);
       setsMap.get(key)!.push(p);
     }
@@ -441,7 +436,7 @@ function ProductsDisplay({
     }
 
     return result;
-  }, [allProducts, customCategories, displayMode, selectedGroup]);
+  }, [allProducts, customCategories, displayMode, selectedGroup, publishedSetKeys]);
 
   const setsCount = gridItems.filter((i) => i.type === "set").length;
 
@@ -497,9 +492,11 @@ function ProductsDisplay({
                 name={item.name}
                 products={item.products}
                 onSelect={onSelectSet}
+                setImage={publishedSetMeta.get(item.name)?.imagine}
                 setLabel={t.set}
                 productsCountLabel={t.productsCount}
                 collectionLabel={t.setProductsInCollection}
+                lang={lang}
               />
             ) : (
               <ProductGridCard
@@ -565,6 +562,10 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
       }
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      // Scroll to top so the user sees the new category from the beginning of the page
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     },
     [router, pathname, searchParams]
   );
@@ -574,6 +575,34 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
+
+  // Live published sets from admin — only these appear as set cards.
+  // Stores metadata (imagine, nume) so set cards use admin-uploaded image.
+  type SetMeta = { imagine: string; nume: string };
+  const [publishedSets, setPublishedSets] = useState<Map<string, SetMeta>>(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/seturi", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: unknown) => {
+        if (cancelled || !Array.isArray(data)) return;
+        const map = new Map<string, SetMeta>();
+        for (const s of data as { key?: unknown; imagine?: unknown; nume?: unknown }[]) {
+          if (typeof s.key === "string" && s.key.trim()) {
+            map.set(s.key.trim(), {
+              imagine: typeof s.imagine === "string" ? s.imagine : "",
+              nume: typeof s.nume === "string" ? s.nume : "",
+            });
+          }
+        }
+        setPublishedSets(map);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const publishedSetKeys = useMemo(() => new Set(publishedSets.keys()), [publishedSets]);
 
   // Live custom categories from DB, merged into sidebar groups
   const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
@@ -1020,6 +1049,8 @@ export default function ProduseClient({ produse }: { produse: Product[] }) {
                 filteredProducts={filteredProducts}
                 allProducts={produse}
                 customCategories={customCategories}
+                publishedSetKeys={publishedSetKeys}
+                publishedSetMeta={publishedSets}
                 lang={lang}
                 categoryLabel={categoryLabel}
                 t={t}

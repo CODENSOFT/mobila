@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Package2, ReceiptText, Sparkles, Star, Tag } from "lucide-react";
+import { FileText, LayoutDashboard, Layers, Package2, ReceiptText, Sparkles, Star, Tag } from "lucide-react";
 
 type PanouLayoutProps = {
   children: React.ReactNode;
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/panou-mobila-2026/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/panou-mobila-2026", label: "Produse", icon: Package2 },
   { href: "/panou-mobila-2026/categorii", label: "Categorii", icon: Tag },
+  { href: "/panou-mobila-2026/seturi", label: "Seturi", icon: Layers },
   { href: "/panou-mobila-2026/produse-top", label: "Produse top", icon: Star },
   { href: "/panou-mobila-2026/produse-noi", label: "Produse noi", icon: Sparkles },
   { href: "/panou-mobila-2026/comenzi", label: "Comenzi", icon: ReceiptText },

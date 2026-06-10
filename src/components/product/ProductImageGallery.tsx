@@ -95,7 +95,7 @@ export default function ProductImageGallery({
   }
 
   const row1 = urls.slice(0, 2);
-  const row2 = urls.slice(2, 5);
+  const rest = urls.slice(2);
 
   return (
     <div className="space-y-2">
@@ -113,10 +113,10 @@ export default function ProductImageGallery({
         ))}
       </div>
 
-      {/* Rândul 2 — până la 3 fotografii mai mici */}
-      {row2.length > 0 && (
+      {/* Toate fotografiile rămase — 3 pe rând, wrap automat pe mai multe rânduri */}
+      {rest.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
-          {row2.map((url, i) => (
+          {rest.map((url, i) => (
             <GalleryImage
               key={url}
               url={url}
