@@ -35,6 +35,14 @@ const normalizeCategory = (value?: string | null): Category => {
 const DORMITOR_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForDormitorGroup());
 const BUCATARIE_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForBucatarieGroup());
 
+/**
+ * Category shown as a single, standalone pill (apart from the per-section groups).
+ * Wardrobes ("Dulapuri") exist across several sections (dormitor, living, hol),
+ * so instead of repeating a "Dulapuri" button under each section we surface ONE
+ * pill that lists every wardrobe on the site (filtered with grup: null).
+ */
+const STANDALONE_CATEGORY_KEY = "Dulapuri";
+
 type SortKey = "featured" | "price-asc" | "price-desc";
 
 /** Translates a Romanian label to Russian when needed; falls back to source for RO. */
@@ -669,11 +677,31 @@ export default function ProduseClient({
         return a.label.localeCompare(b.label);
       });
     for (const c of sorted) {
+      // The wardrobes category is rendered as a single standalone pill, not
+      // duplicated under each section it appears in.
+      if (c.key === STANDALONE_CATEGORY_KEY) continue;
       // Custom category's grup is already a storage key from admin
       ensureGroup(c.grup, c.grup).items.push({ key: c.key, label: c.label });
     }
     return groups.filter((g) => g.items.length > 0);
   }, [t.categoryGroups, customCategories]);
+
+  // Translated label for the standalone wardrobes pill (falls back to the key).
+  const standaloneLabel = useMemo(() => {
+    const rec = customCategories.find(
+      (c) => !c.hidden && c.key === STANDALONE_CATEGORY_KEY
+    );
+    return rec?.label ?? STANDALONE_CATEGORY_KEY;
+  }, [customCategories]);
+
+  // Only surface the standalone wardrobes pill when wardrobes exist (a category
+  // record or at least one product), so we never render a dead, empty filter.
+  const hasStandalone = useMemo(
+    () =>
+      customCategories.some((c) => !c.hidden && c.key === STANDALONE_CATEGORY_KEY) ||
+      produse.some((p) => p.categorie === STANDALONE_CATEGORY_KEY),
+    [customCategories, produse]
+  );
 
   const categoryLabel = useMemo(() => {
     const map = new Map<string, string>();
@@ -682,8 +710,10 @@ export default function ProduseClient({
         map.set(item.key, item.label);
       }
     }
+    // Standalone wardrobes category isn't part of any sidebar group.
+    map.set(STANDALONE_CATEGORY_KEY, standaloneLabel);
     return map;
-  }, [sidebarGroups]);
+  }, [sidebarGroups, standaloneLabel]);
 
   // Compute the effective group of a product:
   // - explicit `grup` field if set
@@ -790,8 +820,8 @@ export default function ProduseClient({
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#1c1917]/45 mb-4">
           {t.categories}
         </h3>
-        {discountedProducts.length > 0 && (
-          <div className="space-y-1 mb-6">
+        <div className="space-y-1 mb-6">
+          {discountedProducts.length > 0 && (
             <CategoryPill
               label={tReduceri.label}
               isActive={activeCategory === "Reduceri"}
@@ -799,8 +829,17 @@ export default function ProduseClient({
               lang={lang}
               onClick={() => { updateFilters({ categorie: "Reduceri", grup: null, set: null }); setIsFilterOpen(false); }}
             />
-          </div>
-        )}
+          )}
+          {/* Standalone wardrobes — lists every "Dulapuri" on the site, regardless of section. */}
+          {hasStandalone && (
+            <CategoryPill
+              label={standaloneLabel}
+              isActive={activeCategory === STANDALONE_CATEGORY_KEY && !selectedGroup}
+              lang={lang}
+              onClick={() => { updateFilters({ categorie: STANDALONE_CATEGORY_KEY, grup: null, set: null }); setIsFilterOpen(false); }}
+            />
+          )}
+        </div>
 
         <div className="space-y-5">
           {sidebarGroups.map((group) => (
