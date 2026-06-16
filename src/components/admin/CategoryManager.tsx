@@ -1,16 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { PRODUCT_CATEGORY_GROUPS } from "@/src/constants/categories";
 import { fetchCustomCategories, type CustomCategory } from "@/src/lib/customCategories";
+import { fetchSections } from "@/src/lib/sections";
 
-const GROUP_TITLES = PRODUCT_CATEGORY_GROUPS.map((g) => g.title);
-
-export default function CategoryManager({ onChange }: { onChange?: () => void }) {
+export default function CategoryManager({
+  onChange,
+  refreshSignal,
+}: {
+  onChange?: () => void;
+  refreshSignal?: number;
+}) {
   const [items, setItems] = useState<CustomCategory[]>([]);
+  // Section titles, ordered — loaded live from /api/sectiuni so admin-created
+  // sections immediately appear as group options here.
+  const [groupTitles, setGroupTitles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newLabel, setNewLabel] = useState("");
-  const [newGrup, setNewGrup] = useState<string>(GROUP_TITLES[0]);
+  const [newGrup, setNewGrup] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -18,7 +25,7 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
   // Inline editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
-  const [editGrup, setEditGrup] = useState<string>(GROUP_TITLES[0]);
+  const [editGrup, setEditGrup] = useState<string>("");
 
   // Drag and drop state
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -26,17 +33,26 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
-    const data = await fetchCustomCategories();
+    const [data, sections] = await Promise.all([fetchCustomCategories(), fetchSections()]);
     // After hard delete, hidden records shouldn't exist, but filter as safety
     setItems(data.filter((c) => !c.hidden));
+    const titles = sections.filter((s) => !s.hidden).map((s) => s.title);
+    setGroupTitles(titles);
+    // Default the "new category" group to the first section once available.
+    setNewGrup((prev) => (prev && titles.includes(prev) ? prev : titles[0] ?? ""));
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+  }, [refresh, refreshSignal]);
 
-  const grouped = GROUP_TITLES.map((title) => ({
+  // Show every section in canonical order, plus any group still referenced by a
+  // category but missing from the sections list (so nothing silently disappears).
+  const orphanGroups = Array.from(
+    new Set(items.map((i) => i.grup).filter((g) => g && !groupTitles.includes(g)))
+  );
+  const grouped = [...groupTitles, ...orphanGroups].map((title) => ({
     title,
     items: items
       .filter((i) => i.grup === title)
@@ -98,7 +114,7 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
   const cancelEdit = () => {
     setEditingId(null);
     setEditLabel("");
-    setEditGrup(GROUP_TITLES[0]);
+    setEditGrup(groupTitles[0] ?? "");
   };
 
   const saveEdit = async (item: CustomCategory) => {
@@ -238,7 +254,7 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
             onChange={(e) => setNewGrup(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
           >
-            {GROUP_TITLES.map((g) => (
+            {groupTitles.map((g) => (
               <option key={g} value={g}>{g}</option>
             ))}
           </select>
@@ -299,7 +315,7 @@ export default function CategoryManager({ onChange }: { onChange?: () => void })
                               onChange={(e) => setEditGrup(e.target.value)}
                               className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
                             >
-                              {GROUP_TITLES.map((g) => (
+                              {Array.from(new Set([...groupTitles, editGrup].filter(Boolean))).map((g) => (
                                 <option key={g} value={g}>{g}</option>
                               ))}
                             </select>

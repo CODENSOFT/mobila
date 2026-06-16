@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { connectDB } from "@/src/lib/db";
 import CustomCategory from "@/src/models/CustomCategory";
 import SetModel from "@/src/models/Set";
+import SectionModel from "@/src/models/Section";
 
 import ProduseClient from "./produse-client";
 import { getAllProducts } from "../../src/services/products";
@@ -49,11 +50,28 @@ async function getInitialSets() {
   }
 }
 
+async function getInitialSections() {
+  try {
+    await connectDB();
+    const docs = await SectionModel.find().sort({ ordine: 1, title: 1 }).lean();
+    return docs.map((d) => ({
+      _id: String(d._id),
+      title: d.title,
+      image: typeof d.image === "string" ? d.image : "",
+      ordine: typeof d.ordine === "number" ? d.ordine : 0,
+      hidden: Boolean(d.hidden),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export default async function ProdusePage() {
-  const [produse, initialCategories, initialSets] = await Promise.all([
+  const [produse, initialCategories, initialSets, initialSections] = await Promise.all([
     getAllProducts(),
     getInitialCategories(),
     getInitialSets(),
+    getInitialSections(),
   ]);
 
   return (
@@ -61,6 +79,7 @@ export default async function ProdusePage() {
       produse={produse}
       initialCategories={initialCategories}
       initialSets={initialSets}
+      initialSections={initialSections}
     />
   );
 }

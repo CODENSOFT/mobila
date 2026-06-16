@@ -9,14 +9,16 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { discountBadgeText } from "../../src/lib/discount";
 import { getSafeImageSrc } from "../../src/lib/image";
 import { fetchCustomCategories, type CustomCategory } from "../../src/lib/customCategories";
+import { fetchSections, type Section } from "../../src/lib/sections";
 import type { Product, ProductCategory } from "../../src/types/product";
 import {
   PRODUCT_CATEGORY_GROUPS,
-  getCategoriesForBucatarieGroup,
-  getCategoriesForDormitorGroup,
 } from "../../src/constants/categories";
 
 type Category = "All" | "Reduceri" | ProductCategory | string;
+
+/** A catalog section with its ordered category keys. Built live from admin data. */
+type CatalogGroup = { title: string; items: string[] };
 
 /** Query values from home/footer cards vs keys stored on products / sidebar. */
 const CATEGORY_QUERY_ALIASES: Record<string, string> = {
@@ -31,9 +33,6 @@ const normalizeCategory = (value?: string | null): Category => {
   if (trimmed === "Reduceri") return "Reduceri";
   return (CATEGORY_QUERY_ALIASES[trimmed] ?? trimmed) as Category;
 };
-
-const DORMITOR_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForDormitorGroup());
-const BUCATARIE_CATEGORY_SET = new Set<ProductCategory>(getCategoriesForBucatarieGroup());
 
 /**
  * Category shown as a single, standalone pill (apart from the per-section groups).
@@ -239,7 +238,7 @@ function SetGridCard({
   name,
   products,
   setImage,
-  setLabel,
+  displayName,
   productsCountLabel,
   collectionLabel,
   lang,
@@ -248,7 +247,8 @@ function SetGridCard({
   products: Product[];
   onSelect?: (setName: string) => void;
   setImage?: string;
-  setLabel: string;
+  /** The admin-defined set name, shown as-is (without any "Set" prefix). */
+  displayName: string;
   productsCountLabel: string;
   collectionLabel: string;
   lang: string;
@@ -271,13 +271,13 @@ function SetGridCard({
         <div className="absolute inset-0 bg-[#0c0c0c]/0 transition-colors duration-300 group-hover:bg-[#0c0c0c]/20" />
 
         <span className="absolute top-2 left-2 sm:top-4 sm:left-4 px-2 py-0.5 sm:px-3 sm:py-1.5 bg-white/90 backdrop-blur-sm text-[8px] sm:text-[10px] font-medium uppercase tracking-wider text-[#1c1917]">
-          {setLabel} · {products.length}
+          {products.length} {collectionLabel || productsCountLabel}
         </span>
       </div>
 
       <div className="p-2.5 sm:p-5">
         <h2 className="text-[13px] sm:text-base font-medium text-[#1c1917] mb-0.5 sm:mb-1 leading-tight line-clamp-2 group-hover:text-[#78716c] transition-colors">
-          {setLabel} {name}
+          {displayName}
         </h2>
         <p className="text-[11px] sm:text-sm text-[#a8a29e]">{products.length} {collectionLabel || productsCountLabel}</p>
       </div>
@@ -295,21 +295,26 @@ const SECTION_FALLBACK_IMAGES: Record<string, string> = {
 };
 
 function SectionCards({
+  groups,
+  sectionImages,
   onSelect,
   sectionLabels,
   seeLabel,
 }: {
-  produse: Product[];
+  groups: CatalogGroup[];
+  sectionImages: Record<string, string>;
   onSelect: (groupTitle: string, firstItemKey: string) => void;
   sectionLabels: Record<string, string>;
   seeLabel: string;
 }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6">
-      {PRODUCT_CATEGORY_GROUPS.map((group) => {
-        // Always use the static section image — never the dynamic product image.
-        // Same images as the home-page "Descoperă mobilier" cards for consistency.
-        const imageSrc = SECTION_FALLBACK_IMAGES[group.title] ?? "/images/categories/dormitor.png";
+      {groups.map((group) => {
+        // Prefer the admin-set section image, then the static fallback map, then a default.
+        const imageSrc =
+          sectionImages[group.title] ||
+          SECTION_FALLBACK_IMAGES[group.title] ||
+          "/images/categories/dormitor.png";
         const friendly = sectionLabels[group.title] ?? group.title;
         const firstItem = group.items[0];
 
@@ -349,6 +354,7 @@ function ProductsDisplay({
   filteredProducts,
   allProducts,
   customCategories,
+  groups,
   publishedSetKeys,
   publishedSetMeta,
   lang,
@@ -364,6 +370,7 @@ function ProductsDisplay({
   filteredProducts: Product[];
   allProducts: Product[];
   customCategories: CustomCategory[];
+  groups: CatalogGroup[];
   publishedSetKeys: Set<string>;
   publishedSetMeta: Map<string, { imagine: string; nume: string }>;
   lang: string;
@@ -392,33 +399,65 @@ function ProductsDisplay({
   //   show ONLY set cards, no individual products
   // - "individual-only": everything else (Toate, Reduceri, specific sub-categories)
   //   shows all products individually
-  const displayMode: "sets-only" | "individual-only" = useMemo(() => {
+  // Standalone wardrobes view: the "Dulapuri" pill (no section). Here we show
+  // BOTH the sets formed from wardrobes AND the individual wardrobes.
+  const isStandaloneWardrobe =
+    !selectedSet && !selectedGroup && activeCategory === STANDALONE_CATEGORY_KEY;
+
+  const displayMode: "sets-only" | "individual-only" | "mixed" = useMemo(() => {
     if (selectedSet) return "individual-only";
+    if (isStandaloneWardrobe) return "mixed";
     if (selectedGroup) {
-      const grp = PRODUCT_CATEGORY_GROUPS.find((g) => g.title === selectedGroup);
+      const grp = groups.find((g) => g.title === selectedGroup);
       if (grp && grp.items[0] === activeCategory) return "sets-only";
     }
     return "individual-only";
-  }, [activeCategory, selectedGroup, selectedSet]);
+  }, [activeCategory, selectedGroup, selectedSet, isStandaloneWardrobe, groups]);
 
   const gridItems = useMemo(() => {
     if (displayMode === "individual-only") {
       return filteredProducts.map((p) => ({ type: "product" as const, product: p }));
     }
 
+    type GridItem =
+      | { type: "set"; name: string; products: Product[] }
+      | { type: "product"; product: Product };
+
+    // Mixed mode (standalone wardrobes): wardrobe sets first, then loose wardrobes.
+    if (displayMode === "mixed") {
+      const setsMap = new Map<string, Product[]>();
+      for (const p of allProducts) {
+        const key = p.set?.trim();
+        if (!key || !publishedSetKeys.has(key)) continue;
+        // Only sets that actually contain wardrobes.
+        if (p.categorie !== STANDALONE_CATEGORY_KEY) continue;
+        if (!setsMap.has(key)) setsMap.set(key, []);
+        setsMap.get(key)!.push(p);
+      }
+      const result: GridItem[] = [];
+      for (const [name, products] of setsMap.entries()) {
+        result.push({ type: "set", name, products });
+      }
+      // Individual wardrobes not already represented by a wardrobe set above.
+      for (const p of filteredProducts) {
+        const sk = p.set?.trim();
+        if (sk && setsMap.has(sk)) continue;
+        result.push({ type: "product", product: p });
+      }
+      return result;
+    }
+
     // sets-only mode: strict detection by effective group of each product.
     // A set appears under a group ONLY if it has at least one product whose
     // effective group matches that group. Effective group =
     // explicit `grup` field (admin-set) OR inferred from `categorie` via
-    // custom categories (DB) then hardcoded items.
+    // custom categories (DB) then section items.
     const effectiveGroupOfProd = (p: Product): string | undefined => {
       if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
       if (typeof p.categorie !== "string") return undefined;
       const cust = customCategories.find((c) => !c.hidden && c.key === p.categorie);
       if (cust) return cust.grup;
-      const grp = PRODUCT_CATEGORY_GROUPS.find((g) =>
-        (g.items as readonly string[]).includes(p.categorie!)
-      );
+      const grp = groups.find((g) => g.items.includes(p.categorie!));
       return grp?.title;
     };
 
@@ -432,7 +471,7 @@ function ProductsDisplay({
       setsMap.get(key)!.push(p);
     }
 
-    const result: ({ type: "set"; name: string; products: Product[] } | { type: "product"; product: Product })[] = [];
+    const result: GridItem[] = [];
     for (const [name, products] of setsMap.entries()) {
       // Set qualifies only if at least one product has effective group === selectedGroup
       const productsInGroup = products.filter(
@@ -444,7 +483,7 @@ function ProductsDisplay({
     }
 
     return result;
-  }, [allProducts, customCategories, displayMode, selectedGroup, publishedSetKeys]);
+  }, [allProducts, customCategories, groups, displayMode, selectedGroup, filteredProducts, publishedSetKeys]);
 
   const setsCount = gridItems.filter((i) => i.type === "set").length;
 
@@ -463,8 +502,9 @@ function ProductsDisplay({
             </svg>
             {t.backToSets}
           </button>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#a8a29e]">{t.set}</span>
-          <span className="text-sm font-medium text-[#1c1917]">{selectedSet}</span>
+          <span className="text-sm font-medium text-[#1c1917]">
+            {publishedSetMeta.get(selectedSet)?.nume?.trim() || selectedSet}
+          </span>
         </div>
       )}
 
@@ -501,7 +541,7 @@ function ProductsDisplay({
                 products={item.products}
                 onSelect={onSelectSet}
                 setImage={publishedSetMeta.get(item.name)?.imagine}
-                setLabel={t.set}
+                displayName={publishedSetMeta.get(item.name)?.nume?.trim() || item.name}
                 productsCountLabel={t.productsCount}
                 collectionLabel={t.setProductsInCollection}
                 lang={lang}
@@ -533,10 +573,12 @@ export default function ProduseClient({
   produse,
   initialCategories,
   initialSets,
+  initialSections,
 }: {
   produse: Product[];
   initialCategories?: CustomCategory[];
   initialSets?: InitialSet[];
+  initialSections?: Section[];
 }) {
   const { lang, dict } = useLang();
   const t = dict.products;
@@ -646,6 +688,58 @@ export default function ProduseClient({
     };
   }, [initialCategories]);
 
+  // Live sections from DB, seeded from SSR. These drive the section cards,
+  // sidebar order and product grouping (replacing the old hardcoded list).
+  const [sections, setSections] = useState<Section[]>(() => initialSections ?? []);
+  useEffect(() => {
+    if (initialSections && initialSections.length > 0) return;
+    let cancelled = false;
+    fetchSections().then((data) => {
+      if (!cancelled) setSections(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [initialSections]);
+
+  // Ordered, visible section titles — fall back to the hardcoded list until the
+  // first fetch resolves so the page is never empty.
+  const sectionTitles = useMemo(() => {
+    const visible = sections.filter((s) => !s.hidden);
+    if (visible.length === 0) return PRODUCT_CATEGORY_GROUPS.map((g) => g.title);
+    return [...visible].sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0)).map((s) => s.title);
+  }, [sections]);
+
+  // Admin-uploaded section images, keyed by section title.
+  const sectionImages = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const s of sections) {
+      if (s.image && s.image.trim()) m[s.title] = s.image.trim();
+    }
+    return m;
+  }, [sections]);
+
+  // The catalog groups: each section with its ordered category keys, built from
+  // live admin data (sections + custom categories). Falls back to the hardcoded
+  // grouping when DB data hasn't arrived yet.
+  const groups = useMemo<CatalogGroup[]>(() => {
+    const sorted = [...customCategories]
+      .filter((c) => !c.hidden)
+      .sort((a, b) => {
+        const oa = typeof a.ordine === "number" ? a.ordine : 0;
+        const ob = typeof b.ordine === "number" ? b.ordine : 0;
+        if (oa !== ob) return oa - ob;
+        return a.label.localeCompare(b.label);
+      });
+    if (sorted.length === 0) {
+      return PRODUCT_CATEGORY_GROUPS.map((g) => ({ title: g.title, items: [...g.items] }));
+    }
+    return sectionTitles.map((title) => ({
+      title,
+      items: sorted.filter((c) => c.grup === title).map((c) => c.key),
+    }));
+  }, [sectionTitles, customCategories]);
+
   const sidebarGroups = useMemo(() => {
     // Each sidebar group has:
     // - storageKey: the canonical group identifier used in DB / URL filtering (e.g. "PENTRU BUCĂTĂRIE")
@@ -660,12 +754,13 @@ export default function ProduseClient({
       }
       return g;
     };
-    // Use PRODUCT_CATEGORY_GROUPS for canonical order + storage keys, pair with
-    // translated titles from the dictionary by index (dict order matches constants).
-    PRODUCT_CATEGORY_GROUPS.forEach((hard, idx) => {
-      const dictGroup = t.categoryGroups[idx];
-      const displayTitle = dictGroup?.title ?? hard.title;
-      ensureGroup(hard.title, displayTitle);
+    // Use the live section order for storage keys. Preserve the curated
+    // dictionary translation for sections that exist in the hardcoded list
+    // (matched by title); newer sections fall back to live translation.
+    sectionTitles.forEach((title) => {
+      const hardIdx = PRODUCT_CATEGORY_GROUPS.findIndex((g) => g.title === title);
+      const displayTitle = hardIdx >= 0 ? t.categoryGroups[hardIdx]?.title ?? title : title;
+      ensureGroup(title, displayTitle);
     });
 
     const sorted = [...customCategories]
@@ -684,7 +779,7 @@ export default function ProduseClient({
       ensureGroup(c.grup, c.grup).items.push({ key: c.key, label: c.label });
     }
     return groups.filter((g) => g.items.length > 0);
-  }, [t.categoryGroups, customCategories]);
+  }, [t.categoryGroups, customCategories, sectionTitles]);
 
   // Translated label for the standalone wardrobes pill (falls back to the key).
   const standaloneLabel = useMemo(() => {
@@ -719,28 +814,34 @@ export default function ProduseClient({
   // - explicit `grup` field if set
   // - otherwise infer from the first matching group containing its `categorie`
   //   (checking custom categories from DB first, then hardcoded list)
-  const getEffectiveGroup = (p: Product): string | undefined => {
-    if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
-    if (typeof p.categorie !== "string") return undefined;
-    // Custom categories take precedence
-    const cust = customCategories.find((c) => !c.hidden && c.key === p.categorie);
-    if (cust) return cust.grup;
-    const grp = PRODUCT_CATEGORY_GROUPS.find((g) =>
-      (g.items as readonly string[]).includes(p.categorie!)
-    );
-    return grp?.title;
-  };
+  const getEffectiveGroup = useCallback(
+    (p: Product): string | undefined => {
+      if (typeof p.grup === "string" && p.grup.trim()) return p.grup.trim();
+      if (typeof p.categorie !== "string") return undefined;
+      // Custom categories take precedence
+      const cust = customCategories.find((c) => !c.hidden && c.key === p.categorie);
+      if (cust) return cust.grup;
+      const grp = groups.find((g) => g.items.includes(p.categorie!));
+      return grp?.title;
+    },
+    [customCategories, groups]
+  );
 
   // Strict matching: product belongs to a group only via its EFFECTIVE group.
-  const matchesGroup = (p: Product, group: string): boolean =>
-    getEffectiveGroup(p) === group;
+  const matchesGroup = useCallback(
+    (p: Product, group: string): boolean => getEffectiveGroup(p) === group,
+    [getEffectiveGroup]
+  );
 
   // Detect aggregator (first item of a group, e.g. "Bucătării", "Livinguri", "Hol").
-  const isAggregator = (cat: Category, group: string | null): boolean => {
-    if (!group) return false;
-    const grp = PRODUCT_CATEGORY_GROUPS.find((g) => g.title === group);
-    return Boolean(grp && grp.items[0] === cat);
-  };
+  const isAggregator = useCallback(
+    (cat: Category, group: string | null): boolean => {
+      if (!group) return false;
+      const grp = groups.find((g) => g.title === group);
+      return Boolean(grp && grp.items[0] === cat);
+    },
+    [groups]
+  );
 
   const filteredProducts = useMemo(() => {
     let list = produse;
@@ -802,7 +903,7 @@ export default function ProduseClient({
     }
 
     return list;
-  }, [activeCategory, selectedGroup, selectedSet, priceFrom, priceTo, produse, query, sortBy]);
+  }, [activeCategory, selectedGroup, selectedSet, priceFrom, priceTo, produse, query, sortBy, matchesGroup, isAggregator]);
 
   const hasActiveFilter = activeCategory !== "All" || priceFrom !== "" || priceTo !== "";
 
@@ -1078,7 +1179,8 @@ export default function ProduseClient({
           <div className="flex-1 min-w-0">
             {activeCategory === "All" && !selectedGroup && !selectedSet && !query && !priceFrom && !priceTo ? (
               <SectionCards
-                produse={produse}
+                groups={groups.filter((g) => g.items.length > 0)}
+                sectionImages={sectionImages}
                 onSelect={(groupTitle, firstItemKey) =>
                   updateFilters({ categorie: firstItemKey as Category, grup: groupTitle, set: null })
                 }
@@ -1110,6 +1212,7 @@ export default function ProduseClient({
                 filteredProducts={filteredProducts}
                 allProducts={produse}
                 customCategories={customCategories}
+                groups={groups}
                 publishedSetKeys={publishedSetKeys}
                 publishedSetMeta={publishedSets}
                 lang={lang}

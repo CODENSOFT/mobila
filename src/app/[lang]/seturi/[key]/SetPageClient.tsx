@@ -145,9 +145,6 @@ export default function SetPageClient({
           </div>
 
           <div className="lg:sticky lg:top-[88px] flex flex-col">
-            <span className="self-start mb-3 inline-block text-[10px] font-semibold uppercase tracking-[0.22em] text-[#78716c] border border-[#d6d3d1] rounded-full px-3 py-1">
-              {t.setLabel}
-            </span>
             <h1 className="text-2xl lg:text-3xl font-light text-[#1c1917] leading-snug mb-5">
               {numeDisplay}
             </h1>

@@ -9,11 +9,16 @@ import {
 import { formatPriceInteger } from "@/src/lib/formatPrice";
 import { uploadToCloudinary } from "@/src/lib/cloudinary-client";
 import { fetchCustomCategories, type CustomCategory } from "@/src/lib/customCategories";
+import { fetchSections } from "@/src/lib/sections";
 import type { Product } from "../../types/product";
 
 export const ADMIN_CATEGORIES = PRODUCT_CATEGORIES;
 export type AdminCategory = ProductCategory;
 type AdminCategoryGroupTitle = (typeof PRODUCT_CATEGORY_GROUPS)[number]["title"];
+
+// Wardrobes are a standalone top-level category on the site (not nested under a
+// section), so the product form offers them directly in the "Pentru" selector.
+const STANDALONE_GROUP = "Dulapuri";
 
 type ProductFormValues = {
   nume: string;
@@ -236,7 +241,8 @@ export default function ProductForm({
   const [values, setValues] = useState<ProductFormValues>(() => toInitialValues(initialProduct));
   const [descriptionRO, setDescriptionRO] = useState(() => initialDescriptionRO(initialProduct));
   const [descriptionRU, setDescriptionRU] = useState(() => initialDescriptionRU(initialProduct));
-  const [selectedCategoryGroup, setSelectedCategoryGroup] = useState<AdminCategoryGroupTitle>(() =>
+  // Section (grup) can be any admin-created section, not just the hardcoded ones.
+  const [selectedCategoryGroup, setSelectedCategoryGroup] = useState<string>(() =>
     getGroupForCategory(toInitialValues(initialProduct).categorie)
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -273,9 +279,9 @@ export default function ProductForm({
     setDescriptionRO(initialDescriptionRO(initialProduct));
     setDescriptionRU(initialDescriptionRU(initialProduct));
     const savedGrup = initialProduct?.grup;
-    const isValidGrup = PRODUCT_CATEGORY_GROUPS.some((g) => g.title === savedGrup);
+    const isValidGrup = typeof savedGrup === "string" && savedGrup.trim().length > 0;
     setSelectedCategoryGroup(
-      isValidGrup ? (savedGrup as AdminCategoryGroupTitle) : getGroupForCategory(nextValues.categorie)
+      isValidGrup ? savedGrup.trim() : getGroupForCategory(nextValues.categorie)
     );
     setExtraImages(
       (initialProduct?.imagini ?? []).map((url) => ({ id: Math.random().toString(36).slice(2), file: null, url }))
@@ -407,26 +413,40 @@ export default function ProductForm({
   const isEdit = mode === "edit";
 
   const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
+  const [sectionTitles, setSectionTitles] = useState<string[]>([]);
   useEffect(() => {
     let cancelled = false;
     fetchCustomCategories().then((data) => {
       if (!cancelled) setCustomCategories(data);
+    });
+    fetchSections().then((data) => {
+      if (!cancelled) setSectionTitles(data.filter((s) => !s.hidden).map((s) => s.title));
     });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  // Section options: live sections + standalone "Dulapuri" + the currently
+  // selected one (covers a product saved under a section since renamed/removed).
+  const groupOptions = Array.from(
+    new Set([...sectionTitles, STANDALONE_GROUP, selectedCategoryGroup].filter(Boolean))
+  );
+
   // Categories come strictly from the DB (auto-seeded with hardcoded list on first run).
   // Filter hidden + sort by `ordine` so the dropdown reflects admin ordering.
-  const categoriesForSelectedGroup: string[] = customCategories
-    .filter((c) => !c.hidden && c.grup === selectedCategoryGroup)
-    .sort((a, b) => {
-      const oa = typeof a.ordine === "number" ? a.ordine : 0;
-      const ob = typeof b.ordine === "number" ? b.ordine : 0;
-      return oa - ob;
-    })
-    .map((c) => c.key);
+  // For the standalone "Dulapuri" group the only category is "Dulapuri" itself.
+  const categoriesForSelectedGroup: string[] =
+    selectedCategoryGroup === STANDALONE_GROUP
+      ? [STANDALONE_GROUP]
+      : customCategories
+          .filter((c) => !c.hidden && c.grup === selectedCategoryGroup)
+          .sort((a, b) => {
+            const oa = typeof a.ordine === "number" ? a.ordine : 0;
+            const ob = typeof b.ordine === "number" ? b.ordine : 0;
+            return oa - ob;
+          })
+          .map((c) => c.key);
 
   const validate = useCallback(() => {
     const newErrors: typeof errors = {};
@@ -621,21 +641,31 @@ export default function ProductForm({
                     <select
                       value={selectedCategoryGroup}
                       onChange={(e) => {
-                        const nextGroupTitle = e.target.value as AdminCategoryGroupTitle;
-                        const nextGroup = PRODUCT_CATEGORY_GROUPS.find(
-                          (group) => group.title === nextGroupTitle
-                        );
-                        const nextCategory = nextGroup?.items[0] as AdminCategory | undefined;
+                        const nextGroupTitle = e.target.value;
                         setSelectedCategoryGroup(nextGroupTitle);
+                        // Standalone "Dulapuri" → category is always "Dulapuri".
+                        if (nextGroupTitle === STANDALONE_GROUP) {
+                          setValues((p) => ({ ...p, categorie: STANDALONE_GROUP as AdminCategory }));
+                          return;
+                        }
+                        // Pick the first category that belongs to the chosen section
+                        // (from DB), falling back to the hardcoded grouping.
+                        const firstCustom = customCategories
+                          .filter((c) => !c.hidden && c.grup === nextGroupTitle)
+                          .sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0))[0]?.key;
+                        const fallback = PRODUCT_CATEGORY_GROUPS.find(
+                          (group) => group.title === nextGroupTitle
+                        )?.items[0];
+                        const nextCategory = (firstCustom ?? fallback) as AdminCategory | undefined;
                         if (nextCategory) {
                           setValues((p) => ({ ...p, categorie: nextCategory }));
                         }
                       }}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
                     >
-                      {PRODUCT_CATEGORY_GROUPS.map((group) => (
-                        <option key={group.title} value={group.title}>
-                          {group.title}
+                      {groupOptions.map((title) => (
+                        <option key={title} value={title}>
+                          {title}
                         </option>
                       ))}
                     </select>
