@@ -18,6 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LABIRINT | Mobila la comanda Soroca",
   description: "Mobila la comanda si produse de calitate. Experienta din 2007.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
